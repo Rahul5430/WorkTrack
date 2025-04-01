@@ -1,3 +1,37 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+	"compilerOptions": {
+		"allowSyntheticDefaultImports": true,
+		"jsx": "react-native",
+		"lib": [
+			"dom",
+			"esnext"
+		],
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"skipLibCheck": true,
+		"resolveJsonModule": true,
+		"strict": true,
+		"useUnknownInCatchVariables": false,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"module": "esnext",
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noImplicitUseStrict": false,
+		"noStrictGenericChecks": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"target": "esnext",
+		"typeRoots": [
+			"node_modules/@types",
+			"./src/types"
+		],
+		"types": [
+			"jest",
+			"node"
+		]
+	},
+	"extends": "@react-native/typescript-config/tsconfig.json"
 }
