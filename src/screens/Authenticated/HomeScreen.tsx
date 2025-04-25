@@ -1,6 +1,8 @@
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CalendarComponent from '../../components/Calendar';
+import Label from '../../components/Label';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { fonts } from '../../themes';
 
@@ -21,6 +23,8 @@ const HomeScreen: () => React.JSX.Element = () => {
 				<Text style={[styles.headerText, { fontSize: RFValue(20) }]}>
 					WorkTrack
 				</Text>
+				<CalendarComponent />
+				<Label />
 			</ScrollView>
 		</SafeAreaView>
 	);
@@ -34,6 +38,7 @@ const styles = StyleSheet.create({
 	headerText: {
 		color: '#111827',
 		fontFamily: fonts.PoppinsSemiBold,
+		marginBottom: 10,
 	},
 });
 
