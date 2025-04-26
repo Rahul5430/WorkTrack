@@ -3,28 +3,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CalendarComponent from '../../components/Calendar';
 import Label from '../../components/Label';
+import Summary from '../../components/Summary';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { fonts } from '../../themes';
 
 const HomeScreen: () => React.JSX.Element = () => {
-	const { getResponsiveSize, RFValue } = useResponsiveLayout();
+	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 
 	return (
-		<SafeAreaView
-			style={[
-				styles.screen,
-				{
-					paddingHorizontal: getResponsiveSize(5).width,
-					paddingVertical: getResponsiveSize(5).width,
-				},
-			]}
-		>
+		<SafeAreaView style={[styles.screen]}>
 			<ScrollView>
-				<Text style={[styles.headerText, { fontSize: RFValue(20) }]}>
+				<Text
+					style={[
+						styles.headerText,
+						{
+							fontSize: RFValue(20),
+							paddingHorizontal: getResponsiveSize(5).width,
+						},
+					]}
+				>
 					WorkTrack
 				</Text>
 				<CalendarComponent />
 				<Label />
+				<Summary />
 			</ScrollView>
 		</SafeAreaView>
 	);

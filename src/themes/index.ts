@@ -26,7 +26,6 @@ export const calendarTheme: Theme = {
 			flexDirection: 'row',
 			justifyContent: 'space-between',
 			alignItems: 'flex-start',
-
 			height: 43,
 		},
 		container: {
@@ -45,7 +44,7 @@ export const calendarTheme: Theme = {
 	},
 	'stylesheet.calendar-list.main': {
 		calendar: {
-			paddingHorizontal: 0,
+			paddingHorizontal: 2,
 		},
 	},
 };

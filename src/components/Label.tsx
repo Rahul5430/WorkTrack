@@ -8,7 +8,7 @@ import { useResponsiveLayout } from '../hooks/useResponsive';
 import { fonts } from '../themes';
 
 const Label = () => {
-	const { RFValue } = useResponsiveLayout();
+	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 
 	const labels = [
 		{ label: 'Office', Icon: Building, color: '#2196F315' },
@@ -18,17 +18,22 @@ const Label = () => {
 	];
 
 	return (
-		<View style={styles.container}>
+		<View
+			style={[
+				styles.container,
+				{ paddingHorizontal: getResponsiveSize(5).width },
+			]}
+		>
 			{labels.map(({ label, Icon, color }) => (
 				<View
 					key={label}
-					style={[styles.item, { backgroundColor: color }]}
+					style={[
+						styles.item,
+						label === 'Forecast' ? styles.lastItem : { flex: 1 },
+						{ backgroundColor: color },
+					]}
 				>
-					<Icon
-						width={16}
-						height={16}
-						style={{ paddingLeft: 25, paddingRight: 2 }}
-					/>
+					<Icon width={16} height={16} />
 					<Text
 						style={[
 							styles.label,
@@ -51,17 +56,19 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		height: 36,
 		marginVertical: 24,
-		gap: 12,
+		gap: 8,
 	},
 	item: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		borderRadius: 12,
-		flex: 1,
-		// justifyContent: 'space-evenly',
-		// width: 78,
-		// paddingLeft: 10,
-		// gap: 5,
+		paddingLeft: 8,
+		gap: 4,
+	},
+	lastItem: {
+		justifyContent: 'center',
+		paddingLeft: 0,
+		width: 90,
 	},
 	label: {
 		fontFamily: fonts.PoppinsMedium,
