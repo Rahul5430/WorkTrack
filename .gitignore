@@ -1,3 +1,6 @@
+.env
+.eslintcache
+
 # OSX
 #
 .DS_Store

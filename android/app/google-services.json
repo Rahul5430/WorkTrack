@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "454189852092",
+    "project_id": "worktrack-5430",
+    "storage_bucket": "worktrack-5430.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:454189852092:android:2d78ce93fae9f53995f7b9",
+        "android_client_info": {
+          "package_name": "com.worktrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "454189852092-64aq2d9raglpqvoc7qrtnc8tvmiamt3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.worktrack",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "454189852092-qn7vhcpvg6sunv5kuk0opvilvfm5ckhg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtuy0RdFMfqjnyAdzSOL8-r5AKBCnW9-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "454189852092-qn7vhcpvg6sunv5kuk0opvilvfm5ckhg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "454189852092-c436mv8qcf5h9q4b8d36sffou9t6u8vc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.reactjs.native.example.WorkTrack"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
