@@ -10,7 +10,7 @@ export interface GoogleUser {
 export interface UserState {
 	user: GoogleUser | null;
 	token: string | null;
-	isLoggedIn: boolean;
+	isLoggedIn: boolean | null;
 	isFetching: boolean;
 	errorMessage: string | null;
 }
@@ -18,7 +18,7 @@ export interface UserState {
 const initialState: UserState = {
 	user: null,
 	token: null,
-	isLoggedIn: false,
+	isLoggedIn: null,
 	isFetching: false,
 	errorMessage: null,
 };

@@ -23,9 +23,11 @@ const LoadingScreen: React.FC<
 			if (rawUser) {
 				const parsedUser = JSON.parse(rawUser);
 
+				// Optionally: Validate token here if backend exists
 				dispatch(setUser(parsedUser));
 				dispatch(setLoggedIn(true));
 
+				// Load WatermelonDB local data
 				const localWorkTrackData = await loadWorkTrackDataFromDB();
 				dispatch(setWorkTrackData(localWorkTrackData));
 			} else {
