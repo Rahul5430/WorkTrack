@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -9,10 +8,12 @@ import { loadWorkTrackDataFromDB } from '../db/watermelon/worktrack/load';
 import { useResponsiveLayout } from '../hooks/useResponsive';
 import { setLoggedIn, setUser } from '../store/reducers/userSlice';
 import { setWorkTrackData } from '../store/reducers/workTrackSlice';
+import { LoadingStackScreenProps } from '../types/navigation';
 
-const LoadingScreen = () => {
+const LoadingScreen: React.FC<
+	LoadingStackScreenProps<'LoadingScreen'>
+> = () => {
 	const dispatch = useDispatch();
-	const navigation = useNavigation();
 	const { RFValue } = useResponsiveLayout();
 
 	const restoreAppData = async () => {
@@ -27,25 +28,12 @@ const LoadingScreen = () => {
 
 				const localWorkTrackData = await loadWorkTrackDataFromDB();
 				dispatch(setWorkTrackData(localWorkTrackData));
-
-				navigation.reset({
-					index: 0,
-					routes: [{ name: 'Home' }],
-				});
 			} else {
 				dispatch(setLoggedIn(false));
-				navigation.reset({
-					index: 0,
-					routes: [{ name: 'Welcome' }],
-				});
 			}
 		} catch (err) {
 			console.error('❌ Error restoring app data:', err);
 			dispatch(setLoggedIn(false));
-			navigation.reset({
-				index: 0,
-				routes: [{ name: 'Welcome' }],
-			});
 		}
 	};
 

@@ -1,10 +1,16 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from '../screens/Authenticated/HomeScreen';
+import {
+	AuthenticatedStackParamList,
+	MainStackScreenProps,
+} from '../types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<AuthenticatedStackParamList>();
 
-const AuthenticatedStack: () => React.JSX.Element = () => {
+const AuthenticatedNavigator: React.FC<
+	MainStackScreenProps<'AuthenticatedStack'>
+> = () => {
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false }}>
 			<Stack.Screen name='HomeScreen' component={HomeScreen} />
@@ -12,4 +18,4 @@ const AuthenticatedStack: () => React.JSX.Element = () => {
 	);
 };
 
-export default AuthenticatedStack;
+export default AuthenticatedNavigator;
