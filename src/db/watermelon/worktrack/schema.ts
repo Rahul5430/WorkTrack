@@ -7,5 +7,7 @@ export const workTrackSchema = tableSchema({
 		{ name: 'status', type: 'string' },
 		{ name: 'created_at', type: 'number' },
 		{ name: 'synced', type: 'boolean' },
+		{ name: 'sync_error', type: 'string', isOptional: true },
+		{ name: 'last_modified', type: 'number' },
 	],
 });

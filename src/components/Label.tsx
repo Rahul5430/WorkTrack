@@ -4,6 +4,11 @@ import Building from '../assets/icons/building.svg';
 import Forecast from '../assets/icons/forecast.svg';
 import Home from '../assets/icons/home.svg';
 import Plus from '../assets/icons/plus.svg';
+import {
+	WORK_STATUS,
+	WORK_STATUS_BACKGROUND_COLORS,
+	WORK_STATUS_LABELS,
+} from '../constants/workStatus';
 import { useResponsiveLayout } from '../hooks/useResponsive';
 import { fonts } from '../themes';
 
@@ -11,9 +16,21 @@ const Label = () => {
 	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 
 	const labels = [
-		{ label: 'Office', Icon: Building, color: '#2196F315' },
-		{ label: 'WFH', Icon: Home, color: '#4CAF5015' },
-		{ label: 'Holiday', Icon: Plus, color: '#FF525215' },
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.OFFICE],
+			Icon: Building,
+			color: WORK_STATUS_BACKGROUND_COLORS[WORK_STATUS.OFFICE],
+		},
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.WFH],
+			Icon: Home,
+			color: WORK_STATUS_BACKGROUND_COLORS[WORK_STATUS.WFH],
+		},
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.HOLIDAY],
+			Icon: Plus,
+			color: WORK_STATUS_BACKGROUND_COLORS[WORK_STATUS.HOLIDAY],
+		},
 		{ label: 'Forecast', Icon: Forecast, color: '#9C27B015' },
 	];
 

@@ -1,19 +1,25 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 
+import { WORK_STATUS } from '../../constants/workStatus';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
-import { calendarTheme, fonts } from '../../themes';
+import { calendarTheme } from '../../themes';
+import CalendarDay from './CalendarDay';
 import CustomCalendarHeader from './CalendarHeader';
 
 type DataType = {
 	[key: string]: string;
 };
 
-const OFFICE_DAYS = 'officeDays';
-const WFH_DAYS = 'wfhDays';
+type CalendarComponentProps = {
+	onDatePress: (date: string) => void;
+};
 
-const CalendarComponent = () => {
-	const { getResponsiveSize, RFValue } = useResponsiveLayout();
+const OFFICE_DAYS = WORK_STATUS.OFFICE;
+const WFH_DAYS = WORK_STATUS.WFH;
+
+const CalendarComponent = ({ onDatePress }: CalendarComponentProps) => {
+	const { getResponsiveSize } = useResponsiveLayout();
 
 	const data: DataType = {
 		'2025-04-01': OFFICE_DAYS,
@@ -33,6 +39,12 @@ const CalendarComponent = () => {
 		'2025-04-29': WFH_DAYS,
 	};
 
+	const handlePressDate = (date: string) => {
+		if (onDatePress) {
+			onDatePress(date);
+		}
+	};
+
 	return (
 		<View style={{ paddingHorizontal: getResponsiveSize(5).width }}>
 			<CalendarList
@@ -50,60 +62,28 @@ const CalendarComponent = () => {
 				markingType='custom'
 				theme={calendarTheme}
 				dayComponent={({ date }) => {
-					const isOfficeDay =
-						(date?.dateString && data[date?.dateString]) ===
-						OFFICE_DAYS;
+					const dateString = date?.dateString ?? '';
+					const dayNumber = date?.day ?? 0;
 
-					const isWfhDay =
-						(date?.dateString && data[date?.dateString]) ===
-						WFH_DAYS;
+					const type =
+						data[dateString] === OFFICE_DAYS
+							? WORK_STATUS.OFFICE
+							: data[dateString] === WFH_DAYS
+								? WORK_STATUS.WFH
+								: WORK_STATUS.HOLIDAY;
 
 					return (
-						<View
-							style={[
-								styles.dayStyle,
-								isOfficeDay && {
-									backgroundColor: '#2196F3',
-								},
-								isWfhDay && {
-									backgroundColor: '#4CAF50',
-								},
-							]}
-						>
-							<Text
-								style={[
-									styles.dayTextStyle,
-									(isOfficeDay || isWfhDay) && {
-										color: '#fff',
-									},
-
-									{
-										fontSize: RFValue(14),
-									},
-								]}
-							>
-								{date?.day}
-							</Text>
-						</View>
+						<CalendarDay
+							day={dayNumber}
+							dateString={dateString}
+							type={type}
+							onPress={handlePressDate}
+						/>
 					);
 				}}
 			/>
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	dayStyle: {
-		backgroundColor: '#F3F4F6',
-		borderRadius: 8,
-		width: 43,
-		height: 43,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	dayTextStyle: {
-		fontFamily: fonts.PoppinsRegular,
-	},
-});
 
 export default CalendarComponent;

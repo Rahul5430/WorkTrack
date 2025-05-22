@@ -1,6 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 
+import {
+	WORK_STATUS,
+	WORK_STATUS_COLORS,
+	WORK_STATUS_LABELS,
+} from '../../constants/workStatus';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { fonts } from '../../themes';
 
@@ -8,9 +13,21 @@ const SummaryData = () => {
 	const { RFValue } = useResponsiveLayout();
 
 	const data = [
-		{ label: 'Office Days', value: 12, color: '#2196F3' },
-		{ label: 'WFH Days', value: 5, color: '#4CAF50' },
-		{ label: 'Holidays', value: 3, color: '#FF9800' },
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.OFFICE],
+			value: 12,
+			color: WORK_STATUS_COLORS[WORK_STATUS.OFFICE],
+		},
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.WFH],
+			value: 5,
+			color: WORK_STATUS_COLORS[WORK_STATUS.WFH],
+		},
+		{
+			label: WORK_STATUS_LABELS[WORK_STATUS.HOLIDAY],
+			value: 3,
+			color: WORK_STATUS_COLORS[WORK_STATUS.HOLIDAY],
+		},
 		{ label: 'Required', value: 3, color: '#FF9800' },
 	];
 	const workingDaysInMonth = 22;

@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { Provider } from 'react-redux';
 
@@ -11,7 +12,9 @@ function App(): React.JSX.Element {
 		<Provider store={store}>
 			<NavigationContainer>
 				<PaperProvider>
-					<MainNavigator />
+					<GestureHandlerRootView style={{ flex: 1 }}>
+						<MainNavigator />
+					</GestureHandlerRootView>
 				</PaperProvider>
 			</NavigationContainer>
 		</Provider>
