@@ -1,12 +1,19 @@
 import { GOOGLE_SIGN_IN_CLIENT_ID } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
+import { getApp } from '@react-native-firebase/app';
+import {
+	getAuth,
+	GoogleAuthProvider,
+	signInWithCredential,
+} from '@react-native-firebase/auth';
+import { doc, getFirestore, setDoc } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
+import SyncService from '../services/sync';
 import {
 	GoogleUser,
 	setErrorMessage,
@@ -29,22 +36,51 @@ const WelcomeScreen: React.FC<
 
 	// Handle Firebase auth state change
 	useEffect(() => {
-		const unsubscribe = auth().onAuthStateChanged(async (firebaseUser) => {
-			console.log('Firebase User', firebaseUser);
+		const auth = getAuth(getApp());
+		const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
 			if (firebaseUser) {
-				// You can optionally reload the user or read fresh token if needed
-				const userInfo: GoogleUser = {
-					id: firebaseUser.uid,
-					name: firebaseUser.displayName ?? 'Unknown',
-					email: firebaseUser.email ?? 'Unknown',
-					photo: firebaseUser.photoURL ?? '',
-				};
+				try {
+					const userInfo: GoogleUser = {
+						id: firebaseUser.uid,
+						name: firebaseUser.displayName ?? 'Unknown',
+						email: firebaseUser.email ?? 'Unknown',
+						photo: firebaseUser.photoURL ?? '',
+					};
 
-				console.log('User Info', userInfo);
+					// Create or update user in Firestore
+					const db = getFirestore(getApp());
+					await setDoc(
+						doc(db, 'users', firebaseUser.uid),
+						{
+							name: userInfo.name,
+							email: userInfo.email.toLowerCase(),
+							photo: userInfo.photo,
+							createdAt: new Date(),
+							updatedAt: new Date(),
+						},
+						{ merge: true }
+					);
 
-				await AsyncStorage.setItem('user', JSON.stringify(userInfo));
-				dispatch(setUser(userInfo));
-				dispatch(setLoggedIn(true));
+					// Trigger initial sync before updating UI state
+					const syncService = SyncService.getInstance();
+					await syncService.syncFromFirebase();
+					await syncService.startPeriodicSync();
+
+					// Only update UI state after sync is complete
+					await AsyncStorage.setItem(
+						'user',
+						JSON.stringify(userInfo)
+					);
+					dispatch(setUser(userInfo));
+					dispatch(setLoggedIn(true));
+				} catch (error) {
+					console.error('Error during login sync:', error);
+					dispatch(
+						setErrorMessage(
+							'Failed to sync data. Please try again.'
+						)
+					);
+				}
 			}
 		});
 
@@ -55,12 +91,10 @@ const WelcomeScreen: React.FC<
 		try {
 			dispatch(setIsFetching(true));
 
-			// Check if your device supports Google Play
 			await GoogleSignin.hasPlayServices({
 				showPlayServicesUpdateDialog: true,
 			});
 
-			// Sign in and get token
 			const signInResult = await GoogleSignin.signIn();
 			const idToken = signInResult?.data?.idToken;
 
@@ -68,16 +102,20 @@ const WelcomeScreen: React.FC<
 				throw new Error('No ID token found');
 			}
 
-			// Authenticate with Firebase
-			const googleCredential =
-				auth.GoogleAuthProvider.credential(idToken);
-			await auth().signInWithCredential(googleCredential);
+			const auth = getAuth(getApp());
+			const credential = GoogleAuthProvider.credential(idToken);
+			await signInWithCredential(auth, credential);
 
 			dispatch(setIsFetching(false));
 		} catch (error) {
 			dispatch(setIsFetching(false));
-			dispatch(setErrorMessage('Google SignIn Error'));
-			console.log('### Google SignIn Error: ', error);
+			dispatch(
+				setErrorMessage(
+					error instanceof Error
+						? error.message
+						: 'Google SignIn Error'
+				)
+			);
 		}
 	};
 

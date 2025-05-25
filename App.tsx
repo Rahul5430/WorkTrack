@@ -1,24 +1,25 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { PaperProvider } from 'react-native-paper';
-import { Provider } from 'react-redux';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider as ReduxProvider } from 'react-redux';
 
 import MainNavigator from './src/navigation/MainNavigator';
 import { store } from './src/store/store';
+import { theme } from './src/themes/theme';
 
-function App(): React.JSX.Element {
+export default function App() {
 	return (
-		<Provider store={store}>
-			<NavigationContainer>
-				<PaperProvider>
-					<GestureHandlerRootView style={{ flex: 1 }}>
-						<MainNavigator />
-					</GestureHandlerRootView>
-				</PaperProvider>
-			</NavigationContainer>
-		</Provider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<SafeAreaProvider>
+				<ReduxProvider store={store}>
+					<PaperProvider theme={theme}>
+						<NavigationContainer>
+							<MainNavigator />
+						</NavigationContainer>
+					</PaperProvider>
+				</ReduxProvider>
+			</SafeAreaProvider>
+		</GestureHandlerRootView>
 	);
 }
-
-export default App;

@@ -1,62 +1,64 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { MarkedDayStatus } from '../../types/calendar';
+import { MarkedDay } from '../../types/calendar';
 
-export interface WorkDayEntry {
-	date: string;
-	status: MarkedDayStatus;
-}
-
-interface WorkTrackState {
-	entries: WorkDayEntry[];
+export interface WorkTrackState {
+	data: MarkedDay[];
 	loading: boolean;
 	error: string | null;
-	lastSynced: number | null;
+	syncStatus: {
+		isSyncing: boolean;
+		isOnline: boolean;
+		lastSyncTime?: number;
+		error?: string;
+		pendingSyncs: number;
+	};
 }
 
 const initialState: WorkTrackState = {
-	entries: [],
+	data: [],
 	loading: false,
 	error: null,
-	lastSynced: null,
+	syncStatus: {
+		isSyncing: false,
+		isOnline: true,
+		pendingSyncs: 0,
+	},
 };
 
 const workTrackSlice = createSlice({
 	name: 'workTrack',
 	initialState,
 	reducers: {
-		setWorkTrackData(state, action: PayloadAction<WorkDayEntry[]>) {
-			state.entries = action.payload;
-			state.error = null;
+		setWorkTrackData: (state, action: PayloadAction<MarkedDay[]>) => {
+			state.data = action.payload;
 		},
-		addOrUpdateEntry(state, action: PayloadAction<WorkDayEntry>) {
-			const existingIndex = state.entries.findIndex(
+		addOrUpdateEntry: (state, action: PayloadAction<MarkedDay>) => {
+			const index = state.data.findIndex(
 				(entry) => entry.date === action.payload.date
 			);
-			if (existingIndex !== -1) {
-				state.entries[existingIndex] = action.payload;
+			if (index !== -1) {
+				state.data[index] = action.payload;
 			} else {
-				state.entries.push(action.payload);
+				state.data.push(action.payload);
 			}
-			state.error = null;
 		},
-		clearWorkTrack(state) {
-			state.entries = [];
-			state.error = null;
-		},
-		setLoading(state, action: PayloadAction<boolean>) {
-			state.loading = action.payload;
-		},
-		setError(state, action: PayloadAction<string | null>) {
-			state.error = action.payload;
-		},
-		setLastSynced(state, action: PayloadAction<number>) {
-			state.lastSynced = action.payload;
-		},
-		rollbackEntry(state, action: PayloadAction<string>) {
-			state.entries = state.entries.filter(
+		rollbackEntry: (state, action: PayloadAction<string>) => {
+			state.data = state.data.filter(
 				(entry) => entry.date !== action.payload
 			);
+		},
+		setLoading: (state, action: PayloadAction<boolean>) => {
+			state.loading = action.payload;
+		},
+		setError: (state, action: PayloadAction<string | null>) => {
+			state.error = action.payload;
+		},
+		updateSyncStatus: (
+			state,
+			action: PayloadAction<Partial<WorkTrackState['syncStatus']>>
+		) => {
+			state.syncStatus = { ...state.syncStatus, ...action.payload };
 		},
 	},
 });
@@ -64,11 +66,13 @@ const workTrackSlice = createSlice({
 export const {
 	setWorkTrackData,
 	addOrUpdateEntry,
-	clearWorkTrack,
+	rollbackEntry,
 	setLoading,
 	setError,
-	setLastSynced,
-	rollbackEntry,
+	updateSyncStatus,
 } = workTrackSlice.actions;
+
+export const selectSyncStatus = (state: { workTrack: WorkTrackState }) =>
+	state.workTrack.syncStatus;
 
 export default workTrackSlice.reducer;

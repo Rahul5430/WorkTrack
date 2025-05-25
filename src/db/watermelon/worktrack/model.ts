@@ -4,7 +4,7 @@ import { date, field, readonly } from '@nozbe/watermelondb/decorators';
 import { MarkedDayStatus } from '../../../types/calendar';
 
 export default class WorkTrack extends Model {
-	static table = 'work_tracks';
+	static readonly table = 'work_tracks';
 
 	@field('date') date!: string;
 	@field('status') status!: MarkedDayStatus;
@@ -19,7 +19,7 @@ export default class WorkTrack extends Model {
 			throw new Error('Invalid entry: missing required fields');
 		}
 		if (
-			!Object.values(['WFH', 'OFFICE', 'HOLIDAY']).includes(this.status)
+			!Object.values(['wfh', 'office', 'holiday']).includes(this.status)
 		) {
 			throw new Error('Invalid status value');
 		}

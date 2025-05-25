@@ -1,11 +1,60 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
+import { WORK_STATUS } from '../../constants/workStatus';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
+import { RootState } from '../../store/store';
 import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 import SummaryData from './SummaryData';
 
 const Summary = () => {
 	const { getResponsiveSize, RFValue } = useResponsiveLayout();
+	const workTrackData = useSelector(
+		(state: RootState) => state.workTrack.data
+	);
+
+	const attendanceStats = useMemo(() => {
+		const currentMonth = new Date().getMonth();
+		const currentYear = new Date().getFullYear();
+		const currentQuarter = Math.floor(currentMonth / 3);
+
+		const monthData = workTrackData.filter((entry) => {
+			const entryDate = new Date(entry.date);
+			return (
+				entryDate.getMonth() === currentMonth &&
+				entryDate.getFullYear() === currentYear
+			);
+		});
+
+		const quarterData = workTrackData.filter((entry) => {
+			const entryDate = new Date(entry.date);
+			const entryQuarter = Math.floor(entryDate.getMonth() / 3);
+			return (
+				entryDate.getFullYear() === currentYear &&
+				entryQuarter === currentQuarter
+			);
+		});
+
+		const calculateAttendance = (data: typeof workTrackData) => {
+			const workingDays = data.filter(
+				(entry) =>
+					entry.status === WORK_STATUS.OFFICE ||
+					entry.status === WORK_STATUS.WFH
+			).length;
+
+			const totalDays = data.length;
+			return totalDays > 0
+				? Math.round((workingDays / totalDays) * 100)
+				: 0;
+		};
+
+		return {
+			monthly: calculateAttendance(monthData),
+			quarterly: calculateAttendance(quarterData),
+		};
+	}, [workTrackData]);
 
 	return (
 		<View
@@ -25,13 +74,13 @@ const Summary = () => {
 							style={[
 								styles.attendance,
 								{
-									color: '#2196F3',
+									color: colors.office,
 									fontFamily: fonts.PoppinsBold,
 									fontSize: RFValue(24),
 								},
 							]}
 						>
-							65%
+							{attendanceStats.monthly}%
 						</Text>
 						<Text
 							style={[
@@ -39,7 +88,7 @@ const Summary = () => {
 								{ fontSize: RFValue(18) },
 							]}
 						>
-							70%
+							{attendanceStats.quarterly}%
 						</Text>
 					</View>
 					<View style={styles.header}>
@@ -69,7 +118,7 @@ const Summary = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: 'white',
+		backgroundColor: colors.background.primary,
 	},
 	shadowContainer: {
 		borderRadius: 12,
@@ -88,12 +137,13 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	attendance: {
-		color: '#000',
+		color: colors.text.primary,
 		fontFamily: fonts.PoppinsMedium,
 	},
 	subHeader: {
-		color: '#4B5563',
+		color: colors.text.secondary,
 		fontFamily: fonts.PoppinsRegular,
 	},
 });
+
 export default Summary;

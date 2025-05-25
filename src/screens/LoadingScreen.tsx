@@ -6,7 +6,11 @@ import { useDispatch } from 'react-redux';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import { loadWorkTrackDataFromDB } from '../db/watermelon/worktrack/load';
 import { useResponsiveLayout } from '../hooks/useResponsive';
-import { setLoggedIn, setUser } from '../store/reducers/userSlice';
+import {
+	setErrorMessage,
+	setLoggedIn,
+	setUser,
+} from '../store/reducers/userSlice';
 import { setWorkTrackData } from '../store/reducers/workTrackSlice';
 import { LoadingStackScreenProps } from '../types/navigation';
 
@@ -22,20 +26,23 @@ const LoadingScreen: React.FC<
 
 			if (rawUser) {
 				const parsedUser = JSON.parse(rawUser);
-
-				// Optionally: Validate token here if backend exists
 				dispatch(setUser(parsedUser));
 				dispatch(setLoggedIn(true));
 
-				// Load WatermelonDB local data
 				const localWorkTrackData = await loadWorkTrackDataFromDB();
 				dispatch(setWorkTrackData(localWorkTrackData));
 			} else {
 				dispatch(setLoggedIn(false));
 			}
 		} catch (err) {
-			console.error('❌ Error restoring app data:', err);
 			dispatch(setLoggedIn(false));
+			dispatch(
+				setErrorMessage(
+					err instanceof Error
+						? err.message
+						: 'Failed to restore app data'
+				)
+			);
 		}
 	};
 

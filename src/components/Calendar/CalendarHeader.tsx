@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ViewProps } from 'react-native';
 
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 
 export interface CalendarHeaderProps {
 	/** The current month presented in the calendar */
@@ -23,14 +24,23 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 
 	const renderWeekDays = useMemo((): React.JSX.Element[] => {
 		const weekDaysNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+		const weekDayPositions = [
+			'sunday',
+			'monday',
+			'tuesday',
+			'wednesday',
+			'thursday',
+			'friday',
+			'saturday',
+		];
 
 		return weekDaysNames.map((day, index) => (
 			<Text
 				allowFontScaling={false}
-				key={index}
+				key={`weekday-${weekDayPositions[index]}`}
 				style={[styles.dayHeader, { fontSize: RFValue(14) }]}
 				numberOfLines={1}
-				accessibilityLabel={''}
+				accessibilityLabel={weekDayPositions[index]}
 			>
 				{day}
 			</Text>
@@ -67,7 +77,7 @@ const styles = StyleSheet.create({
 		fontWeight: 300,
 		marginVertical: 10,
 		fontFamily: fonts.PoppinsMedium,
-		color: '#111827',
+		color: colors.text.primary,
 	},
 	week: {
 		marginTop: 7,
@@ -80,6 +90,7 @@ const styles = StyleSheet.create({
 		width: 32,
 		textAlign: 'center',
 		fontFamily: fonts.PoppinsMedium,
+		color: colors.text.secondary,
 	},
 });
 

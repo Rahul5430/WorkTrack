@@ -1,23 +1,29 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { HelperText } from 'react-native-paper';
 
+import { WORK_STATUS_COLORS } from '../constants/workStatus';
 import { useResponsiveLayout } from '../hooks/useResponsive';
 import { fonts } from '../themes';
+import { colors } from '../themes/colors';
 import { MarkedDayStatus } from '../types/calendar';
 
 type Props = {
 	onSave: (status: MarkedDayStatus) => void;
 	selectedDate: string;
 	loading?: boolean;
+	onCancel?: () => void;
 };
 
 const DayMarkingBottomSheet: React.FC<Props> = ({
 	onSave,
 	selectedDate,
 	loading = false,
+	onCancel,
 }) => {
 	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 	const [status, setStatus] = useState<MarkedDayStatus | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -29,53 +35,123 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 		});
 	};
 
+	const validateDate = (dateString: string) => {
+		const selectedDate = new Date(dateString);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (selectedDate > today) {
+			setError('Cannot mark future dates');
+			return false;
+		}
+		setError(null);
+		return true;
+	};
+
 	const handleConfirm = () => {
-		if (status) {
-			onSave(status);
+		if (!status) {
+			setError('Please select a status');
+			return;
+		}
+
+		if (!validateDate(selectedDate)) {
+			return;
+		}
+
+		onSave(status);
+	};
+
+	const handleCancel = () => {
+		if (onCancel) {
+			onCancel();
 		}
 	};
 
-	const getStatusStyle = (type: string) => [
+	const getStatusStyle = (type: MarkedDayStatus) => [
 		styles.statusButton,
 		{
-			backgroundColor: status === type ? '#2563EB' : '#E5E7EB',
+			backgroundColor:
+				status === type
+					? WORK_STATUS_COLORS[type]
+					: colors.ui.gray[200],
+		},
+	];
+
+	const getStatusTextStyle = (type: MarkedDayStatus) => [
+		styles.statusText,
+		{
+			color: status === type ? colors.text.light : colors.text.primary,
 		},
 	];
 
 	return (
-		<View style={styles.container}>
+		<View
+			style={[styles.container, { padding: getResponsiveSize(5).width }]}
+		>
 			<Text style={[styles.title, { fontSize: RFValue(16) }]}>
 				Mark your status for {formatDate(selectedDate)}
 			</Text>
 
-			<View style={styles.statusOptions}>
+			<View
+				style={[
+					styles.statusOptions,
+					{ paddingHorizontal: getResponsiveSize(2).width },
+				]}
+			>
 				<TouchableOpacity
-					onPress={() => setStatus('OFFICE')}
-					style={getStatusStyle('OFFICE')}
+					onPress={() => {
+						setStatus('office');
+						setError(null);
+					}}
+					style={[styles.statusButton, getStatusStyle('office')]}
 					disabled={loading}
 				>
-					<Text style={styles.statusText}>WFO</Text>
+					<Text style={getStatusTextStyle('office')}>WFO</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
-					onPress={() => setStatus('WFH')}
-					style={getStatusStyle('WFH')}
+					onPress={() => {
+						setStatus('wfh');
+						setError(null);
+					}}
+					style={[styles.statusButton, getStatusStyle('wfh')]}
 					disabled={loading}
 				>
-					<Text style={styles.statusText}>WFH</Text>
+					<Text style={getStatusTextStyle('wfh')}>WFH</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
-					onPress={() => setStatus('HOLIDAY')}
-					style={getStatusStyle('HOLIDAY')}
+					onPress={() => {
+						setStatus('holiday');
+						setError(null);
+					}}
+					style={[styles.statusButton, getStatusStyle('holiday')]}
 					disabled={loading}
 				>
-					<Text style={styles.statusText}>Leave</Text>
+					<Text style={getStatusTextStyle('holiday')}>Leave</Text>
 				</TouchableOpacity>
 			</View>
+
+			{error && (
+				<HelperText type='error' visible={!!error}>
+					{error}
+				</HelperText>
+			)}
 
 			{/* Spacer to push the button to the bottom */}
 			<View style={{ flex: 1 }} />
 
-			<View style={styles.buttonContainer}>
+			<View
+				style={[
+					styles.buttonContainer,
+					{ paddingHorizontal: getResponsiveSize(2).width },
+				]}
+			>
+				<TouchableOpacity
+					style={[styles.cancelButton]}
+					onPress={handleCancel}
+					disabled={loading}
+				>
+					<Text style={styles.cancelText}>Cancel</Text>
+				</TouchableOpacity>
 				<TouchableOpacity
 					style={[
 						styles.confirmButton,
@@ -95,50 +171,64 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
 	container: {
-		padding: 20,
-		backgroundColor: 'white',
+		backgroundColor: colors.background.primary,
 		flex: 1,
 	},
 	title: {
 		fontFamily: fonts.PoppinsSemiBold,
-		color: '#111827',
+		color: colors.text.primary,
 		marginBottom: 12,
 	},
 	statusOptions: {
 		flexDirection: 'row',
-		justifyContent: 'space-evenly',
+		justifyContent: 'space-between',
 		marginBottom: 16,
-		gap: 12,
 	},
 	statusButton: {
 		paddingVertical: 10,
 		paddingHorizontal: 20,
 		borderRadius: 8,
-		marginRight: 12,
+		flex: 1,
+		marginHorizontal: 4,
+		alignItems: 'center',
 	},
 	statusText: {
-		color: '#1F2937',
-		fontFamily: fonts.PoppinsRegular,
+		fontFamily: fonts.PoppinsMedium,
+		fontSize: 14,
 	},
 	buttonContainer: {
 		marginTop: 8,
 		marginBottom: 8,
-		alignItems: 'center',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		gap: 12,
 	},
 	confirmButton: {
-		backgroundColor: '#2563EB',
+		backgroundColor: colors.button.primary,
 		borderRadius: 8,
 		alignItems: 'center',
 		justifyContent: 'center',
 		height: 48,
-		minWidth: 160,
-		paddingHorizontal: 32,
+		flex: 1,
+	},
+	cancelButton: {
+		backgroundColor: colors.button.secondary,
+		borderRadius: 8,
+		alignItems: 'center',
+		justifyContent: 'center',
+		height: 48,
+		flex: 1,
 	},
 	disabledButton: {
-		backgroundColor: '#93C5FD',
+		backgroundColor: colors.button.disabled,
 	},
 	confirmText: {
-		color: 'white',
+		color: colors.text.light,
+		fontFamily: fonts.PoppinsSemiBold,
+		fontSize: 16,
+	},
+	cancelText: {
+		color: colors.text.secondary,
 		fontFamily: fonts.PoppinsSemiBold,
 		fontSize: 16,
 	},

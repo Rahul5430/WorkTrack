@@ -2,8 +2,18 @@ import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StatusBar, StyleSheet, Text } from 'react-native';
+import {
+	Image,
+	Pressable,
+	ScrollView,
+	StatusBar,
+	StyleSheet,
+	Text,
+	View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -13,7 +23,7 @@ import Label from '../../components/Label';
 import Summary from '../../components/Summary';
 import { addMarkedDay } from '../../db/watermelon/worktrack/load';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
-import { SyncService } from '../../services/sync';
+import SyncService from '../../services/sync';
 import {
 	addOrUpdateEntry,
 	rollbackEntry,
@@ -22,14 +32,21 @@ import {
 } from '../../store/reducers/workTrackSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 import { MarkedDayStatus } from '../../types/calendar';
+import { AuthenticatedStackParamList } from '../../types/navigation';
 
-const HomeScreen: () => React.JSX.Element = () => {
-	const { RFValue, getResponsiveSize } = useResponsiveLayout();
+type HomeScreenNavigationProp =
+	NativeStackNavigationProp<AuthenticatedStackParamList>;
+
+const HomeScreen = () => {
+	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
+	const navigation = useNavigation<HomeScreenNavigationProp>();
 	const { error, loading } = useSelector(
 		(state: RootState) => state.workTrack
 	);
+	const user = useSelector((state: RootState) => state.user.user);
 
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -67,12 +84,7 @@ const HomeScreen: () => React.JSX.Element = () => {
 			dispatch(setError(null));
 
 			// Optimistic update in Redux
-			dispatch(
-				addOrUpdateEntry({
-					date: selectedDate,
-					status,
-				})
-			);
+			dispatch(addOrUpdateEntry({ date: selectedDate, status }));
 
 			// Save to WatermelonDB
 			await addMarkedDay({ date: selectedDate, status });
@@ -98,23 +110,44 @@ const HomeScreen: () => React.JSX.Element = () => {
 	};
 
 	return (
-		<SafeAreaView style={[styles.screen]}>
+		<SafeAreaView style={styles.screen}>
 			<ScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
 				scrollEnabled={!selectedDate}
 			>
-				<Text
-					style={[
-						styles.headerText,
-						{
-							fontSize: RFValue(20),
-							paddingHorizontal: getResponsiveSize(5).width,
-						},
-					]}
-				>
-					WorkTrack
-				</Text>
+				<View style={styles.header}>
+					<Text
+						style={[
+							styles.headerText,
+							{
+								fontSize: RFValue(20),
+							},
+						]}
+					>
+						WorkTrack
+					</Text>
+					<Pressable
+						onPress={() => navigation.navigate('ProfileScreen')}
+						style={({ pressed }) => [
+							styles.profileButton,
+							pressed && { opacity: 0.8 },
+						]}
+					>
+						{user?.photo ? (
+							<Image
+								source={{ uri: user.photo }}
+								style={styles.profileImage}
+							/>
+						) : (
+							<View style={styles.profilePlaceholder}>
+								<Text style={styles.profilePlaceholderText}>
+									{user?.name?.[0]?.toUpperCase() ?? '?'}
+								</Text>
+							</View>
+						)}
+					</Pressable>
+				</View>
 				{error && <Text style={styles.errorText}>{error}</Text>}
 				<CalendarComponent onDatePress={onDatePress} />
 				<Label />
@@ -142,6 +175,7 @@ const HomeScreen: () => React.JSX.Element = () => {
 							selectedDate={selectedDate}
 							onSave={handleSave}
 							loading={loading}
+							onCancel={() => bottomSheetRef.current?.close()}
 						/>
 					)}
 				</BottomSheetView>
@@ -153,7 +187,7 @@ const HomeScreen: () => React.JSX.Element = () => {
 const styles = StyleSheet.create({
 	screen: {
 		flex: 1,
-		backgroundColor: '#fff',
+		backgroundColor: colors.background.primary,
 	},
 	scrollView: {
 		flex: 1,
@@ -161,17 +195,51 @@ const styles = StyleSheet.create({
 	scrollContent: {
 		flexGrow: 1,
 	},
-	headerText: {
-		fontFamily: fonts.PoppinsSemiBold,
-		color: '#111827',
+	header: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		paddingHorizontal: 20,
 		marginVertical: 16,
 	},
+	headerText: {
+		fontFamily: fonts.PoppinsSemiBold,
+		color: colors.text.primary,
+	},
+	profileButton: {
+		width: 32,
+		height: 32,
+		borderRadius: 16,
+		overflow: 'hidden',
+		backgroundColor: colors.background.primary,
+		elevation: 2,
+		shadowColor: colors.text.primary,
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+	},
+	profileImage: {
+		width: '100%',
+		height: '100%',
+	},
+	profilePlaceholder: {
+		width: '100%',
+		height: '100%',
+		backgroundColor: colors.office,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	profilePlaceholderText: {
+		color: colors.background.primary,
+		fontFamily: fonts.PoppinsSemiBold,
+		fontSize: 16,
+	},
 	sheetContent: {
-		backgroundColor: 'white',
+		backgroundColor: colors.background.primary,
 		overflow: 'hidden',
 	},
 	errorText: {
-		color: '#EF4444',
+		color: colors.error,
 		fontFamily: fonts.PoppinsRegular,
 		paddingHorizontal: 20,
 		marginBottom: 10,
