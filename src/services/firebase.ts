@@ -253,13 +253,19 @@ export default class FirebaseService {
 			const firestoreData = querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
-			})) as Array<{ id: string; date: string; status: MarkedDayStatus }>;
+			})) as Array<{
+				id: string;
+				date: string;
+				status: MarkedDayStatus;
+				isAdvisory: boolean;
+			}>;
 
 			// Update local database
 			for (const data of firestoreData) {
 				await addMarkedDay({
 					date: data.date,
 					status: data.status,
+					isAdvisory: data.isAdvisory ?? false,
 				});
 			}
 		} catch (error) {

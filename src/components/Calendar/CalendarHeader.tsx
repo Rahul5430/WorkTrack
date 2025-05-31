@@ -15,7 +15,7 @@ export interface CalendarHeaderProps {
 const CalendarHeader = (props: CalendarHeaderProps) => {
 	const { month, onHeaderLayout } = props;
 
-	const { RFValue } = useResponsiveLayout();
+	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 
 	const date = new Date(month).toLocaleDateString('en-US', {
 		month: 'long',
@@ -48,7 +48,10 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 	}, []);
 
 	return (
-		<View onLayout={onHeaderLayout}>
+		<View
+			onLayout={onHeaderLayout}
+			style={{ paddingHorizontal: getResponsiveSize(5).width }}
+		>
 			<View style={styles.header}>
 				<View style={styles.headerContainer}>
 					<Text

@@ -245,7 +245,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 						</Text>
 					</View>
 				</View>
-				<SummaryData />
+				<SummaryData selectedMonth={selectedMonth} />
 			</View>
 		</View>
 	);

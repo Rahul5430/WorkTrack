@@ -54,6 +54,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
+	const [selectedMonth, setSelectedMonth] = useState(new Date());
 
 	useEffect(() => {
 		// Start periodic sync
@@ -140,6 +141,10 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		}
 	};
 
+	const handleMonthChange = useCallback((date: Date) => {
+		setSelectedMonth(date);
+	}, []);
+
 	return (
 		<SafeAreaView style={styles.screen}>
 			<FocusAwareStatusBar
@@ -193,9 +198,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					</Pressable>
 				</View>
 				{error && <Text style={styles.errorText}>{error}</Text>}
-				<CalendarComponent onDatePress={onDatePress} />
+				<CalendarComponent
+					onDatePress={onDatePress}
+					onMonthChange={handleMonthChange}
+				/>
 				<Label />
-				<Summary />
+				<Summary selectedMonth={selectedMonth} />
 			</ScrollView>
 			<BottomSheet
 				ref={bottomSheetRef}

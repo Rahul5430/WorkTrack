@@ -30,12 +30,10 @@ export const useCalendarData = () => {
 	);
 	const loadingRef = useRef(loading);
 	const hasLoadedRef = useRef(hasLoaded);
-	const markedDaysRef = useRef(markedDays);
 
 	// Keep refs in sync with state
 	loadingRef.current = loading;
 	hasLoadedRef.current = hasLoaded;
-	markedDaysRef.current = markedDays;
 
 	const initializeDatabase = useCallback(async () => {
 		const workTracks = await database.collections
@@ -91,13 +89,6 @@ export const useCalendarData = () => {
 				.query()
 				.fetch();
 
-			// Get date ranges
-			const today = new Date();
-			const pastYear = new Date(today);
-			pastYear.setFullYear(today.getFullYear() - 1);
-			const nextYear = new Date(today);
-			nextYear.setFullYear(today.getFullYear() + 1);
-
 			// Convert all records to MarkedDay format and create a map for quick lookup
 			const markedDaysMap: Record<string, MarkedDay> = {};
 			allData.forEach((record) => {
@@ -109,7 +100,6 @@ export const useCalendarData = () => {
 				};
 			});
 
-			// No automatic weekend marking
 			// Convert map to array for Redux store
 			const filteredMarkedDays = Object.values(markedDaysMap);
 
@@ -135,7 +125,11 @@ export const useCalendarData = () => {
 	}, [loadData]);
 
 	const markDay = useCallback(
-		async (date: string, status: MarkedDayStatus) => {
+		async (
+			date: string,
+			status: MarkedDayStatus,
+			isAdvisory: boolean = false
+		) => {
 			try {
 				const workTrackCollection =
 					database.get<WorkTrack>('work_tracks');
@@ -143,6 +137,7 @@ export const useCalendarData = () => {
 					await workTrackCollection.create((workTrack) => {
 						workTrack.date = date;
 						workTrack.status = status;
+						workTrack.isAdvisory = isAdvisory;
 					});
 				});
 
@@ -150,6 +145,7 @@ export const useCalendarData = () => {
 					addOrUpdateEntry({
 						date,
 						status,
+						isAdvisory,
 					})
 				);
 			} catch (error) {

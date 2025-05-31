@@ -99,6 +99,7 @@ export default class WatermelonService {
 	async createOrUpdateRecord(data: {
 		date: string;
 		status: MarkedDayStatus;
+		isAdvisory: boolean;
 		lastModified: number;
 	}): Promise<void> {
 		const existingRecord = await database.collections
@@ -112,6 +113,7 @@ export default class WatermelonService {
 				if (data.lastModified > localRecord.lastModified) {
 					await localRecord.update((r) => {
 						r.status = data.status;
+						r.isAdvisory = data.isAdvisory;
 						r.lastModified = data.lastModified;
 						r.synced = true;
 						r.syncError = undefined;
@@ -123,6 +125,7 @@ export default class WatermelonService {
 					.create((r) => {
 						r.date = data.date;
 						r.status = data.status;
+						r.isAdvisory = data.isAdvisory;
 						r.lastModified = data.lastModified;
 						r.synced = true;
 					});

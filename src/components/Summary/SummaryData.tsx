@@ -14,14 +14,24 @@ import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
 import { MarkedDay } from '../../types/calendar';
 
-const SummaryData = () => {
+type SummaryDataProps = {
+	selectedMonth?: Date;
+};
+
+type MonthlyDataItem = {
+	label: string;
+	value: number;
+	color: string;
+};
+
+const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 	const { RFValue } = useResponsiveLayout();
 	const workTrackData = useSelector(
 		(state: RootState) => state.workTrack.data
 	);
 
 	const stats = useMemo(() => {
-		const today = new Date();
+		const today = selectedMonth || new Date();
 		const currentMonth = today.getMonth();
 		const currentYear = today.getFullYear();
 		const currentQuarter = Math.floor(currentMonth / 3);
@@ -62,7 +72,22 @@ const SummaryData = () => {
 		// Calculate working days for the current month
 		const monthStart = new Date(currentYear, currentMonth, 1);
 		const monthEnd = new Date(currentYear, currentMonth + 1, 0);
-		const workingDaysInMonth = getWorkingDaysInPeriod(monthStart, monthEnd);
+		const totalWorkingDays = getWorkingDaysInPeriod(monthStart, monthEnd);
+
+		// Count holidays and advisory days
+		const holidaysAndAdvisory = monthData.filter((entry) => {
+			const entryDate = new Date(entry.date);
+			const dayOfWeek = entryDate.getDay();
+			// Count holidays and advisory days that are not weekends
+			return (
+				(entry.status === WORK_STATUS.HOLIDAY || entry.isAdvisory) &&
+				dayOfWeek !== 0 &&
+				dayOfWeek !== 6
+			);
+		}).length;
+
+		// Calculate required days
+		const requiredDays = totalWorkingDays - holidaysAndAdvisory;
 
 		// Calculate working days for the current quarter
 		const quarterStart = new Date(currentYear, currentQuarter * 3, 1);
@@ -82,6 +107,15 @@ const SummaryData = () => {
 			};
 
 			data.forEach((entry: MarkedDay) => {
+				const entryDate = new Date(entry.date);
+				const dayOfWeek = entryDate.getDay();
+				// Only count holidays on weekdays
+				if (
+					entry.status === WORK_STATUS.HOLIDAY &&
+					(dayOfWeek === 0 || dayOfWeek === 6)
+				) {
+					return;
+				}
 				counts[entry.status]++;
 			});
 
@@ -94,37 +128,56 @@ const SummaryData = () => {
 		return {
 			monthly: {
 				counts: monthCounts,
-				workingDays: workingDaysInMonth,
+				workingDays: requiredDays,
 			},
 			quarterly: {
 				counts: quarterCounts,
 				workingDays: workingDaysInQuarter,
 			},
 		};
-	}, [workTrackData]);
+	}, [workTrackData, selectedMonth]);
 
-	const monthlyData = [
-		{
-			label: WORK_STATUS_LABELS[WORK_STATUS.OFFICE],
-			value: stats.monthly.counts[WORK_STATUS.OFFICE],
-			color: WORK_STATUS_COLORS[WORK_STATUS.OFFICE],
-		},
-		{
-			label: WORK_STATUS_LABELS[WORK_STATUS.WFH],
-			value: stats.monthly.counts[WORK_STATUS.WFH],
-			color: WORK_STATUS_COLORS[WORK_STATUS.WFH],
-		},
-		{
-			label: WORK_STATUS_LABELS[WORK_STATUS.HOLIDAY],
-			value: stats.monthly.counts[WORK_STATUS.HOLIDAY],
-			color: WORK_STATUS_COLORS[WORK_STATUS.HOLIDAY],
-		},
-		{
+	const monthlyData = useMemo(() => {
+		const data: MonthlyDataItem[] = [
+			{
+				label: WORK_STATUS_LABELS[WORK_STATUS.OFFICE],
+				value: stats.monthly.counts[WORK_STATUS.OFFICE],
+				color: WORK_STATUS_COLORS[WORK_STATUS.OFFICE],
+			},
+			{
+				label: WORK_STATUS_LABELS[WORK_STATUS.WFH],
+				value: stats.monthly.counts[WORK_STATUS.WFH],
+				color: WORK_STATUS_COLORS[WORK_STATUS.WFH],
+			},
+		];
+
+		// Add leaves if greater than 0
+		if (stats.monthly.counts[WORK_STATUS.LEAVE] > 0) {
+			data.push({
+				label: WORK_STATUS_LABELS[WORK_STATUS.LEAVE],
+				value: stats.monthly.counts[WORK_STATUS.LEAVE],
+				color: colors.error,
+			});
+		}
+
+		// Add holidays if greater than 0
+		if (stats.monthly.counts[WORK_STATUS.HOLIDAY] > 0) {
+			data.push({
+				label: WORK_STATUS_LABELS[WORK_STATUS.HOLIDAY],
+				value: stats.monthly.counts[WORK_STATUS.HOLIDAY],
+				color: WORK_STATUS_COLORS[WORK_STATUS.HOLIDAY],
+			});
+		}
+
+		// Always add required days at the end
+		data.push({
 			label: 'Required',
 			value: stats.monthly.workingDays,
-			color: colors.holiday,
-		},
-	];
+			color: colors.text.secondary,
+		});
+
+		return data;
+	}, [stats.monthly.counts, stats.monthly.workingDays]);
 
 	return (
 		<View style={styles.container}>
@@ -148,7 +201,7 @@ const SummaryData = () => {
 									color: colors.text.secondary,
 								}}
 							>
-								{value} days
+								{value} {value === 1 ? 'day' : 'days'}
 							</Text>
 						</View>
 						<ProgressBar

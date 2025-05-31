@@ -61,17 +61,17 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 
 		if (type === WORK_STATUS.HOLIDAY) {
 			return {
-				background: colors.weekend,
+				background: colors.background.holiday,
 				text: colors.text.secondary,
-				pressed: colors.weekendPressed,
+				pressed: colors.background.holiday + '80',
 			};
 		}
 
 		if (type === WORK_STATUS.LEAVE) {
 			return {
-				background: colors.leave,
-				text: colors.text.primary,
-				pressed: colors.leavePressed,
+				background: colors.error,
+				text: colors.text.light,
+				pressed: colors.background.error + '80',
 			};
 		}
 
