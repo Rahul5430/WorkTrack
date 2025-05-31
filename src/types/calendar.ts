@@ -1,4 +1,4 @@
-export type MarkedDayStatus = 'wfh' | 'office' | 'holiday';
+export type MarkedDayStatus = 'office' | 'wfh' | 'leave' | 'holiday';
 
 export type MarkedDay = {
 	date: string;

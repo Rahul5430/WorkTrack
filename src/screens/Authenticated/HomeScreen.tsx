@@ -2,14 +2,12 @@ import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Image,
 	Pressable,
+	RefreshControl,
 	ScrollView,
-	StatusBar,
 	StyleSheet,
 	Text,
 	View,
@@ -19,30 +17,34 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import CalendarComponent from '../../components/Calendar';
 import DayMarkingBottomSheet from '../../components/DayMarkingBottomSheet';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 import Label from '../../components/Label';
 import Summary from '../../components/Summary';
-import { addMarkedDay } from '../../db/watermelon/worktrack/load';
+import {
+	addMarkedDay,
+	loadWorkTrackDataFromDB,
+} from '../../db/watermelon/worktrack/load';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
+import FirebaseService from '../../services/firebase';
 import SyncService from '../../services/sync';
 import {
 	addOrUpdateEntry,
 	rollbackEntry,
 	setError,
 	setLoading,
+	setWorkTrackData,
 } from '../../store/reducers/workTrackSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
 import { MarkedDayStatus } from '../../types/calendar';
-import { AuthenticatedStackParamList } from '../../types/navigation';
+import { AuthenticatedStackScreenProps } from '../../types/navigation';
 
-type HomeScreenNavigationProp =
-	NativeStackNavigationProp<AuthenticatedStackParamList>;
-
-const HomeScreen = () => {
+const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
+	navigation,
+}) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
-	const navigation = useNavigation<HomeScreenNavigationProp>();
 	const { error, loading } = useSelector(
 		(state: RootState) => state.workTrack
 	);
@@ -62,16 +64,41 @@ const HomeScreen = () => {
 	}, []);
 
 	const handleSheetChanges = useCallback((index: number) => {
-		StatusBar.setBarStyle(index === 0 ? 'light-content' : 'dark-content');
 		if (index === -1) {
 			setSelectedDate(null);
 		}
 	}, []);
 
-	const onDatePress = (date: string) => {
-		setSelectedDate(date);
-		bottomSheetRef.current?.expand();
-	};
+	const onDatePress = useCallback((date: string) => {
+		// Update state and bottom sheet in a single render cycle
+		requestAnimationFrame(() => {
+			setSelectedDate(date);
+			bottomSheetRef.current?.expand();
+		});
+	}, []);
+
+	const onRefresh = useCallback(async () => {
+		dispatch(setLoading(true));
+		try {
+			// Sync data from Firestore to local database
+			await FirebaseService.getInstance().syncWorkTrackData();
+
+			// Load updated data from local database
+			const updatedData = await loadWorkTrackDataFromDB();
+			dispatch(setWorkTrackData(updatedData));
+		} catch (error) {
+			console.error('Error syncing data:', error);
+			dispatch(
+				setError(
+					error instanceof Error
+						? error.message
+						: 'Failed to sync data'
+				)
+			);
+		} finally {
+			dispatch(setLoading(false));
+		}
+	}, [dispatch]);
 
 	const handleSave = async (status: MarkedDayStatus) => {
 		if (selectedDate === null) {
@@ -111,10 +138,23 @@ const HomeScreen = () => {
 
 	return (
 		<SafeAreaView style={styles.screen}>
+			<FocusAwareStatusBar
+				barStyle='dark-content'
+				translucent
+				backgroundColor='transparent'
+			/>
 			<ScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
 				scrollEnabled={!selectedDate}
+				refreshControl={
+					<RefreshControl
+						refreshing={loading}
+						onRefresh={onRefresh}
+						colors={[colors.office]}
+						tintColor={colors.office}
+					/>
+				}
 			>
 				<View style={styles.header}>
 					<Text

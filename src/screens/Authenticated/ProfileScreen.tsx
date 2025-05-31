@@ -3,11 +3,11 @@ import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-	ActivityIndicator,
 	Alert,
 	Animated,
-	Image,
+	Keyboard,
 	Pressable,
+	RefreshControl,
 	ScrollView,
 	StyleSheet,
 	Switch,
@@ -19,6 +19,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
+import Dialog from '../../components/common/Dialog';
+import ListItem from '../../components/common/ListItem';
+import ScreenHeader from '../../components/common/ScreenHeader';
+import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
+import ProfileInfo from '../../components/Profile/ProfileInfo';
 import { database } from '../../db/watermelon';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import SyncService, { SharePermission } from '../../services/sync';
@@ -27,25 +32,51 @@ import { setLoading } from '../../store/reducers/workTrackSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
+import { AuthenticatedStackScreenProps } from '../../types/navigation';
+import { clearAppData } from '../../utils/appDataManager';
 
-const ProfileScreen = () => {
+const ProfileScreen: React.FC<
+	AuthenticatedStackScreenProps<'ProfileScreen'>
+> = ({ navigation }) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.user.user);
+	const { loading } = useSelector((state: RootState) => state.workTrack);
 	const [myShares, setMyShares] = useState<SharePermission[]>([]);
 	const [sharedWithMe, setSharedWithMe] = useState<SharePermission[]>([]);
 	const [isShareDialogVisible, setIsShareDialogVisible] = useState(false);
+	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
+	const [editingShare, setEditingShare] = useState<SharePermission | null>(
+		null
+	);
 	const [shareEmail, setShareEmail] = useState('');
-	const [localEmail, setLocalEmail] = useState('');
 	const [sharePermission, setSharePermission] = useState<'read' | 'write'>(
 		'read'
 	);
-	const [isLoading, setIsLoading] = useState(false);
 	const [isAlertVisible, setIsAlertVisible] = useState(false);
 	const [pressAnim] = useState(new Animated.Value(1));
+	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+	const [isRefreshing, setIsRefreshing] = useState(false);
 
 	useEffect(() => {
 		loadShares();
+		const keyboardDidShowListener = Keyboard.addListener(
+			'keyboardDidShow',
+			() => {
+				setIsKeyboardVisible(true);
+			}
+		);
+		const keyboardDidHideListener = Keyboard.addListener(
+			'keyboardDidHide',
+			() => {
+				setIsKeyboardVisible(false);
+			}
+		);
+
+		return () => {
+			keyboardDidShowListener.remove();
+			keyboardDidHideListener.remove();
+		};
 	}, []);
 
 	const loadShares = async () => {
@@ -81,19 +112,9 @@ const ProfileScreen = () => {
 		);
 	};
 
-	const handleEmailChange = useCallback((text: string) => {
-		setLocalEmail(text);
-		// Debounce the actual state update
-		const timeoutId = setTimeout(() => {
-			setShareEmail(text);
-		}, 0);
-		return () => clearTimeout(timeoutId);
-	}, []);
-
-	// Reset local email when dialog closes
 	useEffect(() => {
 		if (!isShareDialogVisible) {
-			setLocalEmail('');
+			setShareEmail('');
 		}
 	}, [isShareDialogVisible]);
 
@@ -103,10 +124,33 @@ const ProfileScreen = () => {
 			return;
 		}
 
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(shareEmail)) {
+			showAlert(
+				'Invalid Email',
+				'Please enter a valid email address',
+				() => setShareEmail('')
+			);
+			return;
+		}
+
 		if (shareEmail.toLowerCase() === user?.email?.toLowerCase()) {
 			showAlert(
 				'Invalid Share',
 				'You cannot share your WorkTrack with yourself.',
+				() => setShareEmail('')
+			);
+			return;
+		}
+
+		const existingShare = myShares.find(
+			(share) =>
+				share.sharedWithEmail.toLowerCase() === shareEmail.toLowerCase()
+		);
+		if (existingShare) {
+			showAlert(
+				'Already Shared',
+				`WorkTrack is already shared with ${shareEmail}`,
 				() => setShareEmail('')
 			);
 			return;
@@ -123,13 +167,7 @@ const ProfileScreen = () => {
 			setIsShareDialogVisible(false);
 			await loadShares();
 		} catch (error: any) {
-			if (error.code === 'USER_NOT_FOUND') {
-				showAlert(
-					'User Not Found',
-					'This user has not created an account yet. Please ask them to create an account first.',
-					() => setShareEmail('')
-				);
-			} else if (error.code === 'permission-denied') {
+			if (error.code === 'permission-denied') {
 				showAlert(
 					'Permission Denied',
 					'You do not have permission to share WorkTracks. Please try logging out and logging back in.',
@@ -160,7 +198,6 @@ const ProfileScreen = () => {
 		try {
 			const syncService = SyncService.getInstance();
 			syncService.setDefaultViewUserId(userId);
-			// You might want to trigger a refresh of the calendar view here
 		} catch (error) {
 			console.error('Error setting default view:', error);
 		}
@@ -180,17 +217,13 @@ const ProfileScreen = () => {
 			if (currentUser) {
 				await auth.signOut();
 			}
-			// Clear AsyncStorage
 			await AsyncStorage.removeItem('user');
-			// Clear local database
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
-			// Clear Redux state
 			dispatch(logout());
 		} catch (error) {
 			console.error('Logout error:', error);
-			// Still clear storage and state even if Firebase signOut fails
 			await AsyncStorage.removeItem('user');
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
@@ -199,27 +232,273 @@ const ProfileScreen = () => {
 		}
 	};
 
-	return (
-		<SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
-			<ScrollView style={styles.scrollView}>
-				<View style={styles.profileSection}>
-					<View style={styles.profileImageContainer}>
-						{user?.photo ? (
-							<Image
-								source={{ uri: user.photo }}
-								style={styles.profileImage}
-							/>
-						) : (
-							<View style={styles.profilePlaceholder}>
-								<Text style={styles.profilePlaceholderText}>
-									{user?.name?.[0]?.toUpperCase() ?? '?'}
-								</Text>
-							</View>
-						)}
-					</View>
-					<Text style={styles.name}>{user?.name}</Text>
-					<Text style={styles.email}>{user?.email}</Text>
+	const onRefresh = useCallback(async () => {
+		setIsRefreshing(true);
+		try {
+			await loadShares();
+		} catch (error) {
+			console.error('Error refreshing:', error);
+		} finally {
+			setIsRefreshing(false);
+		}
+	}, []);
+
+	const handleEditPermission = async (share: SharePermission) => {
+		setEditingShare(share);
+		setSharePermission(share.permission);
+		setIsEditDialogVisible(true);
+	};
+
+	const handleUpdatePermission = async () => {
+		if (!editingShare) return;
+
+		try {
+			dispatch(setLoading(true));
+			await SyncService.getInstance().updateSharePermission(
+				editingShare.sharedWithId,
+				sharePermission
+			);
+			showAlert('Success', 'Permission updated successfully');
+			setIsEditDialogVisible(false);
+			await loadShares();
+		} catch (error: any) {
+			showAlert('Error', error.message ?? 'Failed to update permission');
+		} finally {
+			dispatch(setLoading(false));
+		}
+	};
+
+	const renderShareDialog = () => (
+		<Dialog
+			isVisible={isShareDialogVisible}
+			onBackdropPress={() => {
+				if (isKeyboardVisible) {
+					Keyboard.dismiss();
+				} else {
+					setIsShareDialogVisible(false);
+				}
+			}}
+			title='Share Work Tracks'
+			loading={loading}
+			onDismiss={() => setIsShareDialogVisible(false)}
+			onConfirm={handleShare}
+			confirmText='Share'
+		>
+			<View style={styles.inputContainer}>
+				<Text style={styles.inputLabel}>Email</Text>
+				<TextInput
+					value={shareEmail}
+					onChangeText={setShareEmail}
+					style={styles.input}
+					autoFocus
+					keyboardType='email-address'
+					autoCapitalize='none'
+					autoComplete='email'
+					autoCorrect={false}
+					textContentType='emailAddress'
+					placeholder='Enter email address'
+					placeholderTextColor={colors.text.secondary}
+					selectTextOnFocus={false}
+					returnKeyType='done'
+				/>
+			</View>
+			<View style={styles.permissionContainer}>
+				<Text style={styles.permissionLabel}>Permission:</Text>
+				<View style={styles.permissionButtons}>
+					<Pressable
+						onPress={() => {
+							Keyboard.dismiss();
+							setSharePermission('read');
+						}}
+						style={({ pressed }) => [
+							styles.permissionButton,
+							sharePermission === 'read' &&
+								styles.permissionButtonActive,
+							{ opacity: pressed ? 0.8 : 1 },
+						]}
+					>
+						<Text
+							style={[
+								styles.permissionButtonText,
+								sharePermission === 'read' &&
+									styles.permissionButtonTextActive,
+							]}
+						>
+							Read
+						</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => {
+							Keyboard.dismiss();
+							setSharePermission('write');
+						}}
+						style={({ pressed }) => [
+							styles.permissionButton,
+							sharePermission === 'write' &&
+								styles.permissionButtonActive,
+							{ opacity: pressed ? 0.8 : 1 },
+						]}
+					>
+						<Text
+							style={[
+								styles.permissionButtonText,
+								sharePermission === 'write' &&
+									styles.permissionButtonTextActive,
+							]}
+						>
+							Write
+						</Text>
+					</Pressable>
 				</View>
+			</View>
+		</Dialog>
+	);
+
+	const renderEditDialog = () => (
+		<Dialog
+			isVisible={isEditDialogVisible}
+			onBackdropPress={() => {
+				if (isKeyboardVisible) {
+					Keyboard.dismiss();
+				} else {
+					setIsEditDialogVisible(false);
+				}
+			}}
+			title='Edit Permission'
+			subtitle={editingShare?.sharedWithEmail}
+			loading={loading}
+			onDismiss={() => setIsEditDialogVisible(false)}
+			onConfirm={handleUpdatePermission}
+			confirmText='Update'
+		>
+			<View style={styles.permissionContainer}>
+				<Text style={styles.permissionLabel}>Permission:</Text>
+				<View style={styles.permissionButtons}>
+					<Pressable
+						onPress={() => {
+							Keyboard.dismiss();
+							setSharePermission('read');
+						}}
+						style={({ pressed }) => [
+							styles.permissionButton,
+							sharePermission === 'read' &&
+								styles.permissionButtonActive,
+							{ opacity: pressed ? 0.8 : 1 },
+						]}
+					>
+						<Text
+							style={[
+								styles.permissionButtonText,
+								sharePermission === 'read' &&
+									styles.permissionButtonTextActive,
+							]}
+						>
+							Read
+						</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => {
+							Keyboard.dismiss();
+							setSharePermission('write');
+						}}
+						style={({ pressed }) => [
+							styles.permissionButton,
+							sharePermission === 'write' &&
+								styles.permissionButtonActive,
+							{ opacity: pressed ? 0.8 : 1 },
+						]}
+					>
+						<Text
+							style={[
+								styles.permissionButtonText,
+								sharePermission === 'write' &&
+									styles.permissionButtonTextActive,
+							]}
+						>
+							Write
+						</Text>
+					</Pressable>
+				</View>
+			</View>
+		</Dialog>
+	);
+
+	const renderShareListItem = (share: SharePermission) => (
+		<ListItem
+			key={share.sharedWithId}
+			title={share.sharedWithEmail}
+			description={`Permission: ${share.permission}`}
+			rightComponent={
+				<View style={styles.listItemActions}>
+					<TouchableOpacity
+						onPress={() => handleEditPermission(share)}
+						style={styles.editButton}
+					>
+						<Text style={styles.editButtonText}>Edit</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() => handleRemoveShare(share.sharedWithId)}
+						style={styles.removeButton}
+					>
+						<Text style={styles.removeButtonText}>Remove</Text>
+					</TouchableOpacity>
+				</View>
+			}
+		/>
+	);
+
+	const renderSharedWithMeListItem = (share: SharePermission) => (
+		<ListItem
+			key={share.ownerId}
+			title={share.sharedWithEmail}
+			description={`Permission: ${share.permission}`}
+			rightComponent={
+				<Switch
+					value={
+						share.ownerId ===
+						SyncService.getInstance().getDefaultViewUserId()
+					}
+					onValueChange={() => handleSetDefaultView(share.ownerId)}
+					trackColor={{
+						false: colors.background.secondary,
+						true: colors.office,
+					}}
+					thumbColor={colors.background.primary}
+				/>
+			}
+		/>
+	);
+
+	return (
+		<SafeAreaView style={styles.screen}>
+			<FocusAwareStatusBar
+				barStyle='dark-content'
+				translucent
+				backgroundColor='transparent'
+			/>
+			<ScreenHeader
+				title='Profile'
+				onBackPress={() => navigation.goBack()}
+			/>
+			<ScrollView
+				style={styles.scrollView}
+				contentContainerStyle={styles.scrollViewContent}
+				refreshControl={
+					<RefreshControl
+						refreshing={isRefreshing}
+						onRefresh={() => {
+							void onRefresh();
+						}}
+						tintColor={colors.office}
+						colors={[colors.office]}
+					/>
+				}
+			>
+				<ProfileInfo
+					name={user?.name}
+					email={user?.email}
+					photo={user?.photo}
+				/>
 
 				<View style={styles.contentSection}>
 					<Text
@@ -251,28 +530,7 @@ const ProfileScreen = () => {
 					>
 						Shared With Others
 					</Text>
-					{myShares.map((share) => (
-						<View key={share.sharedWithId} style={styles.listItem}>
-							<View style={styles.listItemContent}>
-								<Text style={styles.listItemTitle}>
-									{share.sharedWithId}
-								</Text>
-								<Text style={styles.listItemDescription}>
-									Permission: {share.permission}
-								</Text>
-							</View>
-							<TouchableOpacity
-								onPress={() =>
-									handleRemoveShare(share.sharedWithId)
-								}
-								style={styles.removeButton}
-							>
-								<Text style={styles.removeButtonText}>
-									Remove
-								</Text>
-							</TouchableOpacity>
-						</View>
-					))}
+					{myShares.map(renderShareListItem)}
 				</View>
 
 				<View style={styles.contentSection}>
@@ -281,32 +539,50 @@ const ProfileScreen = () => {
 					>
 						Shared With Me
 					</Text>
-					{sharedWithMe.map((share) => (
-						<View key={share.ownerId} style={styles.listItem}>
-							<View style={styles.listItemContent}>
-								<Text style={styles.listItemTitle}>
-									{share.ownerId}
-								</Text>
-								<Text style={styles.listItemDescription}>
-									Permission: {share.permission}
-								</Text>
-							</View>
-							<Switch
-								value={
-									share.ownerId ===
-									SyncService.getInstance().getDefaultViewUserId()
-								}
-								onValueChange={() =>
-									handleSetDefaultView(share.ownerId)
-								}
-								trackColor={{
-									false: colors.background.secondary,
-									true: colors.office,
-								}}
-								thumbColor={colors.background.primary}
-							/>
-						</View>
-					))}
+					{sharedWithMe.map(renderSharedWithMeListItem)}
+				</View>
+
+				<View style={styles.contentSection}>
+					<Pressable
+						onPress={() => {
+							Alert.alert(
+								'Clear App Data',
+								'Are you sure you want to clear all app data? This action cannot be undone.',
+								[
+									{
+										text: 'Cancel',
+										style: 'cancel',
+									},
+									{
+										text: 'Clear',
+										style: 'destructive',
+										onPress: async () => {
+											try {
+												await clearAppData();
+												Alert.alert(
+													'Success',
+													'App data cleared successfully'
+												);
+											} catch (error) {
+												Alert.alert(
+													'Error',
+													'Failed to clear app data'
+												);
+											}
+										},
+									},
+								]
+							);
+						}}
+						style={({ pressed }) => [
+							styles.clearDataButton,
+							{ opacity: pressed ? 0.8 : 1 },
+						]}
+					>
+						<Text style={styles.clearDataButtonText}>
+							Clear App Data
+						</Text>
+					</Pressable>
 				</View>
 
 				<View style={styles.contentSection}>
@@ -323,7 +599,9 @@ const ProfileScreen = () => {
 									{
 										text: 'Logout',
 										style: 'destructive',
-										onPress: handleLogout,
+										onPress: () => {
+											void handleLogout();
+										},
 									},
 								]
 							);
@@ -336,133 +614,10 @@ const ProfileScreen = () => {
 						<Text style={styles.logoutButtonText}>Logout</Text>
 					</Pressable>
 				</View>
-
-				{isShareDialogVisible && (
-					<View style={styles.dialogOverlay}>
-						<Pressable
-							style={styles.dialogBackdrop}
-							onPress={() => setIsShareDialogVisible(false)}
-						/>
-						<View style={styles.dialog}>
-							<Text style={styles.dialogTitle}>
-								Share Work Tracks
-							</Text>
-							<View style={styles.dialogContent}>
-								<View style={styles.inputContainer}>
-									<Text style={styles.inputLabel}>Email</Text>
-									<TextInput
-										value={shareEmail}
-										onChangeText={setShareEmail}
-										style={styles.input}
-										autoFocus
-										keyboardType='email-address'
-										autoCapitalize='none'
-										autoComplete='email'
-										autoCorrect={false}
-										textContentType='emailAddress'
-										placeholder='Enter email address'
-										placeholderTextColor={
-											colors.text.secondary
-										}
-										selectTextOnFocus={false}
-										returnKeyType='done'
-									/>
-								</View>
-								<View style={styles.permissionContainer}>
-									<Text style={styles.permissionLabel}>
-										Permission:
-									</Text>
-									<View style={styles.permissionButtons}>
-										<Pressable
-											onPress={() =>
-												setSharePermission('read')
-											}
-											style={({ pressed }) => [
-												styles.permissionButton,
-												sharePermission === 'read' &&
-													styles.permissionButtonActive,
-												{ opacity: pressed ? 0.8 : 1 },
-											]}
-										>
-											<Text
-												style={[
-													styles.permissionButtonText,
-													sharePermission ===
-														'read' &&
-														styles.permissionButtonTextActive,
-												]}
-											>
-												Read
-											</Text>
-										</Pressable>
-										<Pressable
-											onPress={() =>
-												setSharePermission('write')
-											}
-											style={({ pressed }) => [
-												styles.permissionButton,
-												sharePermission === 'write' &&
-													styles.permissionButtonActive,
-												{ opacity: pressed ? 0.8 : 1 },
-											]}
-										>
-											<Text
-												style={[
-													styles.permissionButtonText,
-													sharePermission ===
-														'write' &&
-														styles.permissionButtonTextActive,
-												]}
-											>
-												Write
-											</Text>
-										</Pressable>
-									</View>
-								</View>
-							</View>
-							<View style={styles.dialogActions}>
-								<Pressable
-									onPress={() =>
-										setIsShareDialogVisible(false)
-									}
-									style={({ pressed }) => [
-										styles.dialogButton,
-										{ opacity: pressed ? 0.8 : 1 },
-									]}
-								>
-									<Text style={styles.dialogButtonText}>
-										Cancel
-									</Text>
-								</Pressable>
-								<Pressable
-									onPress={handleShare}
-									disabled={isLoading || !shareEmail}
-									style={({ pressed }) => [
-										styles.dialogButton,
-										styles.dialogButtonPrimary,
-										{ opacity: pressed ? 0.8 : 1 },
-									]}
-								>
-									{isLoading ? (
-										<ActivityIndicator
-											color={colors.background.primary}
-										/>
-									) : (
-										<Text
-											style={[
-												styles.dialogButtonText,
-												styles.dialogButtonTextPrimary,
-											]}
-										>
-											Share
-										</Text>
-									)}
-								</Pressable>
-							</View>
-						</View>
-					</View>
-				)}
 			</ScrollView>
+
+			{renderShareDialog()}
+			{editingShare && renderEditDialog()}
 		</SafeAreaView>
 	);
 };
@@ -475,50 +630,8 @@ const styles = StyleSheet.create({
 	scrollView: {
 		flex: 1,
 	},
-	profileSection: {
-		alignItems: 'center',
-		paddingVertical: 24,
-		paddingTop: 32,
-	},
-	profileImageContainer: {
-		width: 100,
-		height: 100,
-		borderRadius: 50,
-		overflow: 'hidden',
-		marginBottom: 16,
-		backgroundColor: colors.background.primary,
-		elevation: 4,
-		shadowColor: colors.text.primary,
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-	},
-	profileImage: {
-		width: '100%',
-		height: '100%',
-	},
-	profilePlaceholder: {
-		width: '100%',
-		height: '100%',
-		backgroundColor: colors.office,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	profilePlaceholderText: {
-		color: colors.background.primary,
-		fontFamily: fonts.PoppinsSemiBold,
-		fontSize: 40,
-	},
-	name: {
-		fontFamily: fonts.PoppinsSemiBold,
-		fontSize: 24,
-		color: colors.text.primary,
-		marginBottom: 4,
-	},
-	email: {
-		fontFamily: fonts.PoppinsRegular,
-		fontSize: 16,
-		color: colors.text.secondary,
+	scrollViewContent: {
+		paddingTop: 16,
 	},
 	contentSection: {
 		padding: 20,
@@ -527,6 +640,29 @@ const styles = StyleSheet.create({
 		fontFamily: fonts.PoppinsSemiBold,
 		color: colors.text.primary,
 		marginBottom: 16,
+	},
+	shareButton: {
+		backgroundColor: colors.office,
+		padding: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+	},
+	shareButtonText: {
+		color: colors.background.primary,
+		fontFamily: fonts.PoppinsMedium,
+		fontSize: 16,
+	},
+	logoutButton: {
+		backgroundColor: colors.error,
+		padding: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+		marginTop: 20,
+	},
+	logoutButtonText: {
+		color: colors.background.primary,
+		fontFamily: fonts.PoppinsMedium,
+		fontSize: 16,
 	},
 	inputContainer: {
 		marginBottom: 16,
@@ -545,80 +681,8 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: colors.text.primary,
 	},
-	shareButton: {
-		backgroundColor: colors.office,
-		padding: 12,
-		borderRadius: 8,
-		alignItems: 'center',
-	},
-	shareButtonText: {
-		color: colors.background.primary,
-		fontFamily: fonts.PoppinsMedium,
-		fontSize: 16,
-	},
-	listItem: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		paddingVertical: 12,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.background.secondary,
-	},
-	listItemContent: {
-		flex: 1,
-	},
-	listItemTitle: {
-		fontFamily: fonts.PoppinsMedium,
-		fontSize: 16,
-		color: colors.text.primary,
-	},
-	listItemDescription: {
-		fontFamily: fonts.PoppinsRegular,
-		fontSize: 14,
-		color: colors.text.secondary,
-		marginTop: 2,
-	},
-	removeButton: {
-		padding: 8,
-	},
-	removeButtonText: {
-		color: colors.error,
-		fontFamily: fonts.PoppinsMedium,
-		fontSize: 14,
-	},
-	dialogOverlay: {
-		position: 'absolute',
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	dialogBackdrop: {
-		position: 'absolute',
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-	},
-	dialog: {
-		backgroundColor: colors.background.primary,
-		borderRadius: 12,
-		width: '90%',
-		maxWidth: 400,
-		padding: 20,
-		zIndex: 1,
-	},
-	dialogTitle: {
-		fontFamily: fonts.PoppinsSemiBold,
-		fontSize: 20,
-		color: colors.text.primary,
-		marginBottom: 16,
-	},
-	dialogContent: {
-		marginBottom: 20,
+	permissionContainer: {
+		marginTop: 8,
 	},
 	permissionLabel: {
 		fontFamily: fonts.PoppinsMedium,
@@ -649,38 +713,35 @@ const styles = StyleSheet.create({
 	permissionButtonTextActive: {
 		color: colors.background.primary,
 	},
-	dialogActions: {
+	listItemActions: {
 		flexDirection: 'row',
-		justifyContent: 'flex-end',
+		alignItems: 'center',
 	},
-	dialogButton: {
-		paddingVertical: 8,
-		paddingHorizontal: 16,
-		borderRadius: 8,
-		marginLeft: 8,
+	editButton: {
+		padding: 8,
+		marginRight: 8,
 	},
-	dialogButtonPrimary: {
-		backgroundColor: colors.office,
-	},
-	dialogButtonText: {
+	editButtonText: {
+		color: colors.office,
 		fontFamily: fonts.PoppinsMedium,
 		fontSize: 14,
-		color: colors.text.primary,
 	},
-	dialogButtonTextPrimary: {
-		color: colors.background.primary,
+	removeButton: {
+		padding: 8,
 	},
-	permissionContainer: {
-		marginTop: 8,
+	removeButtonText: {
+		color: colors.error,
+		fontFamily: fonts.PoppinsMedium,
+		fontSize: 14,
 	},
-	logoutButton: {
-		backgroundColor: colors.error,
+	clearDataButton: {
+		backgroundColor: colors.wfh,
 		padding: 12,
 		borderRadius: 8,
 		alignItems: 'center',
 		marginTop: 20,
 	},
-	logoutButtonText: {
+	clearDataButtonText: {
 		color: colors.background.primary,
 		fontFamily: fonts.PoppinsMedium,
 		fontSize: 16,

@@ -3,6 +3,11 @@ export const colors = {
 	office: '#2196F3',
 	wfh: '#4CAF50',
 	holiday: '#FF9800',
+	error: '#EF4444',
+	weekend: '#FFEDD5',
+	weekendPressed: '#FED7AA',
+	leave: '#DBEAFE',
+	leavePressed: '#BFDBFE',
 
 	// Background Colors
 	background: {
@@ -12,6 +17,7 @@ export const colors = {
 		wfh: '#4CAF5015',
 		holiday: '#FF525215',
 		forecast: '#9C27B015',
+		error: '#EF444415',
 	},
 
 	// Text Colors
@@ -28,9 +34,6 @@ export const colors = {
 		secondary: '#F3F4F6',
 		disabled: '#93C5FD',
 	},
-
-	// Error Colors
-	error: '#EF4444',
 
 	// UI Colors
 	ui: {

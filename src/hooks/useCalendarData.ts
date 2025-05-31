@@ -1,79 +1,207 @@
-import { useEffect, useState } from 'react';
+import { Q } from '@nozbe/watermelondb';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { loadWorkTrackDataFromDB } from '../db/watermelon/worktrack/load';
-import SyncService from '../services/sync';
-import { setWorkTrackData } from '../store/reducers/workTrackSlice';
+import { WORK_STATUS } from '../constants/workStatus';
+import { database } from '../db/watermelon';
+import WorkTrack from '../db/watermelon/worktrack/model';
+import {
+	addOrUpdateEntry,
+	rollbackEntry,
+	setWorkTrackData,
+} from '../store/reducers/workTrackSlice';
 import { RootState } from '../store/store';
-import { MarkedDayStatus } from '../types/calendar';
+import { MarkedDay, MarkedDayStatus } from '../types/calendar';
+
+type WorkTrackRecord = {
+	date: string;
+	status: MarkedDayStatus;
+};
 
 export const useCalendarData = () => {
 	const dispatch = useDispatch();
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [syncStatus, setSyncStatus] = useState<{
-		isSyncing: boolean;
-		isOnline: boolean;
-		lastSyncTime?: number;
-		error?: string;
-		pendingSyncs: number;
-	}>({
-		isSyncing: false,
-		isOnline: true,
-		pendingSyncs: 0,
-	});
-
-	const workTrackData = useSelector(
-		(state: RootState) => state.workTrack.data
+	const [loading, setLoading] = useState(true);
+	const [hasLoaded, setHasLoaded] = useState(false);
+	const markedDays = useSelector(
+		(state: RootState) => state.workTrack.markedDays
 	);
+	const syncStatus = useSelector(
+		(state: RootState) => state.workTrack.syncStatus
+	);
+	const loadingRef = useRef(loading);
+	const hasLoadedRef = useRef(hasLoaded);
+	const markedDaysRef = useRef(markedDays);
 
-	useEffect(() => {
-		const loadData = async () => {
-			try {
-				setIsLoading(true);
-				const data = await loadWorkTrackDataFromDB();
-				dispatch(setWorkTrackData(data));
-				setError(null);
-			} catch (err) {
-				setError(
-					err instanceof Error
-						? err.message
-						: 'Failed to load calendar data'
-				);
-			} finally {
-				setIsLoading(false);
+	// Keep refs in sync with state
+	loadingRef.current = loading;
+	hasLoadedRef.current = hasLoaded;
+	markedDaysRef.current = markedDays;
+
+	const initializeDatabase = useCallback(async () => {
+		const workTracks = await database.collections
+			.get('work_tracks')
+			.query()
+			.fetch();
+
+		if (workTracks.length === 0) {
+			const today = new Date();
+			const pastYear = new Date(today);
+			pastYear.setFullYear(today.getFullYear() - 1);
+			const nextYear = new Date(today);
+			nextYear.setFullYear(today.getFullYear() + 1);
+
+			const batch: WorkTrackRecord[] = [];
+			let currentDate = new Date(pastYear);
+
+			while (currentDate <= nextYear) {
+				const dayOfWeek = currentDate.getDay();
+				if (dayOfWeek === 0 || dayOfWeek === 6) {
+					// Only Saturday (6) and Sunday (0) are weekends
+					const dateString = currentDate.toISOString().split('T')[0];
+					batch.push({
+						date: dateString,
+						status: WORK_STATUS.HOLIDAY,
+					});
+				}
+				currentDate.setDate(currentDate.getDate() + 1);
 			}
-		};
 
-		loadData();
+			await database.write(async () => {
+				for (const record of batch) {
+					await database
+						.get<WorkTrack>('work_tracks')
+						.create((workTrack) => {
+							workTrack.date = record.date;
+							workTrack.status = record.status;
+						});
+				}
+			});
+		}
+	}, []);
+
+	const loadData = useCallback(async () => {
+		if (loadingRef.current || hasLoadedRef.current) return;
+
+		setLoading(true);
+
+		try {
+			// Load all data first
+			const allData = await database.collections
+				.get('work_tracks')
+				.query()
+				.fetch();
+
+			// Get date ranges
+			const today = new Date();
+			const pastYear = new Date(today);
+			pastYear.setFullYear(today.getFullYear() - 1);
+			const nextYear = new Date(today);
+			nextYear.setFullYear(today.getFullYear() + 1);
+
+			// Convert all records to MarkedDay format and create a map for quick lookup
+			const markedDaysMap: Record<string, MarkedDay> = {};
+			allData.forEach((record) => {
+				const workTrack = record as WorkTrack;
+				markedDaysMap[workTrack.date] = {
+					date: workTrack.date,
+					status: workTrack.status,
+				};
+			});
+
+			// Generate weekend entries for all months in the range
+			let currentDate = new Date(pastYear);
+			while (currentDate <= nextYear) {
+				const dayOfWeek = currentDate.getDay();
+				if (dayOfWeek === 0 || dayOfWeek === 6) {
+					const dateString = currentDate.toISOString().split('T')[0];
+					if (!markedDaysMap[dateString]) {
+						markedDaysMap[dateString] = {
+							date: dateString,
+							status: WORK_STATUS.HOLIDAY,
+						};
+					}
+				}
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+
+			// Convert map to array for Redux store
+			const filteredMarkedDays = Object.values(markedDaysMap);
+
+			// Only update Redux store after all processing is complete
+			dispatch(setWorkTrackData(filteredMarkedDays));
+
+			setHasLoaded(true);
+		} catch (error) {
+			console.error('Error loading data:', error);
+		} finally {
+			setLoading(false);
+		}
 	}, [dispatch]);
 
 	useEffect(() => {
-		const syncService = SyncService.getInstance();
-		const checkSyncStatus = async () => {
-			const status = await syncService.getSyncStatus();
-			setSyncStatus(status);
-		};
+		initializeDatabase();
+	}, [initializeDatabase]);
 
-		// Check sync status every 30 seconds
-		const interval = setInterval(checkSyncStatus, 30000);
-		checkSyncStatus(); // Initial check
+	useEffect(() => {
+		if (!loadingRef.current && !hasLoadedRef.current) {
+			loadData();
+		}
+	}, [loadData]);
 
-		return () => clearInterval(interval);
-	}, []);
+	const markDay = useCallback(
+		async (date: string, status: MarkedDayStatus) => {
+			try {
+				const workTrackCollection =
+					database.get<WorkTrack>('work_tracks');
+				await database.write(async () => {
+					await workTrackCollection.create((workTrack) => {
+						workTrack.date = date;
+						workTrack.status = status;
+					});
+				});
 
-	const getMarkedDays = () => {
-		const markedDays: Record<string, MarkedDayStatus> = {};
-		workTrackData.forEach((day) => {
-			markedDays[day.date] = day.status;
-		});
-		return markedDays;
-	};
+				dispatch(
+					addOrUpdateEntry({
+						date,
+						status,
+					})
+				);
+			} catch (error) {
+				console.error('Error marking day:', error);
+			}
+		},
+		[database, dispatch]
+	);
+
+	const unmarkDay = useCallback(
+		async (date: string) => {
+			try {
+				const workTrackCollection =
+					database.get<WorkTrack>('work_tracks');
+				const record = await workTrackCollection
+					.query(Q.where('date', date))
+					.fetch();
+
+				if (record.length > 0) {
+					await database.write(async () => {
+						await record[0].destroyPermanently();
+					});
+
+					dispatch(rollbackEntry(date));
+				}
+			} catch (error) {
+				console.error('Error unmarking day:', error);
+			}
+		},
+		[database, dispatch]
+	);
 
 	return {
-		isLoading,
-		error,
+		loading,
+		hasLoaded,
+		markedDays,
 		syncStatus,
-		markedDays: getMarkedDays(),
+		markDay,
+		unmarkDay,
 	};
 };

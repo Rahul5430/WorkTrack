@@ -6,6 +6,7 @@ export default class Sharing extends Model {
 
 	@text('owner_id') ownerId!: string;
 	@text('shared_with_id') sharedWithId!: string;
+	@text('shared_with_email') sharedWithEmail!: string;
 	@text('permission') permission!: 'read' | 'write';
 	@date('created_at') createdAt!: Date;
 	@date('updated_at') updatedAt!: Date;

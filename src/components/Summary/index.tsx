@@ -9,17 +9,121 @@ import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
 import SummaryData from './SummaryData';
 
-const Summary = () => {
+type SummaryProps = {
+	selectedMonth?: Date;
+};
+
+const Summary = ({ selectedMonth }: SummaryProps) => {
 	const { getResponsiveSize, RFValue } = useResponsiveLayout();
 	const workTrackData = useSelector(
 		(state: RootState) => state.workTrack.data
 	);
+	const isLoading = useSelector(
+		(state: RootState) => state.workTrack.loading
+	);
 
 	const attendanceStats = useMemo(() => {
-		const currentMonth = new Date().getMonth();
-		const currentYear = new Date().getFullYear();
+		// Don't calculate if data is not loaded yet
+		if (isLoading || !workTrackData.length) {
+			return {
+				monthly: {
+					percentage: 0,
+					meetsRequirement: null,
+					details: {
+						wfoDays: 0,
+						totalWorkingDays: 0,
+						companyHolidays: 0,
+						effectiveWorkingDays: 0,
+					},
+				},
+				quarterly: {
+					percentage: 0,
+					meetsRequirement: null,
+					details: {
+						wfoDays: 0,
+						totalWorkingDays: 0,
+						companyHolidays: 0,
+						effectiveWorkingDays: 0,
+					},
+				},
+			};
+		}
+
+		const today = selectedMonth || new Date();
+		const currentMonth = today.getMonth();
+		const currentYear = today.getFullYear();
 		const currentQuarter = Math.floor(currentMonth / 3);
 
+		const getWorkingDaysInPeriod = (startDate: Date, endDate: Date) => {
+			let workingDays = 0;
+			const currentDate = new Date(startDate);
+
+			while (currentDate <= endDate) {
+				// Skip weekends (0 = Sunday, 6 = Saturday)
+				if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+					workingDays++;
+				}
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+			return workingDays;
+		};
+
+		const calculateAttendance = (
+			data: typeof workTrackData,
+			period: 'month' | 'quarter'
+		) => {
+			// Get start and end dates for the period
+			const startDate = new Date(
+				currentYear,
+				period === 'month' ? currentMonth : currentQuarter * 3,
+				1
+			);
+			const endDate = new Date(
+				currentYear,
+				period === 'month'
+					? currentMonth + 1
+					: (currentQuarter + 1) * 3,
+				0
+			);
+
+			// Calculate total working days in the period (excluding weekends)
+			const totalWorkingDays = getWorkingDaysInPeriod(startDate, endDate);
+
+			// Count only WFO days
+			const wfoDays = data.filter(
+				(entry) => entry.status === WORK_STATUS.OFFICE
+			).length;
+
+			// Count company holidays
+			const companyHolidays = data.filter(
+				(entry) => entry.status === WORK_STATUS.HOLIDAY
+			).length;
+
+			// Calculate attendance percentage
+			// Formula: (WFO Days / (Total Working Days - Company Holidays)) * 100
+			const effectiveWorkingDays = totalWorkingDays - companyHolidays;
+			const attendancePercentage =
+				effectiveWorkingDays > 0
+					? Math.round((wfoDays / effectiveWorkingDays) * 100)
+					: 0;
+
+			// For quarterly, check if it meets the 60% requirement
+			const meetsRequirement =
+				period === 'quarter' ? attendancePercentage >= 60 : null;
+
+			return {
+				percentage: attendancePercentage,
+				meetsRequirement,
+				details: {
+					wfoDays,
+					totalWorkingDays,
+					companyHolidays,
+					effectiveWorkingDays,
+				},
+			};
+		};
+
+		// Get data for the current month
 		const monthData = workTrackData.filter((entry) => {
 			const entryDate = new Date(entry.date);
 			return (
@@ -28,6 +132,7 @@ const Summary = () => {
 			);
 		});
 
+		// Get data for the current quarter
 		const quarterData = workTrackData.filter((entry) => {
 			const entryDate = new Date(entry.date);
 			const entryQuarter = Math.floor(entryDate.getMonth() / 3);
@@ -37,24 +142,14 @@ const Summary = () => {
 			);
 		});
 
-		const calculateAttendance = (data: typeof workTrackData) => {
-			const workingDays = data.filter(
-				(entry) =>
-					entry.status === WORK_STATUS.OFFICE ||
-					entry.status === WORK_STATUS.WFH
-			).length;
-
-			const totalDays = data.length;
-			return totalDays > 0
-				? Math.round((workingDays / totalDays) * 100)
-				: 0;
-		};
+		const monthlyStats = calculateAttendance(monthData, 'month');
+		const quarterlyStats = calculateAttendance(quarterData, 'quarter');
 
 		return {
-			monthly: calculateAttendance(monthData),
-			quarterly: calculateAttendance(quarterData),
+			monthly: monthlyStats,
+			quarterly: quarterlyStats,
 		};
-	}, [workTrackData]);
+	}, [workTrackData, isLoading, selectedMonth]);
 
 	return (
 		<View
@@ -62,8 +157,7 @@ const Summary = () => {
 				styles.container,
 				{
 					paddingHorizontal: getResponsiveSize(5).width,
-					marginBottom: getResponsiveSize(10).width,
-					height: 288,
+					marginBottom: getResponsiveSize(5).width,
 				},
 			]}
 		>
@@ -80,16 +174,49 @@ const Summary = () => {
 								},
 							]}
 						>
-							{attendanceStats.monthly}%
+							{isLoading
+								? '...'
+								: `${attendanceStats.monthly.percentage}%`}
 						</Text>
-						<Text
-							style={[
-								styles.attendance,
-								{ fontSize: RFValue(18) },
-							]}
-						>
-							{attendanceStats.quarterly}%
-						</Text>
+						<View style={styles.quarterlyContainer}>
+							<Text
+								style={[
+									styles.attendance,
+									{
+										fontSize: RFValue(18),
+										color: attendanceStats.quarterly
+											.meetsRequirement
+											? colors.office
+											: colors.error,
+									},
+								]}
+							>
+								{isLoading
+									? '...'
+									: `${attendanceStats.quarterly.percentage}%`}
+							</Text>
+							{!isLoading &&
+								attendanceStats.quarterly.meetsRequirement !==
+									null && (
+									<Text
+										style={[
+											styles.requirementText,
+											{
+												color: attendanceStats.quarterly
+													.meetsRequirement
+													? colors.office
+													: colors.error,
+												fontSize: RFValue(12),
+											},
+										]}
+									>
+										{attendanceStats.quarterly
+											.meetsRequirement
+											? '✓ Meets 60% requirement'
+											: '✗ Below 60% requirement'}
+									</Text>
+								)}
+						</View>
 					</View>
 					<View style={styles.header}>
 						<Text
@@ -139,6 +266,13 @@ const styles = StyleSheet.create({
 	attendance: {
 		color: colors.text.primary,
 		fontFamily: fonts.PoppinsMedium,
+	},
+	quarterlyContainer: {
+		alignItems: 'flex-end',
+	},
+	requirementText: {
+		fontFamily: fonts.PoppinsRegular,
+		marginTop: 2,
 	},
 	subHeader: {
 		color: colors.text.secondary,

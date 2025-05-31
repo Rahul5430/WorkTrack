@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { MarkedDay } from '../../types/calendar';
+import { MarkedDay, MarkedDayStatus } from '../../types/calendar';
 
 export interface WorkTrackState {
 	data: MarkedDay[];
+	markedDays: Record<string, MarkedDayStatus>;
 	loading: boolean;
 	error: string | null;
 	syncStatus: {
@@ -17,6 +18,7 @@ export interface WorkTrackState {
 
 const initialState: WorkTrackState = {
 	data: [],
+	markedDays: {},
 	loading: false,
 	error: null,
 	syncStatus: {
@@ -32,6 +34,13 @@ const workTrackSlice = createSlice({
 	reducers: {
 		setWorkTrackData: (state, action: PayloadAction<MarkedDay[]>) => {
 			state.data = action.payload;
+			state.markedDays = action.payload.reduce(
+				(acc, day) => {
+					acc[day.date] = day.status;
+					return acc;
+				},
+				{} as Record<string, MarkedDayStatus>
+			);
 		},
 		addOrUpdateEntry: (state, action: PayloadAction<MarkedDay>) => {
 			const index = state.data.findIndex(
@@ -42,11 +51,13 @@ const workTrackSlice = createSlice({
 			} else {
 				state.data.push(action.payload);
 			}
+			state.markedDays[action.payload.date] = action.payload.status;
 		},
 		rollbackEntry: (state, action: PayloadAction<string>) => {
 			state.data = state.data.filter(
 				(entry) => entry.date !== action.payload
 			);
+			delete state.markedDays[action.payload];
 		},
 		setLoading: (state, action: PayloadAction<boolean>) => {
 			state.loading = action.payload;

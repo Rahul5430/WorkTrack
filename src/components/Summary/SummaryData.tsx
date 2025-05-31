@@ -21,9 +21,22 @@ const SummaryData = () => {
 	);
 
 	const stats = useMemo(() => {
-		const currentMonth = new Date().getMonth();
-		const currentYear = new Date().getFullYear();
+		const today = new Date();
+		const currentMonth = today.getMonth();
+		const currentYear = today.getFullYear();
+		const currentQuarter = Math.floor(currentMonth / 3);
 
+		// Get data for the current quarter
+		const quarterData = workTrackData.filter((entry: MarkedDay) => {
+			const entryDate = new Date(entry.date);
+			const entryQuarter = Math.floor(entryDate.getMonth() / 3);
+			return (
+				entryDate.getFullYear() === currentYear &&
+				entryQuarter === currentQuarter
+			);
+		});
+
+		// Get data for the current month
 		const monthData = workTrackData.filter((entry: MarkedDay) => {
 			const entryDate = new Date(entry.date);
 			return (
@@ -32,91 +45,123 @@ const SummaryData = () => {
 			);
 		});
 
-		const counts = {
-			[WORK_STATUS.OFFICE]: 0,
-			[WORK_STATUS.WFH]: 0,
-			[WORK_STATUS.HOLIDAY]: 0,
+		const getWorkingDaysInPeriod = (startDate: Date, endDate: Date) => {
+			let workingDays = 0;
+			const currentDate = new Date(startDate);
+
+			while (currentDate <= endDate) {
+				// Skip weekends (0 = Sunday, 6 = Saturday)
+				if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+					workingDays++;
+				}
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+			return workingDays;
 		};
 
-		monthData.forEach((entry: MarkedDay) => {
-			counts[entry.status]++;
-		});
+		// Calculate working days for the current month
+		const monthStart = new Date(currentYear, currentMonth, 1);
+		const monthEnd = new Date(currentYear, currentMonth + 1, 0);
+		const workingDaysInMonth = getWorkingDaysInPeriod(monthStart, monthEnd);
 
-		// Calculate working days in the current month
-		const daysInMonth = new Date(
-			currentYear,
-			currentMonth + 1,
-			0
-		).getDate();
-		const workingDaysInMonth = Array.from(
-			{ length: daysInMonth },
-			(_, i) => {
-				const date = new Date(currentYear, currentMonth, i + 1);
-				return date.getDay() !== 0 && date.getDay() !== 6; // Exclude weekends
-			}
-		).filter(Boolean).length;
+		// Calculate working days for the current quarter
+		const quarterStart = new Date(currentYear, currentQuarter * 3, 1);
+		const quarterEnd = new Date(currentYear, (currentQuarter + 1) * 3, 0);
+		const workingDaysInQuarter = getWorkingDaysInPeriod(
+			quarterStart,
+			quarterEnd
+		);
+
+		const getCounts = (data: MarkedDay[]) => {
+			const counts = {
+				[WORK_STATUS.OFFICE]: 0,
+				[WORK_STATUS.WFH]: 0,
+				[WORK_STATUS.HOLIDAY]: 0,
+				[WORK_STATUS.LEAVE]: 0,
+			};
+
+			data.forEach((entry: MarkedDay) => {
+				counts[entry.status]++;
+			});
+
+			return counts;
+		};
+
+		const monthCounts = getCounts(monthData);
+		const quarterCounts = getCounts(quarterData);
 
 		return {
-			counts,
-			workingDaysInMonth,
+			monthly: {
+				counts: monthCounts,
+				workingDays: workingDaysInMonth,
+			},
+			quarterly: {
+				counts: quarterCounts,
+				workingDays: workingDaysInQuarter,
+			},
 		};
 	}, [workTrackData]);
 
-	const data = [
+	const monthlyData = [
 		{
 			label: WORK_STATUS_LABELS[WORK_STATUS.OFFICE],
-			value: stats.counts[WORK_STATUS.OFFICE],
+			value: stats.monthly.counts[WORK_STATUS.OFFICE],
 			color: WORK_STATUS_COLORS[WORK_STATUS.OFFICE],
 		},
 		{
 			label: WORK_STATUS_LABELS[WORK_STATUS.WFH],
-			value: stats.counts[WORK_STATUS.WFH],
+			value: stats.monthly.counts[WORK_STATUS.WFH],
 			color: WORK_STATUS_COLORS[WORK_STATUS.WFH],
 		},
 		{
 			label: WORK_STATUS_LABELS[WORK_STATUS.HOLIDAY],
-			value: stats.counts[WORK_STATUS.HOLIDAY],
+			value: stats.monthly.counts[WORK_STATUS.HOLIDAY],
 			color: WORK_STATUS_COLORS[WORK_STATUS.HOLIDAY],
 		},
 		{
 			label: 'Required',
-			value: stats.workingDaysInMonth,
+			value: stats.monthly.workingDays,
 			color: colors.holiday,
 		},
 	];
 
 	return (
 		<View style={styles.container}>
-			{data.map(({ label, value, color }) => (
-				<View style={styles.item} key={`${label}-${value}-${color}`}>
-					<View style={styles.dayContainer}>
-						<Text
-							style={{
-								fontFamily: fonts.PoppinsMedium,
-								fontSize: RFValue(14),
-								color: colors.text.primary,
-							}}
-						>
-							{label}
-						</Text>
-						<Text
-							style={{
-								fontFamily: fonts.PoppinsRegular,
-								fontSize: RFValue(14),
-								color: colors.text.secondary,
-							}}
-						>
-							{value} days
-						</Text>
+			<View style={styles.section}>
+				<Text style={[styles.sectionTitle, { fontSize: RFValue(14) }]}>
+					Monthly Attendance
+				</Text>
+				{monthlyData.map(({ label, value, color }) => (
+					<View style={styles.item} key={`monthly-${label}`}>
+						<View style={styles.dayContainer}>
+							<Text
+								style={{
+									fontFamily: fonts.PoppinsMedium,
+									fontSize: RFValue(14),
+									color: colors.text.primary,
+								}}
+							>
+								{label}
+							</Text>
+							<Text
+								style={{
+									fontFamily: fonts.PoppinsRegular,
+									fontSize: RFValue(14),
+									color: colors.text.secondary,
+								}}
+							>
+								{value} days
+							</Text>
+						</View>
+						<ProgressBar
+							progress={value / stats.monthly.workingDays}
+							color={color}
+							style={styles.progressBar}
+							fillStyle={{ borderRadius: 9999 }}
+						/>
 					</View>
-					<ProgressBar
-						progress={value / stats.workingDaysInMonth}
-						color={color}
-						style={styles.progressBar}
-						fillStyle={{ borderRadius: 9999 }}
-					/>
-				</View>
-			))}
+				))}
+			</View>
 		</View>
 	);
 };
@@ -124,8 +169,16 @@ const SummaryData = () => {
 const styles = StyleSheet.create({
 	container: {
 		flexDirection: 'column',
-		justifyContent: 'space-between',
+		gap: 24,
+	},
+	section: {
+		flexDirection: 'column',
 		gap: 12,
+	},
+	sectionTitle: {
+		fontFamily: fonts.PoppinsMedium,
+		color: colors.text.secondary,
+		marginBottom: 4,
 	},
 	item: {
 		flexDirection: 'column',

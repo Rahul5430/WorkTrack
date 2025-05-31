@@ -13,6 +13,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
+import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import SyncService from '../services/sync';
 import {
 	GoogleUser,
@@ -121,6 +122,11 @@ const WelcomeScreen: React.FC<
 
 	return (
 		<View style={styles.screen}>
+			<FocusAwareStatusBar
+				barStyle='dark-content'
+				translucent
+				backgroundColor='transparent'
+			/>
 			<Text>Welcome Screen</Text>
 			<Button
 				mode='contained'
