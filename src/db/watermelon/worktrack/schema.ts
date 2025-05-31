@@ -5,6 +5,7 @@ export const workTrackSchema = tableSchema({
 	columns: [
 		{ name: 'date', type: 'string' },
 		{ name: 'status', type: 'string' },
+		{ name: 'is_advisory', type: 'boolean' },
 		{ name: 'created_at', type: 'number' },
 		{ name: 'synced', type: 'boolean' },
 		{ name: 'sync_error', type: 'string', isOptional: true },

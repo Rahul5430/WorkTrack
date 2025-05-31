@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 
-import { WORK_STATUS } from '../../constants/workStatus';
 import { MarkedDayStatus } from '../../types/calendar';
 import CalendarDay from './CalendarDay';
+
+type MarkedDayData =
+	| MarkedDayStatus
+	| { status: MarkedDayStatus; isAdvisory: boolean };
 
 type CalendarDayWrapperProps = {
 	date?: {
@@ -10,7 +13,7 @@ type CalendarDayWrapperProps = {
 		day: number;
 	};
 	onPress?: (date: string) => void;
-	markedDays: Record<string, MarkedDayStatus>;
+	markedDays: Record<string, MarkedDayData>;
 	currentVisibleMonth: Date;
 };
 
@@ -21,57 +24,77 @@ const CalendarDayWrapper = React.memo(
 		markedDays,
 		currentVisibleMonth,
 	}: CalendarDayWrapperProps) => {
-		// Early return if no date
-		if (!date) return null;
-
 		// Memoize all computed values
-		const { isToday, type, isCurrentMonth } = useMemo(() => {
+		const { isToday, type, isCurrentMonth, isAdvisory } = useMemo(() => {
+			if (!date) {
+				return {
+					isToday: false,
+					type: undefined,
+					isCurrentMonth: false,
+					isAdvisory: false,
+				};
+			}
+
 			const today = new Date();
 			const currentDate = new Date(date.dateString);
 			const isToday = currentDate.toDateString() === today.toDateString();
-			const isWeekendDay =
-				currentDate.getDay() === 0 || currentDate.getDay() === 6;
-			const type = isWeekendDay ? WORK_STATUS.HOLIDAY : undefined;
 			const isCurrentMonth =
 				currentDate.getMonth() === currentVisibleMonth.getMonth() &&
 				currentDate.getFullYear() === currentVisibleMonth.getFullYear();
 
-			return { isToday, isWeekendDay, type, isCurrentMonth };
-		}, [date.dateString, currentVisibleMonth]);
+			const markedDay = markedDays[date.dateString];
+			const isAdvisory =
+				typeof markedDay === 'object' ? markedDay.isAdvisory : false;
+			const status =
+				typeof markedDay === 'object' ? markedDay.status : markedDay;
 
-		// Memoize the marked day data
-		const markedDay = useMemo(
-			() => markedDays[date.dateString],
-			[markedDays, date.dateString]
-		);
+			return {
+				isToday,
+				type: status,
+				isCurrentMonth,
+				isAdvisory,
+			};
+		}, [date, currentVisibleMonth, markedDays]);
 
 		// Memoize the press handler
 		const handlePress = useMemo(
 			() => () => {
-				if (onPress) {
+				if (onPress && date) {
 					onPress(date.dateString);
 				}
 			},
-			[onPress, date.dateString]
+			[onPress, date]
 		);
+
+		// Early return if no date
+		if (!date) return null;
 
 		return (
 			<CalendarDay
 				day={date.day}
 				dateString={date.dateString}
 				onPress={handlePress}
-				type={markedDay || type}
+				type={type}
 				isToday={isToday}
 				isCurrentMonth={isCurrentMonth}
+				isAdvisory={isAdvisory}
 			/>
 		);
 	},
 	(prevProps, nextProps) => {
 		// Only re-render if these props change
+		const prevMarkedDay =
+			prevProps.markedDays[prevProps.date?.dateString ?? ''];
+		const nextMarkedDay =
+			nextProps.markedDays[nextProps.date?.dateString ?? ''];
+
 		return (
 			prevProps.date?.dateString === nextProps.date?.dateString &&
-			prevProps.markedDays[prevProps.date?.dateString || ''] ===
-				nextProps.markedDays[nextProps.date?.dateString || ''] &&
+			(prevMarkedDay === nextMarkedDay ||
+				(typeof prevMarkedDay === 'object' &&
+					typeof nextMarkedDay === 'object' &&
+					prevMarkedDay.status === nextMarkedDay.status &&
+					prevMarkedDay.isAdvisory === nextMarkedDay.isAdvisory)) &&
 			prevProps.currentVisibleMonth.getTime() ===
 				nextProps.currentVisibleMonth.getTime()
 		);

@@ -4,7 +4,10 @@ import { MarkedDay, MarkedDayStatus } from '../../types/calendar';
 
 export interface WorkTrackState {
 	data: MarkedDay[];
-	markedDays: Record<string, MarkedDayStatus>;
+	markedDays: Record<
+		string,
+		{ status: MarkedDayStatus; isAdvisory: boolean }
+	>;
 	loading: boolean;
 	error: string | null;
 	syncStatus: {
@@ -36,10 +39,16 @@ const workTrackSlice = createSlice({
 			state.data = action.payload;
 			state.markedDays = action.payload.reduce(
 				(acc, day) => {
-					acc[day.date] = day.status;
+					acc[day.date] = {
+						status: day.status,
+						isAdvisory: day.isAdvisory ?? false,
+					};
 					return acc;
 				},
-				{} as Record<string, MarkedDayStatus>
+				{} as Record<
+					string,
+					{ status: MarkedDayStatus; isAdvisory: boolean }
+				>
 			);
 		},
 		addOrUpdateEntry: (state, action: PayloadAction<MarkedDay>) => {
@@ -51,7 +60,10 @@ const workTrackSlice = createSlice({
 			} else {
 				state.data.push(action.payload);
 			}
-			state.markedDays[action.payload.date] = action.payload.status;
+			state.markedDays[action.payload.date] = {
+				status: action.payload.status,
+				isAdvisory: action.payload.isAdvisory ?? false,
+			};
 		},
 		rollbackEntry: (state, action: PayloadAction<string>) => {
 			state.data = state.data.filter(

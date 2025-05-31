@@ -78,6 +78,7 @@ const SummaryData = () => {
 				[WORK_STATUS.WFH]: 0,
 				[WORK_STATUS.HOLIDAY]: 0,
 				[WORK_STATUS.LEAVE]: 0,
+				[WORK_STATUS.ADVISORY]: 0,
 			};
 
 			data.forEach((entry: MarkedDay) => {
@@ -128,9 +129,6 @@ const SummaryData = () => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.section}>
-				<Text style={[styles.sectionTitle, { fontSize: RFValue(14) }]}>
-					Monthly Attendance
-				</Text>
 				{monthlyData.map(({ label, value, color }) => (
 					<View style={styles.item} key={`monthly-${label}`}>
 						<View style={styles.dayContainer}>

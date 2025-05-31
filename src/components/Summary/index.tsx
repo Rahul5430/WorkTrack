@@ -89,18 +89,26 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 			// Calculate total working days in the period (excluding weekends)
 			const totalWorkingDays = getWorkingDaysInPeriod(startDate, endDate);
 
-			// Count only WFO days
+			// Count WFO days (including those on advisory days)
 			const wfoDays = data.filter(
 				(entry) => entry.status === WORK_STATUS.OFFICE
 			).length;
 
-			// Count company holidays
-			const companyHolidays = data.filter(
-				(entry) => entry.status === WORK_STATUS.HOLIDAY
-			).length;
+			// Count company holidays and advisory days (excluding weekends)
+			const companyHolidays = data.filter((entry) => {
+				const entryDate = new Date(entry.date);
+				const dayOfWeek = entryDate.getDay();
+				// Count holidays and advisory days that are not weekends
+				return (
+					(entry.status === WORK_STATUS.HOLIDAY ||
+						entry.isAdvisory) &&
+					dayOfWeek !== 0 &&
+					dayOfWeek !== 6
+				);
+			}).length;
 
 			// Calculate attendance percentage
-			// Formula: (WFO Days / (Total Working Days - Company Holidays)) * 100
+			// Formula: (WFO Days / (Total Working Days - Company Holidays - Advisory Days)) * 100
 			const effectiveWorkingDays = totalWorkingDays - companyHolidays;
 			const attendancePercentage =
 				effectiveWorkingDays > 0

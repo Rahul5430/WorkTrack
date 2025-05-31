@@ -37,7 +37,7 @@ import {
 import { AppDispatch, RootState } from '../../store/store';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
-import { MarkedDayStatus } from '../../types/calendar';
+import { MarkedDay, MarkedDayStatus } from '../../types/calendar';
 import { AuthenticatedStackScreenProps } from '../../types/navigation';
 
 const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
@@ -45,9 +45,11 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 }) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
-	const { error, loading } = useSelector(
-		(state: RootState) => state.workTrack
-	);
+	const {
+		error,
+		loading,
+		data: workTrackData,
+	} = useSelector((state: RootState) => state.workTrack);
 	const user = useSelector((state: RootState) => state.user.user);
 
 	const bottomSheetRef = useRef<BottomSheet>(null);
@@ -100,7 +102,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		}
 	}, [dispatch]);
 
-	const handleSave = async (status: MarkedDayStatus) => {
+	const handleSave = async (status: MarkedDayStatus, isAdvisory: boolean) => {
 		if (selectedDate === null) {
 			dispatch(setError('No date selected'));
 			return;
@@ -111,10 +113,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			dispatch(setError(null));
 
 			// Optimistic update in Redux
-			dispatch(addOrUpdateEntry({ date: selectedDate, status }));
+			dispatch(
+				addOrUpdateEntry({ date: selectedDate, status, isAdvisory })
+			);
 
 			// Save to WatermelonDB
-			await addMarkedDay({ date: selectedDate, status });
+			await addMarkedDay({ date: selectedDate, status, isAdvisory });
 
 			// Queue for sync
 			const syncService = SyncService.getInstance();
@@ -197,7 +201,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				ref={bottomSheetRef}
 				onChange={handleSheetChanges}
 				index={-1}
-				snapPoints={['30%']}
+				snapPoints={['40%']}
 				enablePanDownToClose
 				backdropComponent={(props) => (
 					<BottomSheetBackdrop
@@ -216,6 +220,18 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 							onSave={handleSave}
 							loading={loading}
 							onCancel={() => bottomSheetRef.current?.close()}
+							initialStatus={
+								workTrackData.find(
+									(entry: MarkedDay) =>
+										entry.date === selectedDate
+								)?.status
+							}
+							initialIsAdvisory={
+								workTrackData.find(
+									(entry: MarkedDay) =>
+										entry.date === selectedDate
+								)?.isAdvisory
+							}
 						/>
 					)}
 				</BottomSheetView>

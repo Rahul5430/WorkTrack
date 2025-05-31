@@ -55,8 +55,8 @@ export const useCalendarData = () => {
 
 			while (currentDate <= nextYear) {
 				const dayOfWeek = currentDate.getDay();
-				if (dayOfWeek === 0 || dayOfWeek === 6) {
-					// Only Saturday (6) and Sunday (0) are weekends
+				if (dayOfWeek === 0) {
+					// Only Sunday (0) is a holiday
 					const dateString = currentDate.toISOString().split('T')[0];
 					batch.push({
 						date: dateString,
@@ -105,25 +105,11 @@ export const useCalendarData = () => {
 				markedDaysMap[workTrack.date] = {
 					date: workTrack.date,
 					status: workTrack.status,
+					isAdvisory: workTrack.isAdvisory,
 				};
 			});
 
-			// Generate weekend entries for all months in the range
-			let currentDate = new Date(pastYear);
-			while (currentDate <= nextYear) {
-				const dayOfWeek = currentDate.getDay();
-				if (dayOfWeek === 0 || dayOfWeek === 6) {
-					const dateString = currentDate.toISOString().split('T')[0];
-					if (!markedDaysMap[dateString]) {
-						markedDaysMap[dateString] = {
-							date: dateString,
-							status: WORK_STATUS.HOLIDAY,
-						};
-					}
-				}
-				currentDate.setDate(currentDate.getDate() + 1);
-			}
-
+			// No automatic weekend marking
 			// Convert map to array for Redux store
 			const filteredMarkedDays = Object.values(markedDaysMap);
 

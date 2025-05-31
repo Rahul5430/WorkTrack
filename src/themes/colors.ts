@@ -8,6 +8,7 @@ export const colors = {
 	weekendPressed: '#FED7AA',
 	leave: '#DBEAFE',
 	leavePressed: '#BFDBFE',
+	forecast: '#9C27B0',
 
 	// Background Colors
 	background: {

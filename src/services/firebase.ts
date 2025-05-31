@@ -216,6 +216,7 @@ export default class FirebaseService {
 					userId,
 					lastModified: record.lastModified,
 					createdAt: record.createdAt,
+					isAdvisory: record.isAdvisory,
 				},
 				{ merge: true }
 			);

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -22,8 +22,15 @@ type CalendarDayProps = {
 	dateString: string;
 	onPress: (date: string) => void;
 	type?: MarkedDayStatus;
+	isAdvisory?: boolean;
 	isToday?: boolean;
 	isCurrentMonth?: boolean;
+};
+
+type DayColors = {
+	background: string;
+	text: string;
+	pressed: string;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -33,6 +40,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 	dateString,
 	onPress,
 	type,
+	isAdvisory,
 	isToday = false,
 	isCurrentMonth = true,
 }) => {
@@ -42,38 +50,60 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 	const backgroundColor = useSharedValue('transparent');
 	const shadowOpacity = useSharedValue(0.1);
 
-	const getBackgroundColor = () => {
-		if (!isCurrentMonth) return colors.ui.gray[100];
-		if (isToday) return colors.ui.blue[100];
-		if (!type) return colors.background.primary;
-		if (type === WORK_STATUS.HOLIDAY) return colors.weekend;
-		if (type === WORK_STATUS.LEAVE) return colors.leave;
-		return WORK_STATUS_COLORS[type];
-	};
+	const dayColors = useMemo<DayColors>(() => {
+		if (isToday) {
+			return {
+				background: colors.ui.blue[100],
+				text: colors.ui.blue[600],
+				pressed: colors.ui.blue[200],
+			};
+		}
 
-	const getTextColor = () => {
-		if (!isCurrentMonth) return colors.text.secondary;
-		if (isToday) return colors.ui.blue[600];
-		if (!type) return colors.text.primary;
-		if (type === WORK_STATUS.HOLIDAY) return colors.text.secondary;
-		return type === WORK_STATUS.LEAVE
-			? colors.text.primary
-			: colors.text.light;
-	};
+		if (type === WORK_STATUS.HOLIDAY) {
+			return {
+				background: colors.weekend,
+				text: colors.text.secondary,
+				pressed: colors.weekendPressed,
+			};
+		}
 
-	const getPressedBackgroundColor = () => {
-		if (!isCurrentMonth) return colors.ui.gray[200];
-		if (isToday) return colors.ui.blue[200];
-		if (!type) return colors.ui.gray[200];
-		if (type === WORK_STATUS.HOLIDAY) return colors.weekendPressed;
-		if (type === WORK_STATUS.LEAVE) return colors.leavePressed;
-		return WORK_STATUS_PRESSED_COLORS[type];
-	};
+		if (type === WORK_STATUS.LEAVE) {
+			return {
+				background: colors.leave,
+				text: colors.text.primary,
+				pressed: colors.leavePressed,
+			};
+		}
+
+		if (type) {
+			return {
+				background: WORK_STATUS_COLORS[type],
+				text: colors.text.light,
+				pressed: WORK_STATUS_PRESSED_COLORS[type],
+			};
+		}
+
+		if (!isCurrentMonth) {
+			return {
+				background: colors.ui.gray[100],
+				text: colors.text.secondary,
+				pressed: colors.ui.gray[200],
+			};
+		}
+
+		return {
+			background: isAdvisory
+				? colors.forecast + '40'
+				: colors.ui.gray[100],
+			text: isAdvisory ? colors.forecast : colors.text.primary,
+			pressed: isAdvisory ? colors.forecast + '60' : colors.ui.gray[200],
+		};
+	}, [isToday, type, isCurrentMonth, dateString, isAdvisory]);
 
 	// Update background color when type changes
 	useEffect(() => {
-		backgroundColor.value = getBackgroundColor();
-	}, [type, isCurrentMonth, isToday]);
+		backgroundColor.value = dayColors.background;
+	}, [dayColors.background]);
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
@@ -81,7 +111,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			opacity: opacity.value,
 			backgroundColor: backgroundColor.value,
 			borderWidth: isToday ? 2 : 0,
-			borderColor: colors.ui.blue[400],
+			borderColor: isToday ? colors.ui.blue[400] : undefined,
 			shadowColor: colors.text.primary,
 			shadowOffset: {
 				width: 0,
@@ -100,20 +130,20 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 	const handlePressIn = useCallback(() => {
 		scale.value = withSpring(0.92, { damping: 12 });
 		opacity.value = withTiming(0.8, { duration: 100 });
-		backgroundColor.value = withTiming(getPressedBackgroundColor(), {
+		backgroundColor.value = withTiming(dayColors.pressed, {
 			duration: 200,
 		});
 		shadowOpacity.value = withTiming(0.05, { duration: 100 });
-	}, []);
+	}, [dayColors.pressed]);
 
 	const handlePressOut = useCallback(() => {
 		scale.value = withSpring(1, { damping: 12 });
 		opacity.value = withTiming(1, { duration: 100 });
-		backgroundColor.value = withTiming(getBackgroundColor(), {
+		backgroundColor.value = withTiming(dayColors.background, {
 			duration: 200,
 		});
 		shadowOpacity.value = withTiming(0.1, { duration: 100 });
-	}, []);
+	}, [dayColors.background]);
 
 	const containerStyle = useMemo(
 		() => [
@@ -151,12 +181,26 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			onPress={handlePress}
 			onPressIn={handlePressIn}
 			onPressOut={handlePressOut}
-			disabled={!isCurrentMonth}
 		>
 			<Animated.View style={dayStyle}>
-				<Text style={[styles.dayTextStyle, { color: getTextColor() }]}>
-					{day}
-				</Text>
+				{isAdvisory ? (
+					<View style={styles.circleContainer}>
+						<Text
+							style={[
+								styles.dayTextStyle,
+								{ color: dayColors.text },
+							]}
+						>
+							{day}
+						</Text>
+					</View>
+				) : (
+					<Text
+						style={[styles.dayTextStyle, { color: dayColors.text }]}
+					>
+						{day}
+					</Text>
+				)}
 			</Animated.View>
 		</AnimatedPressable>
 	);
@@ -171,6 +215,14 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		width: 43,
 		height: 43,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	circleContainer: {
+		width: 32,
+		height: 32,
+		borderRadius: 16,
+		backgroundColor: colors.forecast + '80',
 		justifyContent: 'center',
 		alignItems: 'center',
 	},

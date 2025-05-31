@@ -8,6 +8,7 @@ export default class WorkTrack extends Model {
 
 	@field('date') date!: string;
 	@field('status') status!: MarkedDayStatus;
+	@field('is_advisory') isAdvisory!: boolean;
 	@readonly @date('created_at') createdAt!: Date;
 	@field('synced') synced!: boolean;
 	@field('sync_error') syncError?: string;
@@ -19,7 +20,9 @@ export default class WorkTrack extends Model {
 			throw new Error('Invalid entry: missing required fields');
 		}
 		if (
-			!Object.values(['wfh', 'office', 'holiday']).includes(this.status)
+			!Object.values(['wfh', 'office', 'holiday', 'leave']).includes(
+				this.status
+			)
 		) {
 			throw new Error('Invalid status value');
 		}

@@ -24,8 +24,8 @@ const initializeWeekendData = async () => {
 
 			// Only create entry if it doesn't exist
 			if (!existingDates.has(dateString)) {
-				// If it's a weekend, mark as holiday
-				if (day === 0 || day === 6) {
+				// Only mark Sundays as holiday
+				if (day === 0) {
 					await collection.create((record) => {
 						record.date = dateString;
 						record.status = 'holiday';
@@ -54,6 +54,7 @@ export async function loadWorkTrackDataFromDB() {
 	return records.map((r) => ({
 		date: r.date,
 		status: r.status,
+		isAdvisory: r.isAdvisory,
 	}));
 }
 
@@ -70,11 +71,17 @@ export async function addMarkedDay(entry: MarkedDay) {
 		if (existing) {
 			await existing.update((record) => {
 				record.status = entry.status;
+				record.isAdvisory = entry.isAdvisory ?? false;
+				record.synced = false;
+				record.lastModified = Date.now();
 			});
 		} else {
 			await collection.create((record) => {
 				record.date = entry.date;
 				record.status = entry.status;
+				record.isAdvisory = entry.isAdvisory ?? false;
+				record.synced = false;
+				record.lastModified = Date.now();
 			});
 		}
 	});
