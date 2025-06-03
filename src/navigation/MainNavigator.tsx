@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { RootState } from '../store/store';
 import { MainStackParamList } from '../types/navigation';
-import AuthenticatedStack from './AuthenticatedNavigator';
+import AuthenticatedNavigator from './AuthenticatedNavigator';
 import LoadingNavigator from './LoadingNavigator';
 import WelcomeNavigator from './WelcomeNavigator';
 
@@ -17,19 +17,22 @@ const MainNavigator: () => React.JSX.Element = () => {
 			{isLoggedIn === true && (
 				<Stack.Screen
 					name='AuthenticatedStack'
-					component={AuthenticatedStack}
+					component={AuthenticatedNavigator}
+					options={{ headerShown: false }}
 				/>
 			)}
 			{isLoggedIn === false && (
 				<Stack.Screen
 					name='WelcomeStack'
 					component={WelcomeNavigator}
+					options={{ headerShown: false }}
 				/>
 			)}
 			{isLoggedIn === null && (
 				<Stack.Screen
 					name='LoadingStack'
 					component={LoadingNavigator}
+					options={{ headerShown: false }}
 				/>
 			)}
 		</Stack.Navigator>

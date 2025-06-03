@@ -1,4 +1,5 @@
 import { Q } from '@nozbe/watermelondb';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { getAuth } from '@react-native-firebase/auth';
 
@@ -38,6 +39,8 @@ export interface SharePermission {
 	sharedWithId: string;
 	sharedWithEmail: string;
 	permission: 'read' | 'write';
+	ownerName?: string;
+	ownerPhoto?: string;
 }
 
 export default class SyncService {
@@ -54,11 +57,24 @@ export default class SyncService {
 	private defaultViewUserId: string | null = null;
 	private readonly firebaseService: FirebaseService;
 	private readonly watermelonService: WatermelonService;
+	private readonly DEFAULT_VIEW_KEY = '@default_view_user_id';
 
 	private constructor() {
 		this.firebaseService = FirebaseService.getInstance();
 		this.watermelonService = WatermelonService.getInstance();
 		this.setupNetworkMonitoring();
+		this.loadDefaultViewUserId();
+	}
+
+	private async loadDefaultViewUserId() {
+		try {
+			const storedUserId = await AsyncStorage.getItem(
+				this.DEFAULT_VIEW_KEY
+			);
+			this.defaultViewUserId = storedUserId;
+		} catch (error) {
+			console.error('Error loading default view user ID:', error);
+		}
 	}
 
 	private setupNetworkMonitoring() {
@@ -134,6 +150,11 @@ export default class SyncService {
 
 	setDefaultViewUserId(userId: string | null) {
 		this.defaultViewUserId = userId;
+		AsyncStorage.setItem(this.DEFAULT_VIEW_KEY, userId ?? '').catch(
+			(error) => {
+				console.error('Error saving default view user ID:', error);
+			}
+		);
 	}
 
 	getDefaultViewUserId(): string | null {
@@ -156,6 +177,7 @@ export default class SyncService {
 				date: data.date,
 				status: data.status,
 				lastModified: data.lastModified,
+				isAdvisory: data.isAdvisory ?? false,
 			});
 		}
 	}

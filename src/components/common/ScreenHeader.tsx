@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
@@ -17,8 +18,16 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 }) => {
 	return (
 		<View style={styles.header}>
-			<TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-				<View style={styles.backIcon} />
+			<TouchableOpacity
+				onPress={onBackPress}
+				style={styles.backButton}
+				hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+			>
+				<MaterialCommunityIcons
+					name='chevron-left'
+					size={28}
+					color={colors.text.primary}
+				/>
 			</TouchableOpacity>
 			<Text style={styles.headerTitle}>{title}</Text>
 			<View style={styles.headerRight}>{rightComponent}</View>
@@ -38,19 +47,12 @@ const styles = StyleSheet.create({
 		borderBottomColor: colors.background.secondary,
 	},
 	backButton: {
-		width: 40,
-		height: 40,
+		width: 44,
+		height: 44,
 		alignItems: 'center',
 		justifyContent: 'center',
 		marginLeft: -8,
-	},
-	backIcon: {
-		width: 12,
-		height: 12,
-		borderLeftWidth: 2,
-		borderBottomWidth: 2,
-		borderColor: colors.office,
-		transform: [{ rotate: '45deg' }],
+		zIndex: 1,
 	},
 	headerTitle: {
 		fontFamily: fonts.PoppinsSemiBold,
@@ -62,7 +64,7 @@ const styles = StyleSheet.create({
 		right: 0,
 	},
 	headerRight: {
-		width: 40,
+		width: 44,
 		alignItems: 'flex-end',
 	},
 });

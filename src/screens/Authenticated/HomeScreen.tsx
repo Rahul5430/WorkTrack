@@ -1,9 +1,7 @@
-import BottomSheet, {
-	BottomSheetBackdrop,
-	BottomSheetView,
-} from '@gorhom/bottom-sheet';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+	Animated,
+	Easing,
 	Image,
 	Pressable,
 	RefreshControl,
@@ -13,18 +11,24 @@ import {
 	View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import CalendarComponent from '../../components/Calendar';
+import CommonBottomSheet, {
+	CommonBottomSheetRef,
+} from '../../components/CommonBottomSheet';
 import DayMarkingBottomSheet from '../../components/DayMarkingBottomSheet';
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 import Label from '../../components/Label';
 import Summary from '../../components/Summary';
+import WorkTrackSwitcher from '../../components/WorkTrackSwitcher';
 import {
 	addMarkedDay,
 	loadWorkTrackDataFromDB,
 } from '../../db/watermelon/worktrack/load';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
+import { useSharedWorkTracks } from '../../hooks/useSharedWorkTracks';
 import FirebaseService from '../../services/firebase';
 import SyncService from '../../services/sync';
 import {
@@ -40,6 +44,12 @@ import { colors } from '../../themes/colors';
 import { MarkedDay, MarkedDayStatus } from '../../types/calendar';
 import { AuthenticatedStackScreenProps } from '../../types/navigation';
 
+const getDisplayName = (name: string, isOwnWorkTrack: boolean) => {
+	if (isOwnWorkTrack) return 'My WorkTrack';
+	const firstName = name.split(' ')[0];
+	return `${firstName}'s WorkTrack`;
+};
+
 const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	navigation,
 }) => {
@@ -51,34 +61,159 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		data: workTrackData,
 	} = useSelector((state: RootState) => state.workTrack);
 	const user = useSelector((state: RootState) => state.user.user);
-
-	const bottomSheetRef = useRef<BottomSheet>(null);
+	const { sharedWorkTracks, loading: sharedWorkTracksLoading } =
+		useSharedWorkTracks();
+	const [currentWorkTrack, setCurrentWorkTrack] = useState<{
+		id: string;
+		name: string;
+	} | null>(null);
+	const [isWorkTrackSwitcherOpen, setIsWorkTrackSwitcherOpen] =
+		useState(false);
+	const dayMarkingSheetRef = useRef<CommonBottomSheetRef>(null);
+	const workTrackSwitcherRef = useRef<CommonBottomSheetRef>(null);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const [selectedMonth, setSelectedMonth] = useState(new Date());
+	const rotateAnim = useRef(new Animated.Value(0)).current;
+	const isAnimating = useRef(false);
 
 	useEffect(() => {
 		// Start periodic sync
 		const syncService = SyncService.getInstance();
 		syncService.startPeriodicSync();
 
+		// Load initial work track
+		const defaultViewUserId = syncService.getDefaultViewUserId();
+		if (defaultViewUserId) {
+			const workTrack = sharedWorkTracks.find(
+				(track) => track.id === defaultViewUserId
+			);
+			if (workTrack) {
+				setCurrentWorkTrack({
+					id: workTrack.id,
+					name: workTrack.ownerName,
+				});
+			}
+		} else {
+			setCurrentWorkTrack({
+				id: user?.id ?? '',
+				name: user?.name ?? 'My WorkTrack',
+			});
+		}
+
 		return () => {
 			syncService.stopPeriodicSync();
 		};
-	}, []);
+	}, [user, sharedWorkTracks]);
 
-	const handleSheetChanges = useCallback((index: number) => {
+	// Add a new effect to handle data loading when currentWorkTrack changes
+	useEffect(() => {
+		const loadData = async () => {
+			if (!currentWorkTrack?.id) return;
+
+			dispatch(setLoading(true));
+			try {
+				// Sync data from Firestore to local database
+				await FirebaseService.getInstance().syncWorkTrackData();
+
+				// Load updated data from local database
+				const updatedData = await loadWorkTrackDataFromDB();
+				dispatch(setWorkTrackData(updatedData));
+			} catch (error) {
+				console.error('Error syncing data:', error);
+				dispatch(
+					setError(
+						error instanceof Error
+							? error.message
+							: 'Failed to sync data'
+					)
+				);
+			} finally {
+				dispatch(setLoading(false));
+			}
+		};
+
+		loadData();
+	}, [currentWorkTrack?.id, dispatch]);
+
+	// Add effect to sync with default view changes
+	useEffect(() => {
+		const syncService = SyncService.getInstance();
+		const defaultViewUserId = syncService.getDefaultViewUserId();
+
+		if (defaultViewUserId && defaultViewUserId !== currentWorkTrack?.id) {
+			const workTrack = sharedWorkTracks.find(
+				(track) => track.id === defaultViewUserId
+			);
+			if (workTrack) {
+				setCurrentWorkTrack({
+					id: workTrack.id,
+					name: workTrack.ownerName,
+				});
+			}
+		}
+	}, [sharedWorkTracks]);
+
+	const handleDayMarkingSheetChanges = useCallback((index: number) => {
 		if (index === -1) {
 			setSelectedDate(null);
 		}
 	}, []);
 
+	const handleWorkTrackSwitcherChanges = useCallback((index: number) => {
+		const isOpen = index > -1;
+		setIsWorkTrackSwitcherOpen(isOpen);
+	}, []);
+
+	const handlePressIn = useCallback(() => {
+		// Animate on press for opening
+		Animated.timing(rotateAnim, {
+			toValue: 1,
+			duration: 400,
+			useNativeDriver: true,
+			easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+		}).start();
+	}, [rotateAnim]);
+
+	const handleCloseAnimation = useCallback(() => {
+		// Animate when closing
+		Animated.timing(rotateAnim, {
+			toValue: 0,
+			duration: 400,
+			useNativeDriver: true,
+			easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+		}).start();
+	}, [rotateAnim]);
+
 	const onDatePress = useCallback((date: string) => {
 		// Update state and bottom sheet in a single render cycle
 		requestAnimationFrame(() => {
 			setSelectedDate(date);
-			bottomSheetRef.current?.expand();
+			dayMarkingSheetRef.current?.expand();
 		});
 	}, []);
+
+	const handleWorkTrackSelect = async (workTrackId: string) => {
+		try {
+			const workTrack = sharedWorkTracks.find(
+				(track) => track.id === workTrackId
+			);
+			if (workTrack) {
+				setCurrentWorkTrack({
+					id: workTrack.id,
+					name: workTrack.ownerName,
+				});
+				workTrackSwitcherRef.current?.close();
+			}
+		} catch (error) {
+			console.error('Error switching worktrack:', error);
+		}
+	};
+
+	const handleAddWorkTrack = () => {
+		// TODO: Implement add worktrack logic
+		console.log('Add worktrack clicked');
+		workTrackSwitcherRef.current?.close();
+	};
 
 	const onRefresh = useCallback(async () => {
 		dispatch(setLoading(true));
@@ -125,7 +260,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			const syncService = SyncService.getInstance();
 			await syncService.queueSync(selectedDate);
 
-			bottomSheetRef.current?.close();
+			dayMarkingSheetRef.current?.close();
 		} catch (error) {
 			console.error('Error saving work status:', error);
 			dispatch(
@@ -166,16 +301,57 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				}
 			>
 				<View style={styles.header}>
-					<Text
-						style={[
-							styles.headerText,
-							{
-								fontSize: RFValue(20),
-							},
+					<Pressable
+						onPress={() => workTrackSwitcherRef.current?.expand()}
+						onPressIn={handlePressIn}
+						style={({ pressed }) => [
+							styles.titleContainer,
+							pressed && styles.titleContainerPressed,
 						]}
 					>
-						WorkTrack
-					</Text>
+						<View style={styles.titleContent}>
+							<Text
+								style={[
+									styles.headerText,
+									{
+										fontSize: RFValue(20),
+									},
+								]}
+							>
+								{currentWorkTrack?.name
+									? getDisplayName(
+											currentWorkTrack.name,
+											currentWorkTrack.id === user?.id
+										)
+									: 'My WorkTrack'}
+							</Text>
+							<Animated.View
+								style={[
+									styles.chevronContainer,
+									{
+										transform: [
+											{
+												rotate: rotateAnim.interpolate({
+													inputRange: [0, 1],
+													outputRange: [
+														'0deg',
+														'180deg',
+													],
+												}),
+											},
+										],
+									},
+								]}
+							>
+								<MaterialCommunityIcons
+									name='chevron-down'
+									size={24}
+									color={colors.text.primary}
+									style={styles.chevronIcon}
+								/>
+							</Animated.View>
+						</View>
+					</Pressable>
 					<Pressable
 						onPress={() => navigation.navigate('ProfileScreen')}
 						style={({ pressed }) => [
@@ -205,45 +381,41 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				<Label />
 				<Summary selectedMonth={selectedMonth} />
 			</ScrollView>
-			<BottomSheet
-				ref={bottomSheetRef}
-				onChange={handleSheetChanges}
-				index={-1}
+
+			<CommonBottomSheet
+				ref={dayMarkingSheetRef}
+				onChange={handleDayMarkingSheetChanges}
 				snapPoints={['40%']}
-				enablePanDownToClose
-				backdropComponent={(props) => (
-					<BottomSheetBackdrop
-						{...props}
-						disappearsOnIndex={-1}
-						appearsOnIndex={0}
-						opacity={0.7}
-						pressBehavior='close'
+			>
+				{selectedDate && (
+					<DayMarkingBottomSheet
+						selectedDate={selectedDate}
+						onSave={handleSave}
+						loading={loading}
+						onCancel={() => dayMarkingSheetRef.current?.close()}
 					/>
 				)}
+			</CommonBottomSheet>
+
+			<CommonBottomSheet
+				ref={workTrackSwitcherRef}
+				enableDynamicSizing
+				onChange={handleWorkTrackSwitcherChanges}
+				onBackdropPress={handleCloseAnimation}
+				onClose={handleCloseAnimation}
 			>
-				<BottomSheetView style={[styles.sheetContent, { flex: 1 }]}>
-					{selectedDate && (
-						<DayMarkingBottomSheet
-							selectedDate={selectedDate}
-							onSave={handleSave}
-							loading={loading}
-							onCancel={() => bottomSheetRef.current?.close()}
-							initialStatus={
-								workTrackData.find(
-									(entry: MarkedDay) =>
-										entry.date === selectedDate
-								)?.status
-							}
-							initialIsAdvisory={
-								workTrackData.find(
-									(entry: MarkedDay) =>
-										entry.date === selectedDate
-								)?.isAdvisory
-							}
-						/>
-					)}
-				</BottomSheetView>
-			</BottomSheet>
+				<WorkTrackSwitcher
+					sharedWorkTracks={sharedWorkTracks}
+					loading={sharedWorkTracksLoading}
+					onWorkTrackSelect={handleWorkTrackSelect}
+					onAddWorkTrack={handleAddWorkTrack}
+					currentWorkTrackId={currentWorkTrack?.id}
+					defaultWorkTrackId={
+						SyncService.getInstance().getDefaultViewUserId() ??
+						undefined
+					}
+				/>
+			</CommonBottomSheet>
 		</SafeAreaView>
 	);
 };
@@ -261,26 +433,44 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		flexDirection: 'row',
-		alignItems: 'center',
 		justifyContent: 'space-between',
+		alignItems: 'center',
 		paddingHorizontal: 20,
-		marginVertical: 16,
+		paddingVertical: 10,
+	},
+	titleContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	titleContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	titleContainerPressed: {
+		opacity: 0.7,
 	},
 	headerText: {
-		fontFamily: fonts.PoppinsSemiBold,
+		fontFamily: fonts.PoppinsMedium,
 		color: colors.text.primary,
 	},
+	chevronContainer: {
+		width: 24,
+		height: 24,
+		justifyContent: 'center',
+		alignItems: 'center',
+		transform: [{ translateX: -12 }],
+	},
+	chevronIcon: {
+		width: 24,
+		height: 24,
+		textAlign: 'center',
+		textAlignVertical: 'center',
+	},
 	profileButton: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
+		width: 40,
+		height: 40,
+		borderRadius: 20,
 		overflow: 'hidden',
-		backgroundColor: colors.background.primary,
-		elevation: 2,
-		shadowColor: colors.text.primary,
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
 	},
 	profileImage: {
 		width: '100%',
@@ -289,24 +479,23 @@ const styles = StyleSheet.create({
 	profilePlaceholder: {
 		width: '100%',
 		height: '100%',
-		backgroundColor: colors.office,
-		alignItems: 'center',
+		backgroundColor: colors.ui.gray[200],
 		justifyContent: 'center',
+		alignItems: 'center',
 	},
 	profilePlaceholderText: {
-		color: colors.background.primary,
-		fontFamily: fonts.PoppinsSemiBold,
-		fontSize: 16,
-	},
-	sheetContent: {
-		backgroundColor: colors.background.primary,
-		overflow: 'hidden',
+		fontFamily: fonts.PoppinsMedium,
+		color: colors.text.secondary,
+		fontSize: 18,
 	},
 	errorText: {
 		color: colors.error,
-		fontFamily: fonts.PoppinsRegular,
-		paddingHorizontal: 20,
-		marginBottom: 10,
+		fontFamily: fonts.PoppinsMedium,
+		textAlign: 'center',
+		marginVertical: 10,
+	},
+	workTrackSwitcherScroll: {
+		flex: 1,
 	},
 });
 

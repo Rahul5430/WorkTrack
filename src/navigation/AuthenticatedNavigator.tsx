@@ -9,7 +9,7 @@ const Stack = createNativeStackNavigator<AuthenticatedStackParamList>();
 
 export default function AuthenticatedNavigator() {
 	return (
-		<Stack.Navigator screenOptions={{ headerShown: false }}>
+		<Stack.Navigator>
 			<Stack.Screen
 				name='HomeScreen'
 				component={HomeScreen}
@@ -22,6 +22,7 @@ export default function AuthenticatedNavigator() {
 				name='ProfileScreen'
 				component={ProfileScreen}
 				options={{
+					headerShown: false,
 					title: 'Profile',
 				}}
 			/>

@@ -10,20 +10,20 @@ import {
 	RefreshControl,
 	ScrollView,
 	StyleSheet,
-	Switch,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Dialog from '../../components/common/Dialog';
-import ListItem from '../../components/common/ListItem';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 import ProfileInfo from '../../components/Profile/ProfileInfo';
+import SharedWithMeListItem from '../../components/Profile/SharedWithMeListItem';
+import ShareListItem from '../../components/Profile/ShareListItem';
 import { database } from '../../db/watermelon';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import SyncService, { SharePermission } from '../../services/sync';
@@ -44,6 +44,9 @@ const ProfileScreen: React.FC<
 	const { loading } = useSelector((state: RootState) => state.workTrack);
 	const [myShares, setMyShares] = useState<SharePermission[]>([]);
 	const [sharedWithMe, setSharedWithMe] = useState<SharePermission[]>([]);
+	const [defaultViewUserId, setDefaultViewUserId] = useState<string | null>(
+		null
+	);
 	const [isShareDialogVisible, setIsShareDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [editingShare, setEditingShare] = useState<SharePermission | null>(
@@ -77,6 +80,11 @@ const ProfileScreen: React.FC<
 			keyboardDidShowListener.remove();
 			keyboardDidHideListener.remove();
 		};
+	}, []);
+
+	useEffect(() => {
+		const syncService = SyncService.getInstance();
+		setDefaultViewUserId(syncService.getDefaultViewUserId());
 	}, []);
 
 	const loadShares = async () => {
@@ -185,19 +193,59 @@ const ProfileScreen: React.FC<
 	};
 
 	const handleRemoveShare = async (sharedWithId: string) => {
-		try {
-			const syncService = SyncService.getInstance();
-			await syncService.removeShare(sharedWithId);
-			await loadShares();
-		} catch (error) {
-			console.error('Error removing share:', error);
-		}
+		const share = myShares.find((s) => s.sharedWithId === sharedWithId);
+		if (!share) return;
+
+		Alert.alert(
+			'Remove Share',
+			`Are you sure you want to remove sharing with ${share.ownerName ?? share.sharedWithEmail}?`,
+			[
+				{
+					text: 'Cancel',
+					style: 'cancel',
+				},
+				{
+					text: 'Remove',
+					style: 'destructive',
+					onPress: () => {
+						try {
+							const syncService = SyncService.getInstance();
+							syncService
+								.removeShare(sharedWithId)
+								.then(() => {
+									loadShares();
+								})
+								.catch((error) => {
+									console.error(
+										'Error removing share:',
+										error
+									);
+									showAlert(
+										'Error',
+										'Failed to remove share. Please try again.'
+									);
+								});
+						} catch (error) {
+							console.error('Error removing share:', error);
+							showAlert(
+								'Error',
+								'Failed to remove share. Please try again.'
+							);
+						}
+					},
+				},
+			]
+		);
 	};
 
 	const handleSetDefaultView = async (userId: string) => {
 		try {
 			const syncService = SyncService.getInstance();
-			syncService.setDefaultViewUserId(userId);
+			const currentDefaultView = syncService.getDefaultViewUserId();
+			const newDefaultView =
+				currentDefaultView === userId ? null : userId;
+			syncService.setDefaultViewUserId(newDefaultView);
+			setDefaultViewUserId(newDefaultView);
 		} catch (error) {
 			console.error('Error setting default view:', error);
 		}
@@ -218,6 +266,7 @@ const ProfileScreen: React.FC<
 				await auth.signOut();
 			}
 			await AsyncStorage.removeItem('user');
+			SyncService.getInstance().setDefaultViewUserId(null);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
@@ -225,6 +274,7 @@ const ProfileScreen: React.FC<
 		} catch (error) {
 			console.error('Logout error:', error);
 			await AsyncStorage.removeItem('user');
+			SyncService.getInstance().setDefaultViewUserId(null);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
@@ -423,52 +473,6 @@ const ProfileScreen: React.FC<
 		</Dialog>
 	);
 
-	const renderShareListItem = (share: SharePermission) => (
-		<ListItem
-			key={share.sharedWithId}
-			title={share.sharedWithEmail}
-			description={`Permission: ${share.permission}`}
-			rightComponent={
-				<View style={styles.listItemActions}>
-					<TouchableOpacity
-						onPress={() => handleEditPermission(share)}
-						style={styles.editButton}
-					>
-						<Text style={styles.editButtonText}>Edit</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						onPress={() => handleRemoveShare(share.sharedWithId)}
-						style={styles.removeButton}
-					>
-						<Text style={styles.removeButtonText}>Remove</Text>
-					</TouchableOpacity>
-				</View>
-			}
-		/>
-	);
-
-	const renderSharedWithMeListItem = (share: SharePermission) => (
-		<ListItem
-			key={share.ownerId}
-			title={share.sharedWithEmail}
-			description={`Permission: ${share.permission}`}
-			rightComponent={
-				<Switch
-					value={
-						share.ownerId ===
-						SyncService.getInstance().getDefaultViewUserId()
-					}
-					onValueChange={() => handleSetDefaultView(share.ownerId)}
-					trackColor={{
-						false: colors.background.secondary,
-						true: colors.office,
-					}}
-					thumbColor={colors.background.primary}
-				/>
-			}
-		/>
-	);
-
 	return (
 		<SafeAreaView style={styles.screen}>
 			<FocusAwareStatusBar
@@ -530,7 +534,16 @@ const ProfileScreen: React.FC<
 					>
 						Shared With Others
 					</Text>
-					{myShares.map(renderShareListItem)}
+					<View style={{ gap: 16 }}>
+						{myShares.map((share) => (
+							<ShareListItem
+								key={share.sharedWithId}
+								share={share}
+								onEditPermission={handleEditPermission}
+								onRemoveShare={handleRemoveShare}
+							/>
+						))}
+					</View>
 				</View>
 
 				<View style={styles.contentSection}>
@@ -539,7 +552,29 @@ const ProfileScreen: React.FC<
 					>
 						Shared With Me
 					</Text>
-					{sharedWithMe.map(renderSharedWithMeListItem)}
+					<View style={styles.sectionNote}>
+						<MaterialCommunityIcons
+							name='information-outline'
+							size={16}
+							color={colors.text.secondary}
+						/>
+						<Text style={styles.sectionNoteText}>
+							If no WorkTrack is set as default, your own
+							WorkTrack will be shown by default
+						</Text>
+					</View>
+					<View style={{ gap: 16 }}>
+						{sharedWithMe.map((share) => (
+							<SharedWithMeListItem
+								key={share.ownerId}
+								share={share}
+								onSetDefaultView={handleSetDefaultView}
+								isDefaultView={
+									share.ownerId === defaultViewUserId
+								}
+							/>
+						))}
+					</View>
 				</View>
 
 				<View style={styles.contentSection}>
@@ -556,19 +591,20 @@ const ProfileScreen: React.FC<
 									{
 										text: 'Clear',
 										style: 'destructive',
-										onPress: async () => {
-											try {
-												await clearAppData();
-												Alert.alert(
-													'Success',
-													'App data cleared successfully'
-												);
-											} catch (error) {
-												Alert.alert(
-													'Error',
-													'Failed to clear app data'
-												);
-											}
+										onPress: () => {
+											void clearAppData()
+												.then(() => {
+													Alert.alert(
+														'Success',
+														'App data cleared successfully'
+													);
+												})
+												.catch(() => {
+													Alert.alert(
+														'Error',
+														'Failed to clear app data'
+													);
+												});
 										},
 									},
 								]
@@ -713,27 +749,6 @@ const styles = StyleSheet.create({
 	permissionButtonTextActive: {
 		color: colors.background.primary,
 	},
-	listItemActions: {
-		flexDirection: 'row',
-		alignItems: 'center',
-	},
-	editButton: {
-		padding: 8,
-		marginRight: 8,
-	},
-	editButtonText: {
-		color: colors.office,
-		fontFamily: fonts.PoppinsMedium,
-		fontSize: 14,
-	},
-	removeButton: {
-		padding: 8,
-	},
-	removeButtonText: {
-		color: colors.error,
-		fontFamily: fonts.PoppinsMedium,
-		fontSize: 14,
-	},
 	clearDataButton: {
 		backgroundColor: colors.wfh,
 		padding: 12,
@@ -745,6 +760,21 @@ const styles = StyleSheet.create({
 		color: colors.background.primary,
 		fontFamily: fonts.PoppinsMedium,
 		fontSize: 16,
+	},
+	sectionNote: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 8,
+		padding: 12,
+		backgroundColor: colors.background.secondary,
+		borderRadius: 8,
+		marginBottom: 16,
+	},
+	sectionNoteText: {
+		fontFamily: fonts.PoppinsRegular,
+		fontSize: 12,
+		color: colors.text.secondary,
+		flex: 1,
 	},
 });
 

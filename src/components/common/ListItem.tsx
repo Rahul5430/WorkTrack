@@ -1,63 +1,71 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ViewProps } from 'react-native';
 
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
 
-interface ListItemProps {
-	title: string;
+interface ListItemProps extends ViewProps {
+	title: string | React.ReactNode;
 	description?: string;
+	leftComponent?: React.ReactNode;
 	rightComponent?: React.ReactNode;
 }
 
 const ListItem: React.FC<ListItemProps> = ({
 	title,
 	description,
+	leftComponent,
 	rightComponent,
+	style,
+	...props
 }) => {
 	return (
-		<View style={styles.listItem}>
-			<View style={styles.listItemContent}>
-				<Text style={styles.listItemTitle}>{title}</Text>
+		<View style={[styles.container, style]} {...props}>
+			{leftComponent && (
+				<View style={styles.leftComponent}>{leftComponent}</View>
+			)}
+			<View style={styles.content}>
+				{typeof title === 'string' ? (
+					<Text style={styles.title}>{title}</Text>
+				) : (
+					title
+				)}
 				{description && (
-					<Text style={styles.listItemDescription}>
-						{description}
-					</Text>
+					<Text style={styles.description}>{description}</Text>
 				)}
 			</View>
 			{rightComponent && (
-				<View style={styles.listItemActions}>{rightComponent}</View>
+				<View style={styles.rightComponent}>{rightComponent}</View>
 			)}
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
-	listItem: {
+	container: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		justifyContent: 'space-between',
-		paddingVertical: 12,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.background.secondary,
+		backgroundColor: colors.background.primary,
 	},
-	listItemContent: {
+	leftComponent: {
+		marginRight: 12,
+	},
+	content: {
 		flex: 1,
 	},
-	listItemTitle: {
+	title: {
 		fontFamily: fonts.PoppinsMedium,
 		fontSize: 16,
 		color: colors.text.primary,
 	},
-	listItemDescription: {
+	description: {
 		fontFamily: fonts.PoppinsRegular,
 		fontSize: 14,
 		color: colors.text.secondary,
 		marginTop: 2,
 	},
-	listItemActions: {
-		flexDirection: 'row',
-		alignItems: 'center',
+	rightComponent: {
+		marginLeft: 12,
 	},
 });
 
