@@ -43,7 +43,39 @@ export const useSharedWorkTracks = () => {
 				isCurrent: track.ownerId === user.id,
 			}));
 
-			setSharedWorkTracks(transformedTracks);
+			// Add mock data for testing
+			const mockTracks = [
+				{
+					id: 'mock1',
+					ownerName: 'John Doe',
+					ownerEmail: 'john.doe@example.com',
+					permission: 'write' as const,
+					isCurrent: false,
+				},
+				{
+					id: 'mock2',
+					ownerName: 'Jane Smith',
+					ownerEmail: 'jane.smith@example.com',
+					permission: 'read' as const,
+					isCurrent: false,
+				},
+				{
+					id: 'mock3',
+					ownerName: 'Mike Johnson',
+					ownerEmail: 'mike.johnson@example.com',
+					permission: 'write' as const,
+					isCurrent: false,
+				},
+				{
+					id: 'mock4',
+					ownerName: 'Sarah Wilson',
+					ownerEmail: 'sarah.wilson@example.com',
+					permission: 'read' as const,
+					isCurrent: false,
+				},
+			];
+
+			setSharedWorkTracks([...transformedTracks, ...mockTracks]);
 		} catch (error) {
 			console.error('Error loading shared worktracks:', error);
 		} finally {

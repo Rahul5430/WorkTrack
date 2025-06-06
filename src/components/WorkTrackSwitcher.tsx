@@ -4,6 +4,7 @@ import {
 	ActivityIndicator,
 	Image,
 	Pressable,
+	ScrollView,
 	StyleSheet,
 	Text,
 	View,
@@ -65,208 +66,272 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 				</Pressable>
 			</View>
 
-			<View style={styles.list}>
-				{/* My WorkTrack */}
-				{myWorkTrack && (
-					<>
-						<Pressable
-							style={({ pressed }) => [
-								styles.workTrackItem,
-								myWorkTrack.id === currentWorkTrackId &&
-									styles.selectedWorkTrackItem,
-								pressed && styles.workTrackItemPressed,
-							]}
-							onPress={() => onWorkTrackSelect(myWorkTrack.id)}
-						>
-							<View style={styles.workTrackInfo}>
-								<View style={styles.ownerInfo}>
-									{user?.photo ? (
-										<Image
-											source={{ uri: user.photo }}
-											style={styles.ownerPhoto}
-										/>
-									) : (
-										<View
-											style={styles.ownerPhotoPlaceholder}
-										>
-											<MaterialCommunityIcons
-												name='account'
-												size={24}
-												color='#666'
+			<ScrollView
+				showsVerticalScrollIndicator={false}
+				bounces={false}
+				contentContainerStyle={styles.scrollContent}
+			>
+				<View style={styles.list}>
+					{/* My WorkTrack */}
+					{myWorkTrack && (
+						<>
+							<Pressable
+								style={({ pressed }) => [
+									styles.workTrackItem,
+									myWorkTrack.id === currentWorkTrackId &&
+										styles.selectedWorkTrackItem,
+									pressed && styles.workTrackItemPressed,
+								]}
+								onPress={() =>
+									onWorkTrackSelect(myWorkTrack.id)
+								}
+							>
+								<View style={styles.workTrackInfo}>
+									<View style={styles.ownerInfo}>
+										{user?.photo ? (
+											<Image
+												source={{ uri: user.photo }}
+												style={styles.ownerPhoto}
 											/>
-										</View>
-									)}
-									<View style={styles.ownerDetails}>
-										<View style={styles.nameRow}>
-											<Text style={styles.ownerName}>
-												{user?.name ?? 'My WorkTrack'}
-											</Text>
+										) : (
 											<View
-												style={[
-													styles.permissionBadge,
-													styles.writeBadge,
-												]}
+												style={
+													styles.ownerPhotoPlaceholder
+												}
 											>
 												<Text
 													style={
-														styles.permissionBadgeText
+														styles.ownerPhotoPlaceholderText
 													}
 												>
-													Owner
+													{(user?.name ??
+														'M')[0].toUpperCase()}
 												</Text>
 											</View>
-											{myWorkTrack.id ===
-												defaultWorkTrackId && (
+										)}
+										<View style={styles.ownerDetails}>
+											<View style={styles.nameRow}>
+												<Text style={styles.ownerName}>
+													{user?.name ??
+														'My WorkTrack'}
+												</Text>
 												<View
-													style={styles.defaultBadge}
+													style={[
+														styles.permissionBadge,
+														styles.writeBadge,
+													]}
 												>
 													<Text
-														style={styles.badgeText}
+														style={
+															styles.permissionBadgeText
+														}
 													>
-														Default
+														Owner
 													</Text>
 												</View>
-											)}
-										</View>
-										<Text style={styles.ownerEmail}>
-											{user?.email}
-										</Text>
-									</View>
-								</View>
-								{myWorkTrack.id === currentWorkTrackId && (
-									<MaterialCommunityIcons
-										name='check-circle'
-										size={24}
-										color='#4CAF50'
-										style={styles.currentIndicator}
-									/>
-								)}
-							</View>
-						</Pressable>
-						<View style={styles.sectionDivider} />
-					</>
-				)}
-
-				{/* Shared WorkTracks */}
-				{otherWorkTracks.length > 0 && (
-					<>
-						<Text style={styles.sectionTitle}>
-							Shared WorkTracks
-						</Text>
-						{otherWorkTracks.map((workTrack, index) => (
-							<React.Fragment key={workTrack.id}>
-								<Pressable
-									style={({ pressed }) => [
-										styles.workTrackItem,
-										workTrack.id === currentWorkTrackId &&
-											styles.selectedWorkTrackItem,
-										pressed && styles.workTrackItemPressed,
-									]}
-									onPress={() =>
-										onWorkTrackSelect(workTrack.id)
-									}
-								>
-									<View style={styles.workTrackInfo}>
-										<View style={styles.ownerInfo}>
-											{workTrack.ownerPhoto ? (
-												<Image
-													source={{
-														uri: workTrack.ownerPhoto,
-													}}
-													style={styles.ownerPhoto}
-												/>
-											) : (
-												<View
-													style={
-														styles.ownerPhotoPlaceholder
-													}
-												>
-													<MaterialCommunityIcons
-														name='account'
-														size={24}
-														color='#666'
-													/>
-												</View>
-											)}
-											<View style={styles.ownerDetails}>
-												<View style={styles.nameRow}>
-													<Text
-														style={styles.ownerName}
-													>
-														{workTrack.ownerName}
-													</Text>
+												{myWorkTrack.id ===
+													defaultWorkTrackId && (
 													<View
-														style={[
-															styles.permissionBadge,
-															workTrack.permission ===
-															'write'
-																? styles.writeBadge
-																: styles.readBadge,
-														]}
+														style={
+															styles.defaultBadge
+														}
 													>
 														<Text
 															style={
-																styles.permissionBadgeText
+																styles.badgeText
 															}
 														>
-															{workTrack.permission ===
-															'write'
-																? 'Write'
-																: 'Read'}
+															Default
 														</Text>
 													</View>
-													{workTrack.id ===
-														defaultWorkTrackId && (
+												)}
+											</View>
+											<Text style={styles.ownerEmail}>
+												{user?.email}
+											</Text>
+										</View>
+									</View>
+									{myWorkTrack.id === currentWorkTrackId && (
+										<MaterialCommunityIcons
+											name='check-circle'
+											size={24}
+											color='#4CAF50'
+											style={styles.currentIndicator}
+										/>
+									)}
+								</View>
+							</Pressable>
+							<View style={styles.sectionDivider} />
+						</>
+					)}
+
+					{/* Shared WorkTracks */}
+					<View style={styles.sharedSection}>
+						<Text style={styles.sectionTitle}>
+							Shared WorkTracks
+						</Text>
+						{otherWorkTracks.length > 0 ? (
+							<View style={styles.sharedList}>
+								{otherWorkTracks.map((workTrack, index) => (
+									<React.Fragment key={workTrack.id}>
+										<Pressable
+											style={({ pressed }) => [
+												styles.workTrackItem,
+												workTrack.id ===
+													currentWorkTrackId &&
+													styles.selectedWorkTrackItem,
+												pressed &&
+													styles.workTrackItemPressed,
+											]}
+											onPress={() =>
+												onWorkTrackSelect(workTrack.id)
+											}
+										>
+											<View style={styles.workTrackInfo}>
+												<View style={styles.ownerInfo}>
+													{workTrack.ownerPhoto ? (
+														<Image
+															source={{
+																uri: workTrack.ownerPhoto,
+															}}
+															style={
+																styles.ownerPhoto
+															}
+														/>
+													) : (
 														<View
 															style={
-																styles.defaultBadge
+																styles.ownerPhotoPlaceholder
+															}
+														>
+															<MaterialCommunityIcons
+																name='account'
+																size={24}
+																color='#666'
+															/>
+														</View>
+													)}
+													<View
+														style={
+															styles.ownerDetails
+														}
+													>
+														<View
+															style={
+																styles.nameRow
 															}
 														>
 															<Text
 																style={
-																	styles.badgeText
+																	styles.ownerName
 																}
 															>
-																Default
+																{
+																	workTrack.ownerName
+																}
 															</Text>
+															<View
+																style={[
+																	styles.permissionBadge,
+																	workTrack.permission ===
+																	'write'
+																		? styles.writeBadge
+																		: styles.readBadge,
+																]}
+															>
+																<Text
+																	style={
+																		styles.permissionBadgeText
+																	}
+																>
+																	{workTrack.permission ===
+																	'write'
+																		? 'Write'
+																		: 'Read'}
+																</Text>
+															</View>
+															{workTrack.id ===
+																defaultWorkTrackId && (
+																<View
+																	style={
+																		styles.defaultBadge
+																	}
+																>
+																	<Text
+																		style={
+																			styles.badgeText
+																		}
+																	>
+																		Default
+																	</Text>
+																</View>
+															)}
 														</View>
-													)}
+														<Text
+															style={
+																styles.ownerEmail
+															}
+														>
+															{
+																workTrack.ownerEmail
+															}
+														</Text>
+													</View>
 												</View>
-												<Text style={styles.ownerEmail}>
-													{workTrack.ownerEmail}
-												</Text>
+												{workTrack.id ===
+													currentWorkTrackId && (
+													<MaterialCommunityIcons
+														name='check-circle'
+														size={24}
+														color='#4CAF50'
+														style={
+															styles.currentIndicator
+														}
+													/>
+												)}
 											</View>
-										</View>
-										{workTrack.id ===
-											currentWorkTrackId && (
-											<MaterialCommunityIcons
-												name='check-circle'
-												size={24}
-												color='#4CAF50'
-												style={styles.currentIndicator}
-											/>
+										</Pressable>
+										{index < otherWorkTracks.length - 1 && (
+											<View style={styles.divider} />
 										)}
-									</View>
-								</Pressable>
-								{index < otherWorkTracks.length - 1 && (
-									<View style={styles.divider} />
-								)}
-							</React.Fragment>
-						))}
-					</>
-				)}
-			</View>
+									</React.Fragment>
+								))}
+							</View>
+						) : (
+							<View style={styles.emptyStateContainer}>
+								<View style={styles.emptyState}>
+									<MaterialCommunityIcons
+										name='account-group-outline'
+										size={48}
+										color={colors.text.secondary}
+										style={styles.emptyStateIcon}
+									/>
+									<Text style={styles.emptyStateTitle}>
+										No Shared WorkTracks
+									</Text>
+									<Text style={styles.emptyStateText}>
+										Use the + button above to share your
+										WorkTrack with others
+									</Text>
+								</View>
+							</View>
+						)}
+					</View>
 
-			<View style={styles.noteContainer}>
-				<MaterialCommunityIcons
-					name='information-outline'
-					size={16}
-					color={colors.text.secondary}
-				/>
-				<Text style={styles.noteText}>
-					Set your default WorkTrack in Profile screen
-				</Text>
-			</View>
+					<View style={styles.noteContainer}>
+						<View style={styles.noteContent}>
+							<MaterialCommunityIcons
+								name='information-outline'
+								size={16}
+								color={colors.text.secondary}
+							/>
+							<Text style={styles.noteText}>
+								Set your default WorkTrack in Profile screen
+							</Text>
+						</View>
+					</View>
+				</View>
+			</ScrollView>
 		</BottomSheetView>
 	);
 };
@@ -302,8 +367,11 @@ const styles = StyleSheet.create({
 		shadowRadius: 3.84,
 		elevation: 5,
 	},
+	scrollContent: {
+		flexGrow: 1,
+	},
 	list: {
-		flex: 1,
+		paddingBottom: 16,
 	},
 	sectionTitle: {
 		fontFamily: fonts.PoppinsMedium,
@@ -360,15 +428,19 @@ const styles = StyleSheet.create({
 		width: 44,
 		height: 44,
 		borderRadius: 22,
-		backgroundColor: colors.ui.gray[200],
+		backgroundColor: colors.office + '15',
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 12,
 	},
+	ownerPhotoPlaceholderText: {
+		fontFamily: fonts.PoppinsMedium,
+		color: colors.office,
+		fontSize: 18,
+	},
 	nameRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		gap: 8,
 		marginBottom: 2,
 	},
 	ownerName: {
@@ -384,9 +456,8 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 		paddingVertical: 4,
 		borderRadius: 4,
-		position: 'relative',
-		justifyContent: 'center',
-		alignItems: 'center',
+		backgroundColor: colors.office + '15',
+		marginLeft: 8,
 	},
 	readBadge: {
 		backgroundColor: colors.ui.gray[200],
@@ -400,18 +471,16 @@ const styles = StyleSheet.create({
 		color: colors.text.secondary,
 	},
 	defaultBadge: {
-		backgroundColor: colors.wfh,
 		paddingHorizontal: 8,
 		paddingVertical: 4,
 		borderRadius: 4,
-		position: 'relative',
-		justifyContent: 'center',
-		alignItems: 'center',
+		backgroundColor: colors.office + '15',
+		marginLeft: 8,
 	},
 	badgeText: {
 		fontFamily: fonts.PoppinsMedium,
 		fontSize: 12,
-		color: colors.text.light,
+		color: colors.office,
 	},
 	currentIndicator: {
 		marginLeft: 8,
@@ -433,19 +502,50 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	noteContainer: {
+		alignItems: 'center',
+		marginTop: 12,
+	},
+	noteContent: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		gap: 8,
-		padding: 16,
 		backgroundColor: colors.background.secondary,
-		borderRadius: 8,
-		marginTop: 16,
+		borderRadius: 6,
+		padding: 12,
 	},
 	noteText: {
 		fontFamily: fonts.PoppinsRegular,
 		fontSize: 12,
 		color: colors.text.secondary,
-		flex: 1,
+	},
+	sharedSection: {
+		marginTop: 8,
+	},
+	sharedList: {
+		gap: 8,
+	},
+	emptyStateContainer: {
+		paddingVertical: 20,
+	},
+	emptyState: {
+		alignItems: 'center',
+		padding: 24,
+	},
+	emptyStateIcon: {
+		marginBottom: 16,
+		opacity: 0.5,
+	},
+	emptyStateTitle: {
+		fontFamily: fonts.PoppinsSemiBold,
+		fontSize: 18,
+		color: colors.text.primary,
+		marginBottom: 8,
+	},
+	emptyStateText: {
+		fontFamily: fonts.PoppinsRegular,
+		fontSize: 14,
+		color: colors.text.secondary,
+		textAlign: 'center',
 	},
 });
 

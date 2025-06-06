@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Alert,
 	Animated,
@@ -37,7 +37,7 @@ import { clearAppData } from '../../utils/appDataManager';
 
 const ProfileScreen: React.FC<
 	AuthenticatedStackScreenProps<'ProfileScreen'>
-> = ({ navigation }) => {
+> = ({ navigation, route }) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.user.user);
@@ -60,6 +60,11 @@ const ProfileScreen: React.FC<
 	const [pressAnim] = useState(new Animated.Value(1));
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
+	const scrollViewRef = useRef<ScrollView>(null);
+	const [highlightedWorkTrackId, setHighlightedWorkTrackId] = useState<
+		string | null
+	>(null);
+	const sharedWithMeSectionRef = useRef<View>(null);
 
 	useEffect(() => {
 		loadShares();
@@ -86,6 +91,32 @@ const ProfileScreen: React.FC<
 		const syncService = SyncService.getInstance();
 		setDefaultViewUserId(syncService.getDefaultViewUserId());
 	}, []);
+
+	useEffect(() => {
+		const params = route.params as
+			| { scrollToSection?: string; highlightWorkTrackId?: string }
+			| undefined;
+		if (
+			params?.scrollToSection === 'sharedWithMe' &&
+			sharedWithMeSectionRef.current
+		) {
+			// Wait for layout to complete
+			setTimeout(() => {
+				sharedWithMeSectionRef.current?.measureLayout(
+					scrollViewRef.current?.getInnerViewNode() as number,
+					(x, y) => {
+						scrollViewRef.current?.scrollTo({ y, animated: true });
+					},
+					() => {}
+				);
+			}, 100);
+		}
+		if (params?.highlightWorkTrackId) {
+			setHighlightedWorkTrackId(params.highlightWorkTrackId);
+			// Remove highlight after 2 seconds
+			setTimeout(() => setHighlightedWorkTrackId(null), 2000);
+		}
+	}, [route.params]);
 
 	const loadShares = async () => {
 		const syncService = SyncService.getInstance();
@@ -485,6 +516,7 @@ const ProfileScreen: React.FC<
 				onBackPress={() => navigation.goBack()}
 			/>
 			<ScrollView
+				ref={scrollViewRef}
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollViewContent}
 				refreshControl={
@@ -546,7 +578,10 @@ const ProfileScreen: React.FC<
 					</View>
 				</View>
 
-				<View style={styles.contentSection}>
+				<View
+					style={styles.contentSection}
+					ref={sharedWithMeSectionRef}
+				>
 					<Text
 						style={[styles.sectionTitle, { fontSize: RFValue(18) }]}
 					>
@@ -571,6 +606,9 @@ const ProfileScreen: React.FC<
 								onSetDefaultView={handleSetDefaultView}
 								isDefaultView={
 									share.ownerId === defaultViewUserId
+								}
+								isHighlighted={
+									share.ownerId === highlightedWorkTrackId
 								}
 							/>
 						))}

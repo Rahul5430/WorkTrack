@@ -3,7 +3,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type AuthenticatedStackParamList = {
 	HomeScreen: undefined;
-	ProfileScreen: undefined;
+	ProfileScreen: {
+		scrollToSection?: 'sharedWithMe';
+		highlightWorkTrackId?: string;
+	};
 };
 
 export type WelcomeStackParamList = {

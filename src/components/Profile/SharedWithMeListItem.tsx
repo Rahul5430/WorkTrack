@@ -10,12 +10,14 @@ interface SharedWithMeListItemProps {
 	share: SharePermission;
 	onSetDefaultView: (userId: string) => void;
 	isDefaultView: boolean;
+	isHighlighted?: boolean;
 }
 
 const SharedWithMeListItem: React.FC<SharedWithMeListItemProps> = ({
 	share,
 	onSetDefaultView,
 	isDefaultView,
+	isHighlighted,
 }) => {
 	return (
 		<ListItem
@@ -68,6 +70,7 @@ const SharedWithMeListItem: React.FC<SharedWithMeListItemProps> = ({
 					/>
 				</View>
 			}
+			style={isHighlighted ? styles.highlightedItem : undefined}
 		/>
 	);
 };
@@ -123,6 +126,10 @@ const styles = StyleSheet.create({
 		fontFamily: fonts.PoppinsMedium,
 		color: colors.text.secondary,
 		fontSize: 18,
+	},
+	highlightedItem: {
+		backgroundColor: colors.office + '15',
+		borderRadius: 8,
 	},
 });
 

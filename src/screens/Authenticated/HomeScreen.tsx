@@ -210,9 +210,11 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	};
 
 	const handleAddWorkTrack = () => {
-		// TODO: Implement add worktrack logic
-		console.log('Add worktrack clicked');
 		workTrackSwitcherRef.current?.close();
+		navigation.navigate('ProfileScreen', {
+			scrollToSection: 'sharedWithMe',
+			highlightWorkTrackId: currentWorkTrack?.id,
+		});
 	};
 
 	const onRefresh = useCallback(async () => {
@@ -353,7 +355,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 						</View>
 					</Pressable>
 					<Pressable
-						onPress={() => navigation.navigate('ProfileScreen')}
+						onPress={() => navigation.navigate('ProfileScreen', {})}
 						style={({ pressed }) => [
 							styles.profileButton,
 							pressed && { opacity: 0.8 },
@@ -399,7 +401,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 
 			<CommonBottomSheet
 				ref={workTrackSwitcherRef}
-				enableDynamicSizing
+				snapPoints={['50%']}
 				onChange={handleWorkTrackSwitcherChanges}
 				onBackdropPress={handleCloseAnimation}
 				onClose={handleCloseAnimation}
