@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants/trackerTypes';
 import FirebaseService from '../services/firebase';
 import { setLoading } from '../store/reducers/workTrackSlice';
 import { RootState } from '../store/store';
@@ -12,6 +13,7 @@ export type SharedWorkTrack = {
 	ownerPhoto?: string;
 	permission: 'read' | 'write';
 	isCurrent: boolean;
+	trackerType: TrackerType;
 };
 
 export const useSharedWorkTracks = () => {
@@ -41,6 +43,7 @@ export const useSharedWorkTracks = () => {
 				ownerPhoto: track.ownerPhoto,
 				permission: track.permission,
 				isCurrent: track.ownerId === user.id,
+				trackerType: track.trackerType ?? DEFAULT_TRACKER_TYPE,
 			}));
 
 			// Add mock data for testing
@@ -51,6 +54,7 @@ export const useSharedWorkTracks = () => {
 					ownerEmail: 'john.doe@example.com',
 					permission: 'write' as const,
 					isCurrent: false,
+					trackerType: DEFAULT_TRACKER_TYPE,
 				},
 				{
 					id: 'mock2',
@@ -58,6 +62,7 @@ export const useSharedWorkTracks = () => {
 					ownerEmail: 'jane.smith@example.com',
 					permission: 'read' as const,
 					isCurrent: false,
+					trackerType: DEFAULT_TRACKER_TYPE,
 				},
 				{
 					id: 'mock3',
@@ -65,6 +70,7 @@ export const useSharedWorkTracks = () => {
 					ownerEmail: 'mike.johnson@example.com',
 					permission: 'write' as const,
 					isCurrent: false,
+					trackerType: DEFAULT_TRACKER_TYPE,
 				},
 				{
 					id: 'mock4',
@@ -72,6 +78,7 @@ export const useSharedWorkTracks = () => {
 					ownerEmail: 'sarah.wilson@example.com',
 					permission: 'read' as const,
 					isCurrent: false,
+					trackerType: DEFAULT_TRACKER_TYPE,
 				},
 			];
 

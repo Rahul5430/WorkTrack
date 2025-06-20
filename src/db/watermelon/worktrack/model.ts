@@ -1,18 +1,31 @@
 import { Model } from '@nozbe/watermelondb';
-import { date, field, readonly } from '@nozbe/watermelondb/decorators';
+import {
+	date,
+	field,
+	readonly,
+	relation,
+} from '@nozbe/watermelondb/decorators';
 
 import { MarkedDayStatus } from '../../../types/calendar';
 
 export default class WorkTrack extends Model {
 	static readonly table = 'work_tracks';
 
+	static readonly associations = {
+		trackers: { type: 'belongs_to', key: 'tracker_id' },
+	} as const;
+
 	@field('date') date!: string;
 	@field('status') status!: MarkedDayStatus;
 	@field('is_advisory') isAdvisory!: boolean;
-	@readonly @date('created_at') createdAt!: Date;
-	@field('synced') synced!: boolean;
+	@field('tracker_id') trackerId!: string;
+	@field('needs_sync') needsSync!: boolean;
 	@field('sync_error') syncError?: string;
+	@field('retry_count') retryCount?: number;
+	@readonly @date('created_at') createdAt!: Date;
 	@field('last_modified') lastModified!: number;
+
+	@relation('trackers', 'tracker_id') tracker: any;
 
 	// Validation method
 	validate() {

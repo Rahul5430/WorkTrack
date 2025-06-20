@@ -1,17 +1,15 @@
-import { Q } from '@nozbe/watermelondb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { getAuth } from '@react-native-firebase/auth';
 
-import { database } from '../db/watermelon';
-import WorkTrack from '../db/watermelon/worktrack/model';
 import FirebaseService from './firebase';
 import WatermelonService from './watermelon';
 
 export class SyncError extends Error {
 	constructor(
 		message: string,
-		public readonly code: string
+		public readonly code: string,
+		public readonly isRetryable: boolean = true
 	) {
 		super(message);
 		this.name = 'SyncError';
@@ -23,24 +21,7 @@ export interface SyncStatus {
 	isOnline: boolean;
 	lastSyncTime?: number;
 	error?: string;
-	pendingSyncs: number;
-	lastBatchSize?: number;
-}
-
-export interface SyncBatch {
-	records: WorkTrack[];
-	timestamp: number;
-	status: 'pending' | 'completed' | 'failed';
-	error?: string;
-}
-
-export interface SharePermission {
-	ownerId: string;
-	sharedWithId: string;
-	sharedWithEmail: string;
-	permission: 'read' | 'write';
-	ownerName?: string;
-	ownerPhoto?: string;
+	errorType?: 'network' | 'auth' | 'server' | 'unknown';
 }
 
 export default class SyncService {
@@ -49,41 +30,36 @@ export default class SyncService {
 	private syncInterval: NodeJS.Timeout | null = null;
 	private networkUnsubscribe: (() => void) | null = null;
 	private isOnline: boolean = true;
-	private lastSyncTime?: number;
-	private readonly MAX_RETRIES = 3;
-	private retryCount: number = 0;
-	private readonly BATCH_SIZE = 50;
-	private readonly syncBatches: SyncBatch[] = [];
-	private defaultViewUserId: string | null = null;
+	private lastSyncTime: number | null = null;
+	private readonly LAST_SYNC_KEY = '@last_sync_time';
 	private readonly firebaseService: FirebaseService;
 	private readonly watermelonService: WatermelonService;
-	private readonly DEFAULT_VIEW_KEY = '@default_view_user_id';
 
 	private constructor() {
 		this.firebaseService = FirebaseService.getInstance();
 		this.watermelonService = WatermelonService.getInstance();
 		this.setupNetworkMonitoring();
-		this.loadDefaultViewUserId();
 	}
 
-	private async loadDefaultViewUserId() {
-		try {
-			const storedUserId = await AsyncStorage.getItem(
-				this.DEFAULT_VIEW_KEY
-			);
-			this.defaultViewUserId = storedUserId;
-		} catch (error) {
-			console.error('Error loading default view user ID:', error);
-		}
+	private async loadLastSyncTime() {
+		const time = await AsyncStorage.getItem(this.LAST_SYNC_KEY);
+		this.lastSyncTime = time ? parseInt(time, 10) : null;
+	}
+
+	private async setLastSyncTime(time: number) {
+		this.lastSyncTime = time;
+		await AsyncStorage.setItem(this.LAST_SYNC_KEY, time.toString());
 	}
 
 	private setupNetworkMonitoring() {
 		this.networkUnsubscribe = NetInfo.addEventListener(
 			(state: NetInfoState) => {
-				this.isOnline = state.isConnected ?? false;
-				if (this.isOnline) {
-					this.syncToFirebase();
-					this.syncFromFirebase();
+				const isOnline = state.isConnected ?? false;
+				if (this.isOnline !== isOnline) {
+					this.isOnline = isOnline;
+					if (isOnline) {
+						this.triggerSync();
+					}
 				}
 			}
 		);
@@ -92,19 +68,159 @@ export default class SyncService {
 	static getInstance(): SyncService {
 		if (!SyncService.instance) {
 			SyncService.instance = new SyncService();
+			SyncService.instance
+				.loadLastSyncTime()
+				.catch((err) =>
+					console.error('Failed to load last sync time on init', err)
+				);
 		}
 		return SyncService.instance;
 	}
 
-	async startPeriodicSync(intervalMs: number = 5 * 60 * 1000) {
-		if (this.syncInterval) {
-			clearInterval(this.syncInterval);
+	async triggerSync() {
+		if (this.isSyncing || !this.isOnline) return;
+
+		console.log('Sync triggered...');
+		this.isSyncing = true;
+		try {
+			await this.syncToFirebase();
+			await this.syncFromFirebase();
+			await this.setLastSyncTime(Date.now());
+			console.log('Sync completed successfully.');
+		} catch (error) {
+			console.error('Sync failed:', error);
+			// Categorize the error for better user feedback
+			const errorType = this.categorizeError(error);
+			console.error(`Sync error type: ${errorType}`);
+		} finally {
+			this.isSyncing = false;
 		}
-		this.syncInterval = setInterval(() => {
-			if (this.isOnline) {
-				this.syncToFirebase();
+	}
+
+	// Manual sync trigger for user interaction
+	async manualSync(): Promise<boolean> {
+		if (this.isSyncing) {
+			console.log('Sync already in progress...');
+			return false;
+		}
+
+		if (!this.isOnline) {
+			console.log('No network connection available');
+			return false;
+		}
+
+		try {
+			await this.triggerSync();
+			return true;
+		} catch (error) {
+			console.error('Manual sync failed:', error);
+			return false;
+		}
+	}
+
+	private categorizeError(
+		error: any
+	): 'network' | 'auth' | 'server' | 'unknown' {
+		if (!error) return 'unknown';
+
+		const errorMessage = error.message?.toLowerCase() ?? '';
+		const errorCode = error.code?.toLowerCase() ?? '';
+
+		// Network errors
+		if (
+			errorMessage.includes('network') ||
+			errorMessage.includes('connection') ||
+			errorMessage.includes('timeout') ||
+			errorCode.includes('network') ||
+			errorCode.includes('unavailable')
+		) {
+			return 'network';
+		}
+
+		// Authentication errors
+		if (
+			errorMessage.includes('auth') ||
+			errorMessage.includes('unauthorized') ||
+			errorMessage.includes('permission') ||
+			errorCode.includes('permission') ||
+			errorCode.includes('unauthenticated')
+		) {
+			return 'auth';
+		}
+
+		// Server errors
+		if (
+			errorMessage.includes('server') ||
+			errorMessage.includes('internal') ||
+			errorCode.includes('internal') ||
+			errorCode.includes('unavailable')
+		) {
+			return 'server';
+		}
+
+		return 'unknown';
+	}
+
+	async syncToFirebase() {
+		const recordsToSync = await this.watermelonService.getUnsyncedRecords();
+		if (recordsToSync.length > 0) {
+			console.log(
+				`Syncing ${recordsToSync.length} records to Firebase...`
+			);
+			try {
+				await this.firebaseService.syncToFirebase(recordsToSync);
+				// After successful sync, mark records as synced
+				await this.watermelonService.markRecordsAsSynced(recordsToSync);
+			} catch (error) {
+				console.error('Sync to Firebase failed:', error);
+				// Mark records with sync error for retry
+				await this.watermelonService.markRecordsWithSyncError(
+					recordsToSync,
+					error instanceof Error ? error.message : 'Sync failed'
+				);
+				throw error;
 			}
-		}, intervalMs);
+		} else {
+			console.log('No records to sync to Firebase.');
+		}
+	}
+
+	async syncFromFirebase() {
+		const userId = getAuth().currentUser?.uid;
+		if (!userId) {
+			throw new Error('User not authenticated');
+		}
+
+		console.log('Syncing from Firebase...');
+		const { trackers, entries } =
+			await this.firebaseService.syncFromFirebase(
+				userId,
+				this.lastSyncTime
+			);
+
+		// Sync trackers
+		if (trackers.length > 0) {
+			console.log(`Received ${trackers.length} trackers from Firebase.`);
+			await this.watermelonService.createOrUpdateTrackers(trackers);
+		}
+
+		// Sync entries
+		for (const entryGroup of entries) {
+			if (entryGroup.data.length > 0) {
+				console.log(
+					`Received ${entryGroup.data.length} entries for tracker ${entryGroup.trackerId}.`
+				);
+				await this.watermelonService.createOrUpdateEntries(
+					entryGroup.trackerId,
+					entryGroup.data
+				);
+			}
+		}
+	}
+
+	startPeriodicSync(intervalMs: number = 5 * 60 * 1000) {
+		if (this.syncInterval) clearInterval(this.syncInterval);
+		this.syncInterval = setInterval(() => this.triggerSync(), intervalMs);
 	}
 
 	stopPeriodicSync() {
@@ -118,200 +234,16 @@ export default class SyncService {
 		}
 	}
 
-	async shareWorkTrack(
-		sharedWithId: string,
-		permission: 'read' | 'write'
-	): Promise<void> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
-
-		await this.firebaseService.shareWorkTrack(sharedWithId, permission);
-	}
-
-	async removeShare(sharedWithId: string): Promise<void> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
-
-		await this.firebaseService.removeShare(sharedWithId);
-		await this.watermelonService.removeShare(userId, sharedWithId);
-	}
-
-	async getSharedWithMe(): Promise<SharePermission[]> {
-		return this.firebaseService.getSharedWithMe();
-	}
-
-	async getMyShares(): Promise<SharePermission[]> {
-		return this.firebaseService.getMyShares();
-	}
-
-	setDefaultViewUserId(userId: string | null) {
-		this.defaultViewUserId = userId;
-		AsyncStorage.setItem(this.DEFAULT_VIEW_KEY, userId ?? '').catch(
-			(error) => {
-				console.error('Error saving default view user ID:', error);
-			}
-		);
-	}
-
-	getDefaultViewUserId(): string | null {
-		return this.defaultViewUserId;
-	}
-
-	async syncFromFirebase() {
-		if (!this.isOnline) return;
-
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new Error('User not authenticated');
-		}
-
-		const viewUserId = this.defaultViewUserId ?? userId;
-		const records = await this.firebaseService.syncFromFirebase(viewUserId);
-
-		for (const data of records) {
-			await this.watermelonService.createOrUpdateRecord({
-				date: data.date,
-				status: data.status,
-				lastModified: data.lastModified,
-				isAdvisory: data.isAdvisory ?? false,
-			});
-		}
-	}
-
-	async syncToFirebase() {
-		if (this.isSyncing || !this.isOnline) return;
-
-		try {
-			this.isSyncing = true;
-			const userId = getAuth().currentUser?.uid;
-			if (!userId) {
-				throw new SyncError('User not authenticated', 'AUTH_ERROR');
-			}
-
-			const viewUserId = this.defaultViewUserId ?? userId;
-			if (viewUserId !== userId) {
-				const sharedWithMe = await this.getSharedWithMe();
-				const share = sharedWithMe.find(
-					(s) => s.ownerId === viewUserId
-				);
-				if (!share || share.permission !== 'write') {
-					throw new SyncError(
-						'No write permission',
-						'PERMISSION_DENIED'
-					);
-				}
-			}
-
-			const unsynced = await this.watermelonService.getUnsyncedRecords();
-
-			for (let i = 0; i < unsynced.length; i += this.BATCH_SIZE) {
-				const batch = unsynced.slice(i, i + this.BATCH_SIZE);
-				try {
-					await this.firebaseService.syncToFirebase(
-						batch,
-						viewUserId
-					);
-					for (const record of batch) {
-						await this.watermelonService.updateRecordSyncStatus(
-							record,
-							true
-						);
-					}
-					this.retryCount = 0;
-				} catch (error) {
-					if (this.retryCount < this.MAX_RETRIES) {
-						this.retryCount++;
-						await new Promise((resolve) =>
-							setTimeout(resolve, 1000 * this.retryCount)
-						);
-						await this.firebaseService.syncToFirebase(
-							batch,
-							viewUserId
-						);
-					} else {
-						throw error;
-					}
-				}
-			}
-
-			this.lastSyncTime = Date.now();
-		} finally {
-			this.isSyncing = false;
-		}
-	}
-
 	async getSyncStatus(): Promise<SyncStatus> {
-		const unsynced = await this.watermelonService.getUnsyncedRecords();
-		const lastBatch = this.syncBatches[this.syncBatches.length - 1];
-
 		return {
 			isSyncing: this.isSyncing,
 			isOnline: this.isOnline,
-			lastSyncTime: this.lastSyncTime,
-			pendingSyncs: unsynced.length,
-			lastBatchSize: lastBatch?.records.length,
-			error: lastBatch?.error,
+			lastSyncTime: this.lastSyncTime ?? undefined,
+			error: undefined,
 		};
-	}
-
-	async queueSync(date: string) {
-		try {
-			const record = await database.collections
-				.get<WorkTrack>('work_tracks')
-				.query(Q.where('date', date))
-				.fetch();
-
-			if (record.length > 0) {
-				await this.watermelonService.updateRecordSyncStatus(
-					record[0],
-					false
-				);
-
-				if (this.isOnline) {
-					this.syncToFirebase();
-				}
-			}
-		} catch (error) {
-			const record = await database.collections
-				.get<WorkTrack>('work_tracks')
-				.query(Q.where('date', date))
-				.fetch();
-
-			if (record.length > 0) {
-				await this.watermelonService.updateRecordSyncStatus(
-					record[0],
-					false,
-					error instanceof Error ? error.message : 'Queue sync error'
-				);
-			}
-		}
 	}
 
 	isNetworkAvailable(): boolean {
 		return this.isOnline;
-	}
-
-	async updateSharePermission(
-		sharedWithId: string,
-		newPermission: 'read' | 'write'
-	): Promise<void> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
-
-		await this.firebaseService.updateSharePermission(
-			sharedWithId,
-			newPermission
-		);
-		await this.watermelonService.updateSharePermission(
-			userId,
-			sharedWithId,
-			newPermission
-		);
 	}
 }

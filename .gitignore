@@ -1,5 +1,6 @@
 .env
 .eslintcache
+.cursor
 
 # OSX
 #

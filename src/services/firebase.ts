@@ -2,6 +2,7 @@ import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import {
 	collection,
+	collectionGroup,
 	deleteDoc,
 	doc,
 	getDoc,
@@ -9,14 +10,40 @@ import {
 	getFirestore,
 	query,
 	setDoc,
+	Timestamp,
 	where,
 	writeBatch,
 } from '@react-native-firebase/firestore';
 
 import { FIREBASE_COLLECTIONS } from '../constants/firebase';
-import { addMarkedDay } from '../db/watermelon/worktrack/load';
+import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants/trackerTypes';
+import { Tracker, WorkTrack } from '../db/watermelon';
 import { MarkedDayStatus } from '../types/calendar';
-import { SyncError } from './sync';
+
+export interface TrackerData {
+	id: string;
+	name: string;
+	color: string;
+	ownerId: string;
+	createdAt: Timestamp;
+	isDefault: boolean;
+	trackerType: TrackerType;
+}
+
+export interface TrackerEntryData {
+	date: string;
+	status: MarkedDayStatus;
+	isAdvisory: boolean;
+	createdAt: Timestamp;
+	lastModified: Timestamp;
+}
+
+export interface TrackerShareData {
+	sharedWithId: string;
+	permission: 'read' | 'write';
+	sharedWithEmail: string;
+	createdAt: Timestamp;
+}
 
 export interface SharePermission {
 	ownerId: string;
@@ -25,6 +52,7 @@ export interface SharePermission {
 	permission: 'read' | 'write';
 	ownerName?: string;
 	ownerPhoto?: string;
+	trackerType?: TrackerType;
 }
 
 export type SharedWorkTrackData = {
@@ -33,12 +61,11 @@ export type SharedWorkTrackData = {
 	ownerEmail: string;
 	ownerPhoto?: string;
 	permission: 'read' | 'write';
+	trackerType?: TrackerType;
 };
 
 export default class FirebaseService {
 	private static instance: FirebaseService;
-	private readonly COLLECTION_NAME = FIREBASE_COLLECTIONS.WORK_TRACKS;
-	private readonly SHARING_COLLECTION = FIREBASE_COLLECTIONS.SHARING;
 
 	private constructor() {}
 
@@ -49,297 +76,234 @@ export default class FirebaseService {
 		return FirebaseService.instance;
 	}
 
-	async shareWorkTrack(
-		sharedWithId: string,
-		permission: 'read' | 'write'
-	): Promise<void> {
-		const userId = getAuth(getApp()).currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
-
-		const db = getFirestore(getApp());
-		let sharedWithUserId = sharedWithId;
-		let sharedWithEmail = sharedWithId.toLowerCase();
-
-		try {
-			const userQuery = query(
-				collection(db, 'users'),
-				where('email', '==', sharedWithId.toLowerCase())
-			);
-			const userSnapshot = await getDocs(userQuery);
-
-			if (!userSnapshot.empty) {
-				const userDoc = userSnapshot.docs[0];
-				sharedWithUserId = userDoc.id;
-				sharedWithEmail = userDoc.data().email;
-			}
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				'code' in error &&
-				error.code === 'permission-denied'
-			) {
-				throw new SyncError(
-					'Permission denied. Please check your Firestore rules.',
-					'PERMISSION_DENIED'
-				);
-			}
-			if (
-				error instanceof Error &&
-				'code' in error &&
-				error.code !== 'not-found'
-			) {
-				throw error;
-			}
-		}
-
-		const shareData = {
-			ownerId: userId,
-			sharedWithId: sharedWithUserId,
-			sharedWithEmail: sharedWithEmail,
-			permission,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		};
-
-		try {
-			// Create a custom document ID using owner and shared user IDs
-			const docId = `${userId}_${sharedWithUserId}`;
-			const shareRef = doc(db, this.SHARING_COLLECTION, docId);
-			await setDoc(shareRef, shareData);
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				'code' in error &&
-				error.code === 'permission-denied'
-			) {
-				throw new SyncError(
-					'Permission denied. Please check your Firestore rules.',
-					'PERMISSION_DENIED'
-				);
-			}
-			throw error;
-		}
+	private getTrackersCollection() {
+		return collection(
+			getFirestore(getApp()),
+			FIREBASE_COLLECTIONS.TRACKERS
+		);
 	}
 
-	async removeShare(sharedWithId: string): Promise<void> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
+	private getEntriesCollection(trackerId: string) {
+		return collection(
+			this.getTrackersCollection(),
+			trackerId,
+			FIREBASE_COLLECTIONS.ENTRIES
+		);
+	}
 
+	private getSharesCollection(trackerId: string) {
+		return collection(
+			this.getTrackersCollection(),
+			trackerId,
+			FIREBASE_COLLECTIONS.SHARES
+		);
+	}
+
+	// New Tracker Methods
+	async createTracker(tracker: Tracker): Promise<void> {
+		const trackerRef = doc(this.getTrackersCollection(), tracker.id);
+		await setDoc(trackerRef, {
+			name: tracker.name,
+			color: tracker.color,
+			ownerId: tracker.ownerId,
+			createdAt: Timestamp.fromDate(tracker.createdAt),
+			isDefault: tracker.isDefault,
+			trackerType: tracker.trackerType,
+		});
+	}
+
+	async updateTracker(tracker: Tracker): Promise<void> {
+		const trackerRef = doc(this.getTrackersCollection(), tracker.id);
+		await setDoc(
+			trackerRef,
+			{
+				name: tracker.name,
+				color: tracker.color,
+				isDefault: tracker.isDefault,
+			},
+			{ merge: true }
+		);
+	}
+
+	// Entry Sync Methods
+	async syncToFirebase(records: WorkTrack[]): Promise<void> {
+		if (records.length === 0) return;
+
+		const BATCH_SIZE = 500; // Firestore batch limit
 		const db = getFirestore();
-		const q = query(
-			collection(db, this.SHARING_COLLECTION),
-			where('ownerId', '==', userId),
-			where('sharedWithId', '==', sharedWithId)
-		);
-		const snapshot = await getDocs(q);
 
-		for (const doc of snapshot.docs) {
-			await deleteDoc(doc.ref);
-		}
-	}
+		for (let i = 0; i < records.length; i += BATCH_SIZE) {
+			const batch = writeBatch(db);
+			const batchRecords = records.slice(i, i + BATCH_SIZE);
 
-	async getSharedWithMe(): Promise<SharePermission[]> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
+			for (const record of batchRecords) {
+				const { trackerId, date } = record;
+				if (!trackerId) continue; // Should not happen
 
-		const db = getFirestore(getApp());
-		const q = query(
-			collection(db, this.SHARING_COLLECTION),
-			where('sharedWithId', '==', userId)
-		);
-		const snapshot = await getDocs(q);
-
-		const shares = await Promise.all(
-			snapshot.docs.map(async (docSnapshot) => {
-				const shareData = docSnapshot.data() as SharePermission;
-				const ownerDoc = await getDoc(
-					doc(db, 'users', shareData.ownerId)
+				const entryRef = doc(
+					this.getEntriesCollection(trackerId),
+					date
 				);
-				const ownerData = ownerDoc.data();
-				return {
-					...shareData,
-					sharedWithEmail: ownerData?.email ?? shareData.ownerId,
-					ownerName: ownerData?.name,
-					ownerPhoto: ownerData?.photo,
-				};
-			})
-		);
-
-		return shares;
-	}
-
-	async getMyShares(): Promise<SharePermission[]> {
-		try {
-			const user = getAuth().currentUser;
-			if (!user) throw new Error('No user logged in');
-
-			const db = getFirestore(getApp());
-			const sharesRef = collection(db, this.SHARING_COLLECTION);
-			const q = query(sharesRef, where('ownerId', '==', user.uid));
-			const querySnapshot = await getDocs(q);
-			const shares: SharePermission[] = [];
-
-			for (const shareDoc of querySnapshot.docs) {
-				const shareData = shareDoc.data();
-				// Get user details from users collection
-				const userDocRef = doc(db, 'users', shareData.sharedWithId);
-				const userDoc = await getDoc(userDocRef);
-				const userData = userDoc.data() as
-					| { name?: string; photo?: string }
-					| undefined;
-
-				shares.push({
-					ownerId: shareData.ownerId,
-					sharedWithId: shareData.sharedWithId,
-					sharedWithEmail: shareData.sharedWithEmail,
-					permission: shareData.permission,
-					ownerName: userData?.name,
-					ownerPhoto: userData?.photo,
-				});
-			}
-
-			return shares;
-		} catch (error) {
-			console.error('Error getting my shares:', error);
-			throw error;
-		}
-	}
-
-	async updateSharePermission(
-		sharedWithId: string,
-		newPermission: 'read' | 'write'
-	): Promise<void> {
-		const userId = getAuth().currentUser?.uid;
-		if (!userId) {
-			throw new SyncError('User not authenticated', 'AUTH_ERROR');
-		}
-
-		const db = getFirestore();
-		const q = query(
-			collection(db, this.SHARING_COLLECTION),
-			where('ownerId', '==', userId),
-			where('sharedWithId', '==', sharedWithId)
-		);
-		const snapshot = await getDocs(q);
-
-		for (const doc of snapshot.docs) {
-			await doc.ref.update({
-				permission: newPermission,
-				updatedAt: new Date(),
-			});
-		}
-	}
-
-	async syncToFirebase(records: any[], userId: string): Promise<void> {
-		const db = getFirestore();
-		const batchRef = writeBatch(db);
-
-		for (const record of records) {
-			const docId = `${record.date}_${userId}`;
-			const docRef = doc(db, this.COLLECTION_NAME, docId);
-
-			batchRef.set(
-				docRef,
-				{
+				batch.set(entryRef, {
 					date: record.date,
 					status: record.status,
-					userId,
-					lastModified: record.lastModified,
-					createdAt: record.createdAt,
 					isAdvisory: record.isAdvisory,
-				},
-				{ merge: true }
-			);
-		}
-
-		await batchRef.commit();
-	}
-
-	async syncFromFirebase(userId: string): Promise<any[]> {
-		const db = getFirestore();
-		const q = query(
-			collection(db, this.COLLECTION_NAME),
-			where('userId', '==', userId)
-		);
-
-		const snapshot = await getDocs(q);
-		return snapshot.docs.map((doc) => doc.data());
-	}
-
-	async syncWorkTrackData(): Promise<void> {
-		try {
-			const userId = getAuth(getApp()).currentUser?.uid;
-			if (!userId) {
-				throw new SyncError('User not authenticated', 'AUTH_ERROR');
-			}
-
-			// Get data from Firestore
-			const db = getFirestore(getApp());
-			const q = query(
-				collection(db, FIREBASE_COLLECTIONS.WORK_TRACKS),
-				where('userId', '==', userId)
-			);
-			const querySnapshot = await getDocs(q);
-			const firestoreData = querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			})) as Array<{
-				id: string;
-				date: string;
-				status: MarkedDayStatus;
-				isAdvisory: boolean;
-			}>;
-
-			// Update local database
-			for (const data of firestoreData) {
-				await addMarkedDay({
-					date: data.date,
-					status: data.status,
-					isAdvisory: data.isAdvisory ?? false,
+					lastModified: Timestamp.fromMillis(record.lastModified),
+					createdAt: Timestamp.fromDate(record.createdAt),
 				});
 			}
-		} catch (error) {
-			console.error('Error syncing work track data:', error);
-			if (
-				error instanceof Error &&
-				'code' in error &&
-				error.code === 'permission-denied'
-			) {
-				throw new SyncError(
-					'Permission denied. Please check your Firestore rules.',
-					'PERMISSION_DENIED'
-				);
-			}
-			throw error;
+
+			await batch.commit();
 		}
+	}
+
+	// New Sharing Methods
+	async shareTracker(
+		trackerId: string,
+		shareData: Omit<TrackerShareData, 'createdAt'>
+	): Promise<void> {
+		const shareRef = doc(
+			this.getSharesCollection(trackerId),
+			shareData.sharedWithId
+		);
+		await setDoc(shareRef, {
+			...shareData,
+			createdAt: Timestamp.now(),
+		});
+	}
+
+	async unshareTracker(
+		trackerId: string,
+		sharedWithId: string
+	): Promise<void> {
+		const shareRef = doc(this.getSharesCollection(trackerId), sharedWithId);
+		await deleteDoc(shareRef);
+	}
+
+	async getTrackersSharedWithUser(
+		userId: string
+	): Promise<{ tracker: TrackerData; share: TrackerShareData }[]> {
+		const db = getFirestore(getApp());
+		const sharesQuery = query(
+			collectionGroup(db, FIREBASE_COLLECTIONS.SHARES),
+			where('sharedWithId', '==', userId)
+		);
+
+		const sharesSnapshot = await getDocs(sharesQuery);
+		if (sharesSnapshot.empty) {
+			return [];
+		}
+
+		const trackerPromises = sharesSnapshot.docs.map(async (shareDoc) => {
+			// The parent of a share doc is the tracker doc
+			const trackerRef = shareDoc.ref.parent.parent;
+			if (!trackerRef) return null;
+
+			const trackerSnapshot = await getDoc(trackerRef);
+			if (!trackerSnapshot.exists()) return null;
+
+			return {
+				tracker: {
+					id: trackerSnapshot.id,
+					...trackerSnapshot.data(),
+				} as TrackerData,
+				share: shareDoc.data() as TrackerShareData,
+			};
+		});
+
+		const results = (await Promise.all(trackerPromises)).filter(
+			(r): r is { tracker: TrackerData; share: TrackerShareData } =>
+				r !== null
+		);
+
+		return results;
+	}
+
+	async syncFromFirebase(
+		userId: string,
+		lastSyncedAt: number | null
+	): Promise<{
+		trackers: TrackerData[];
+		entries: { trackerId: string; data: TrackerEntryData[] }[];
+	}> {
+		// 1. Fetch trackers owned by the user
+		const ownedTrackersQuery = query(
+			this.getTrackersCollection(),
+			where('ownerId', '==', userId)
+		);
+		const ownedTrackersSnapshot = await getDocs(ownedTrackersQuery);
+		const ownedTrackers = ownedTrackersSnapshot.docs.map(
+			(doc) => ({ id: doc.id, ...doc.data() }) as TrackerData
+		);
+
+		// 2. Fetch trackers shared with the user
+		const sharedTrackers = await this.getTrackersSharedWithUser(userId);
+
+		// 3. Combine and deduplicate
+		const allTrackersMap = new Map<string, TrackerData>();
+		[...ownedTrackers, ...sharedTrackers.map((s) => s.tracker)].forEach(
+			(t) => allTrackersMap.set(t.id, t)
+		);
+		const allTrackers = Array.from(allTrackersMap.values());
+
+		// 4. Fetch entries for each tracker
+		const entriesPromises = allTrackers.map(async (tracker) => {
+			const entriesQuery = lastSyncedAt
+				? query(
+						this.getEntriesCollection(tracker.id),
+						where(
+							'lastModified',
+							'>',
+							Timestamp.fromMillis(lastSyncedAt)
+						)
+					)
+				: this.getEntriesCollection(tracker.id);
+
+			const entriesSnapshot = await getDocs(entriesQuery);
+			const entriesData = entriesSnapshot.docs.map(
+				(doc) => doc.data() as TrackerEntryData
+			);
+			return { trackerId: tracker.id, data: entriesData };
+		});
+
+		const entries = await Promise.all(entriesPromises);
+
+		return { trackers: allTrackers, entries };
 	}
 
 	async getSharedWorkTracks(): Promise<SharedWorkTrackData[]> {
 		const user = getAuth().currentUser;
 		if (!user) throw new Error('No user logged in');
 
-		// Get shared worktracks
-		const sharedTracks = await this.getSharedWithMe();
-		const sharedWorkTracks: SharedWorkTrackData[] = sharedTracks.map(
-			(track) => ({
-				ownerId: track.ownerId,
-				ownerName: track.ownerName,
-				ownerEmail: track.sharedWithEmail,
-				ownerPhoto: track.ownerPhoto,
-				permission: track.permission,
-			})
-		);
+		const db = getFirestore(getApp());
+		const sharedTracks = await this.getTrackersSharedWithUser(user.uid);
+		const sharedWorkTracks: SharedWorkTrackData[] = [];
+
+		for (const { tracker, share } of sharedTracks) {
+			let ownerEmail = share.sharedWithEmail;
+			let ownerPhoto = undefined;
+			try {
+				const ownerDoc = await getDoc(
+					doc(db, 'users', tracker.ownerId)
+				);
+				if (ownerDoc.exists()) {
+					const ownerData = ownerDoc.data();
+					ownerEmail = ownerData?.email ?? ownerEmail;
+					ownerPhoto = ownerData?.photoURL;
+				}
+			} catch {}
+			sharedWorkTracks.push({
+				ownerId: tracker.ownerId,
+				ownerName: tracker.name,
+				ownerEmail,
+				ownerPhoto,
+				permission: share.permission,
+				trackerType: tracker.trackerType ?? DEFAULT_TRACKER_TYPE,
+			});
+		}
 
 		// Add current user's worktrack
-		const db = getFirestore(getApp());
 		const currentUserDoc = await getDoc(doc(db, 'users', user.uid));
-
 		if (currentUserDoc.exists()) {
 			const userData = currentUserDoc.data();
 			sharedWorkTracks.unshift({
@@ -348,25 +312,10 @@ export default class FirebaseService {
 				ownerEmail: userData?.email,
 				ownerPhoto: userData?.photoURL,
 				permission: 'write',
+				trackerType: DEFAULT_TRACKER_TYPE,
 			});
 		}
 
 		return sharedWorkTracks;
 	}
 }
-
-export const getWorkTrackData = async () => {
-	try {
-		const db = getFirestore(getApp());
-		const querySnapshot = await getDocs(
-			collection(db, FIREBASE_COLLECTIONS.WORK_TRACKS)
-		);
-		return querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		}));
-	} catch (error) {
-		console.error('Error fetching work track data:', error);
-		throw error;
-	}
-};

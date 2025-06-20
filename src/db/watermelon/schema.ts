@@ -7,14 +7,21 @@ export default appSchema({
 	tables: [
 		workTrackSchema,
 		tableSchema({
-			name: 'sharing',
+			name: 'trackers',
 			columns: [
-				{ name: 'owner_id', type: 'string' },
-				{ name: 'shared_with_id', type: 'string' },
-				{ name: 'shared_with_email', type: 'string' },
+				{ name: 'name', type: 'string' },
+				{ name: 'color', type: 'string' },
+				{ name: 'created_at', type: 'number' },
+				{ name: 'is_default', type: 'boolean' },
+			],
+		}),
+		tableSchema({
+			name: 'shared_trackers',
+			columns: [
+				{ name: 'tracker_id', type: 'string' },
+				{ name: 'shared_with', type: 'string' },
 				{ name: 'permission', type: 'string' },
 				{ name: 'created_at', type: 'number' },
-				{ name: 'updated_at', type: 'number' },
 			],
 		}),
 	],

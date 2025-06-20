@@ -22,6 +22,8 @@ import DayMarkingBottomSheet from '../../components/DayMarkingBottomSheet';
 import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
 import Label from '../../components/Label';
 import Summary from '../../components/Summary';
+import { SyncErrorBanner } from '../../components/SyncErrorBanner';
+import { SyncStatusIndicator } from '../../components/SyncStatusIndicator';
 import WorkTrackSwitcher from '../../components/WorkTrackSwitcher';
 import {
 	addMarkedDay,
@@ -108,6 +110,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	// Add a new effect to handle data loading when currentWorkTrack changes
 	useEffect(() => {
 		const loadData = async () => {
+			console.log('loadData', currentWorkTrack?.id);
 			if (!currentWorkTrack?.id) return;
 
 			dispatch(setLoading(true));
@@ -117,6 +120,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 
 				// Load updated data from local database
 				const updatedData = await loadWorkTrackDataFromDB();
+				console.log('updatedData', updatedData);
 				dispatch(setWorkTrackData(updatedData));
 			} catch (error) {
 				console.error('Error syncing data:', error);
@@ -284,6 +288,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 
 	return (
 		<SafeAreaView style={styles.screen}>
+			<SyncErrorBanner />
 			<FocusAwareStatusBar
 				barStyle='dark-content'
 				translucent
@@ -354,26 +359,32 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 							</Animated.View>
 						</View>
 					</Pressable>
-					<Pressable
-						onPress={() => navigation.navigate('ProfileScreen', {})}
-						style={({ pressed }) => [
-							styles.profileButton,
-							pressed && { opacity: 0.8 },
-						]}
-					>
-						{user?.photo ? (
-							<Image
-								source={{ uri: user.photo }}
-								style={styles.profileImage}
-							/>
-						) : (
-							<View style={styles.profilePlaceholder}>
-								<Text style={styles.profilePlaceholderText}>
-									{user?.name?.[0]?.toUpperCase() ?? '?'}
-								</Text>
-							</View>
-						)}
-					</Pressable>
+
+					<View style={styles.headerActions}>
+						<SyncStatusIndicator showText={false} />
+						<Pressable
+							onPress={() =>
+								navigation.navigate('ProfileScreen', {})
+							}
+							style={({ pressed }) => [
+								styles.profileButton,
+								pressed && { opacity: 0.8 },
+							]}
+						>
+							{user?.photo ? (
+								<Image
+									source={{ uri: user.photo }}
+									style={styles.profileImage}
+								/>
+							) : (
+								<View style={styles.profilePlaceholder}>
+									<Text style={styles.profilePlaceholderText}>
+										{user?.name?.[0]?.toUpperCase() ?? '?'}
+									</Text>
+								</View>
+							)}
+						</Pressable>
+					</View>
 				</View>
 				{error && <Text style={styles.errorText}>{error}</Text>}
 				<CalendarComponent
@@ -498,6 +509,10 @@ const styles = StyleSheet.create({
 	},
 	workTrackSwitcherScroll: {
 		flex: 1,
+	},
+	headerActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
 	},
 });
 
