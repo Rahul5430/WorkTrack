@@ -36,7 +36,7 @@ export default class ToastQueueService {
 		message: string,
 		type: ToastType = 'info',
 		duration: number = 3000,
-		position: 'top' | 'bottom' = 'top'
+		position: 'top' | 'bottom' = 'bottom'
 	): string {
 		const toast: ToastMessage = {
 			id: this.generateId(),

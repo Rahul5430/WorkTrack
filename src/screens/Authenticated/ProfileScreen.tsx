@@ -176,7 +176,7 @@ const ProfileScreen: React.FC<
 		if (shareEmail.toLowerCase() === user?.email?.toLowerCase()) {
 			showAlert(
 				'Invalid Share',
-				'You cannot share your WorkTrack with yourself.',
+				'You cannot share your tracker with yourself.',
 				() => setShareEmail('')
 			);
 			return;
@@ -189,7 +189,7 @@ const ProfileScreen: React.FC<
 		if (existingShare) {
 			showAlert(
 				'Already Shared',
-				`WorkTrack is already shared with ${shareEmail}`,
+				`Tracker is already shared with ${shareEmail}`,
 				() => setShareEmail('')
 			);
 			return;
@@ -201,7 +201,7 @@ const ProfileScreen: React.FC<
 				shareEmail.toLowerCase(),
 				sharePermission
 			);
-			showAlert('Success', 'WorkTrack shared successfully');
+			showAlert('Success', 'Tracker shared successfully');
 			setShareEmail('');
 			setIsShareDialogVisible(false);
 			await loadShares();
@@ -209,14 +209,11 @@ const ProfileScreen: React.FC<
 			if (error.code === 'permission-denied') {
 				showAlert(
 					'Permission Denied',
-					'You do not have permission to share WorkTracks. Please try logging out and logging back in.',
+					'You do not have permission to share trackers. Please try logging out and logging back in.',
 					() => setShareEmail('')
 				);
 			} else {
-				showAlert(
-					'Error',
-					error.message ?? 'Failed to share WorkTrack'
-				);
+				showAlert('Error', error.message ?? 'Failed to share tracker');
 			}
 		} finally {
 			dispatch(setLoading(false));
@@ -359,7 +356,7 @@ const ProfileScreen: React.FC<
 					setIsShareDialogVisible(false);
 				}
 			}}
-			title='Share Work Tracks'
+			title='Share Trackers'
 			loading={loading}
 			onDismiss={() => setIsShareDialogVisible(false)}
 			onConfirm={handleShare}
@@ -540,7 +537,7 @@ const ProfileScreen: React.FC<
 					<Text
 						style={[styles.sectionTitle, { fontSize: RFValue(18) }]}
 					>
-						My Work Tracks
+						My Trackers
 					</Text>
 					<Pressable
 						onPress={() => setIsShareDialogVisible(true)}
@@ -594,8 +591,8 @@ const ProfileScreen: React.FC<
 							color={colors.text.secondary}
 						/>
 						<Text style={styles.sectionNoteText}>
-							If no WorkTrack is set as default, your own
-							WorkTrack will be shown by default
+							If no tracker is set as default, your own tracker
+							will be shown by default
 						</Text>
 					</View>
 					<View style={{ gap: 16 }}>

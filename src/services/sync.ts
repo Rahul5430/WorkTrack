@@ -1,6 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
+import {
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	getFirestore,
+	query,
+	where,
+} from '@react-native-firebase/firestore';
 
 import FirebaseService from './firebase';
 import WatermelonService from './watermelon';
@@ -22,6 +32,16 @@ export interface SyncStatus {
 	lastSyncTime?: number;
 	error?: string;
 	errorType?: 'network' | 'auth' | 'server' | 'unknown';
+}
+
+export interface SharePermission {
+	ownerId: string;
+	sharedWithId: string;
+	sharedWithEmail: string;
+	permission: 'read' | 'write';
+	ownerName: string;
+	ownerPhoto?: string;
+	trackerType: string;
 }
 
 export default class SyncService {
@@ -245,5 +265,239 @@ export default class SyncService {
 
 	isNetworkAvailable(): boolean {
 		return this.isOnline;
+	}
+
+	// Sharing Management Methods
+	async shareWorkTrack(
+		email: string,
+		permission: 'read' | 'write',
+		trackerId?: string
+	): Promise<void> {
+		const user = getAuth().currentUser;
+		if (!user) throw new Error('User not authenticated');
+
+		// If no trackerId provided, use the user's default tracker
+		if (!trackerId) {
+			const myTrackers = await this.watermelonService.getMyTrackers(
+				user.uid
+			);
+			const defaultTracker =
+				myTrackers.find((t) => t.isDefault) || myTrackers[0];
+			if (!defaultTracker) {
+				throw new Error('No tracker available to share');
+			}
+			trackerId = defaultTracker.id;
+		}
+
+		// First, find the user by email in Firebase
+		const db = getFirestore(getApp());
+		const usersQuery = query(
+			collection(db, 'users'),
+			where('email', '==', email.toLowerCase())
+		);
+		const usersSnapshot = await getDocs(usersQuery);
+
+		if (usersSnapshot.empty) {
+			throw new Error('User not found with this email address');
+		}
+
+		const targetUser = usersSnapshot.docs[0];
+		const targetUserId = targetUser.id;
+
+		if (targetUserId === user.uid) {
+			throw new Error('You cannot share with yourself');
+		}
+
+		// Share the tracker
+		await this.firebaseService.shareTracker(trackerId, {
+			sharedWithId: targetUserId,
+			permission,
+			sharedWithEmail: email.toLowerCase(),
+		});
+
+		// Also create the share locally
+		await this.watermelonService.shareTracker(
+			trackerId,
+			targetUserId,
+			permission
+		);
+	}
+
+	async removeShare(sharedWithId: string, trackerId?: string): Promise<void> {
+		const user = getAuth().currentUser;
+		if (!user) throw new Error('User not authenticated');
+
+		// If no trackerId provided, find the tracker that has this share
+		if (!trackerId) {
+			const myShares = await this.watermelonService.getTrackersSharedByMe(
+				user.uid
+			);
+			const share = myShares.find(
+				(s) => s.share.sharedWith === sharedWithId
+			);
+			if (!share) {
+				throw new Error('Share not found');
+			}
+			trackerId = share.tracker.id;
+		}
+
+		// Remove from Firebase
+		await this.firebaseService.unshareTracker(trackerId, sharedWithId);
+
+		// Remove from local database
+		await this.watermelonService.removeShare(trackerId, sharedWithId);
+	}
+
+	async updateSharePermission(
+		sharedWithId: string,
+		permission: 'read' | 'write',
+		trackerId?: string
+	): Promise<void> {
+		const user = getAuth().currentUser;
+		if (!user) throw new Error('User not authenticated');
+
+		// If no trackerId provided, find the tracker that has this share
+		if (!trackerId) {
+			const myShares = await this.watermelonService.getTrackersSharedByMe(
+				user.uid
+			);
+			const share = myShares.find(
+				(s) => s.share.sharedWith === sharedWithId
+			);
+			if (!share) {
+				throw new Error('Share not found');
+			}
+			trackerId = share.tracker.id;
+		}
+
+		// Update in local database
+		await this.watermelonService.updateSharePermission(
+			trackerId,
+			sharedWithId,
+			permission
+		);
+
+		// Update in Firebase (re-create the share with new permission)
+		const share = await this.watermelonService
+			.getTrackersSharedByMe(user.uid)
+			.then((shares) =>
+				shares.find(
+					(s) =>
+						s.share.sharedWith === sharedWithId &&
+						s.tracker.id === trackerId
+				)
+			);
+
+		if (share) {
+			await this.firebaseService.shareTracker(trackerId, {
+				sharedWithId,
+				permission,
+				sharedWithEmail: share.share.sharedWith, // This should be the email
+			});
+		}
+	}
+
+	async getMyShares(): Promise<SharePermission[]> {
+		const user = getAuth().currentUser;
+		if (!user) throw new Error('User not authenticated');
+
+		const myShares = await this.watermelonService.getTrackersSharedByMe(
+			user.uid
+		);
+
+		// Convert to SharePermission format
+		const sharePermissions: SharePermission[] = [];
+		for (const { tracker, share } of myShares) {
+			// Get the shared user's info from Firebase
+			const db = getFirestore(getApp());
+			try {
+				const userDoc = await getDoc(
+					doc(db, 'users', share.sharedWith)
+				);
+				if (userDoc.exists()) {
+					const userData = userDoc.data();
+					sharePermissions.push({
+						ownerId: tracker.ownerId,
+						sharedWithId: share.sharedWith,
+						sharedWithEmail: userData?.email ?? share.sharedWith,
+						permission: share.permission,
+						ownerName: tracker.name,
+						ownerPhoto: undefined, // Could be added to tracker model if needed
+						trackerType: tracker.trackerType,
+					});
+				}
+			} catch (error) {
+				console.warn('Failed to get user info for share:', error);
+				// Still include the share with basic info
+				sharePermissions.push({
+					ownerId: tracker.ownerId,
+					sharedWithId: share.sharedWith,
+					sharedWithEmail: share.sharedWith,
+					permission: share.permission,
+					ownerName: tracker.name,
+					trackerType: tracker.trackerType,
+				});
+			}
+		}
+
+		return sharePermissions;
+	}
+
+	async getSharedWithMe(): Promise<SharePermission[]> {
+		const user = getAuth().currentUser;
+		if (!user) throw new Error('User not authenticated');
+
+		const sharedWithMe =
+			await this.watermelonService.getTrackersSharedWithMe(user.uid);
+
+		// Convert to SharePermission format
+		const sharePermissions: SharePermission[] = [];
+		for (const { tracker, share } of sharedWithMe) {
+			// Get the owner's info from Firebase
+			const db = getFirestore(getApp());
+			try {
+				const ownerDoc = await getDoc(
+					doc(db, 'users', tracker.ownerId)
+				);
+				if (ownerDoc.exists()) {
+					const ownerData = ownerDoc.data();
+					sharePermissions.push({
+						ownerId: tracker.ownerId,
+						sharedWithId: user.uid,
+						sharedWithEmail: user.email ?? '',
+						permission: share.permission,
+						ownerName: ownerData?.displayName ?? tracker.name,
+						ownerPhoto: ownerData?.photoURL,
+						trackerType: tracker.trackerType,
+					});
+				}
+			} catch (error) {
+				console.warn('Failed to get owner info for share:', error);
+				// Still include the share with basic info
+				sharePermissions.push({
+					ownerId: tracker.ownerId,
+					sharedWithId: user.uid,
+					sharedWithEmail: user.email ?? '',
+					permission: share.permission,
+					ownerName: tracker.name,
+					trackerType: tracker.trackerType,
+				});
+			}
+		}
+
+		return sharePermissions;
+	}
+
+	// Default view management
+	getDefaultViewUserId(): string | null {
+		// This would typically be stored in AsyncStorage
+		// For now, return null to use user's own tracker
+		return null;
+	}
+
+	setDefaultViewUserId(userId: string | null): void {
+		// This would typically be stored in AsyncStorage
+		// For now, just log the change
+		console.log('Setting default view user ID:', userId);
 	}
 }

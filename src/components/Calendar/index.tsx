@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
 import CustomCalendar from './CustomCalendar';
-import SyncStatus from './SyncStatus';
 
 type CalendarComponentProps = {
 	onDatePress?: (date: string) => void;
@@ -14,7 +13,7 @@ type CalendarComponentProps = {
 const CalendarComponent = React.memo(
 	({ onDatePress, onMonthChange }: CalendarComponentProps) => {
 		const { getResponsiveSize } = useResponsiveLayout();
-		const { syncStatus, markedDays } = useCalendarData();
+		const { markedDays } = useCalendarData();
 		const [currentMonth, setCurrentMonth] = useState(new Date());
 
 		const handlePressDate = useCallback(
@@ -50,7 +49,6 @@ const CalendarComponent = React.memo(
 
 		return (
 			<View style={{ paddingHorizontal: getResponsiveSize(5).width }}>
-				<SyncStatus status={syncStatus} />
 				<CustomCalendar
 					currentMonth={currentMonth}
 					markedDays={transformedMarkedDays}

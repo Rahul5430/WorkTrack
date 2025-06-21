@@ -7,6 +7,7 @@ import {
 	ViewToken,
 } from 'react-native';
 
+import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { colors } from '../../themes/colors';
 import { MarkedDayStatus } from '../../types/calendar';
 import CalendarHeader from './CalendarHeader';
@@ -14,8 +15,7 @@ import MonthCalendar from './MonthCalendar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HEADER_HEIGHT = 80; // Height for month header and week days
-const WEEK_HEIGHT = 50; // Height for each week row
-const BOTTOM_PADDING = 25; // Extra padding at the bottom
+const BOTTOM_PADDING = 5; // Reduced from 10 to 5 for less empty space at bottom
 
 type CustomCalendarProps = {
 	currentMonth: Date;
@@ -32,8 +32,13 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 	onDayPress,
 	onMonthChange,
 }) => {
-	const calendarWidth = SCREEN_WIDTH;
-	const daySize = (calendarWidth - 40) / 7;
+	const { getResponsiveMargin } = useResponsiveLayout();
+	const containerMargin = 20; // 10px on each side from marginHorizontal: 10
+	const calendarWidth = SCREEN_WIDTH - containerMargin;
+	const horizontalPadding = getResponsiveMargin(3); // Reduced to 3% to prevent wrapping
+	const daySize = (calendarWidth - horizontalPadding * 2) / 7;
+	const weekHeight = daySize + 2; // Reduced from +5 to +2 for even tighter spacing
+
 	const flatListRef = useRef<FlatList>(null);
 	const [visibleMonths, setVisibleMonths] = useState<Date[]>([]);
 	const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -145,9 +150,9 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 	const getCalendarHeight = useCallback(
 		(date: Date) => {
 			const weeks = getWeeksInMonth(date);
-			return HEADER_HEIGHT + weeks * WEEK_HEIGHT + BOTTOM_PADDING;
+			return HEADER_HEIGHT + weeks * weekHeight + BOTTOM_PADDING;
 		},
-		[getWeeksInMonth]
+		[getWeeksInMonth, weekHeight]
 	);
 
 	const viewabilityConfig = {
@@ -175,7 +180,10 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 					},
 				]}
 			>
-				<CalendarHeader month={currentVisibleMonth} />
+				<CalendarHeader
+					month={currentVisibleMonth}
+					horizontalPadding={horizontalPadding}
+				/>
 				<FlatList
 					ref={flatListRef}
 					data={generateMonths()}
@@ -202,6 +210,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 							onDayPress={onDayPress}
 							daySize={daySize}
 							width={calendarWidth}
+							horizontalPadding={horizontalPadding}
 						/>
 					)}
 					keyExtractor={(item) => item.toISOString()}

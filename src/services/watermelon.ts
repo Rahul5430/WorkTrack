@@ -8,6 +8,8 @@ import { TrackerData, TrackerEntryData } from './firebase';
 
 export default class WatermelonService {
 	private static instance: WatermelonService;
+	private isDatabaseReady: boolean = false;
+
 	private constructor() {}
 
 	static getInstance(): WatermelonService {
@@ -15,6 +17,92 @@ export default class WatermelonService {
 			WatermelonService.instance = new WatermelonService();
 		}
 		return WatermelonService.instance;
+	}
+
+	// Get fresh database instance to avoid context issues
+	private getDatabaseInstance() {
+		try {
+			// Import database fresh each time to avoid context issues
+			const { database: db } = require('../db/watermelon') as {
+				database: any;
+			};
+			return db;
+		} catch (error) {
+			console.error('Failed to get database instance:', error);
+			return null;
+		}
+	}
+
+	// Initialize database and ensure it's ready
+	async ensureDatabaseReady(): Promise<void> {
+		console.log(
+			'ensureDatabaseReady called, isDatabaseReady:',
+			this.isDatabaseReady
+		);
+		if (this.isDatabaseReady) return;
+
+		const maxRetries = 3;
+		const retryDelay = 1000; // 1 second
+
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				console.log(
+					`Database initialization attempt ${attempt}/${maxRetries}`
+				);
+
+				const db = this.getDatabaseInstance();
+				console.log('ensureDatabaseReady - database object:', db);
+				console.log('ensureDatabaseReady - database type:', typeof db);
+				console.log(
+					'ensureDatabaseReady - database.write type:',
+					typeof db?.write
+				);
+
+				// Check if database object exists
+				if (!db) {
+					throw new Error('Database object is undefined');
+				}
+
+				// Check if database.write method exists
+				if (typeof db.write !== 'function') {
+					throw new Error('Database write method is not available');
+				}
+
+				console.log('About to call db.write...');
+				// Test database access by performing a simple write operation
+				await db.write(async () => {
+					// This will trigger database initialization if not already done
+					console.log('Database is ready');
+				});
+
+				this.isDatabaseReady = true;
+				console.log('Database initialization successful');
+				return;
+			} catch (error) {
+				console.error(
+					`Database initialization attempt ${attempt} failed:`,
+					error
+				);
+				const db = this.getDatabaseInstance();
+				console.error('Database object:', db);
+				console.error('Database type:', typeof db);
+				if (db) {
+					console.error(
+						'Database methods:',
+						Object.getOwnPropertyNames(db)
+					);
+				}
+
+				if (attempt === maxRetries) {
+					throw new Error(
+						`Failed to initialize database after ${maxRetries} attempts: ${error}`
+					);
+				}
+
+				// Wait before retrying
+				await new Promise((resolve) => setTimeout(resolve, retryDelay));
+			}
+		}
 	}
 
 	// Tracker Management
@@ -25,13 +113,25 @@ export default class WatermelonService {
 		trackerType: TrackerType;
 		ownerId: string;
 	}) {
+		console.log('createTracker called with data:', data);
+
+		await this.ensureDatabaseReady();
+
 		const { name, color, trackerType, ownerId } = data;
+
+		// Check if any trackers exist to determine if this should be default
 		const existingTrackers = await database
 			.get<Tracker>('trackers')
 			.query()
 			.fetch();
 		const isDefault = existingTrackers.length === 0;
 
+		console.log(
+			'createTracker - Creating tracker with isDefault:',
+			isDefault
+		);
+
+		// Create the new tracker
 		const newTracker = await database
 			.get<Tracker>('trackers')
 			.create((tracker) => {
@@ -41,11 +141,18 @@ export default class WatermelonService {
 				tracker.isDefault = isDefault;
 				tracker.trackerType = trackerType;
 			});
+
+		console.log(
+			'createTracker - Successfully created tracker:',
+			newTracker
+		);
 		return newTracker;
 	}
 
 	@writer
 	async createOrUpdateTrackers(trackersData: TrackerData[]) {
+		await this.ensureDatabaseReady();
+
 		const trackerCollection = database.get<Tracker>('trackers');
 
 		for (const data of trackersData) {
@@ -80,6 +187,13 @@ export default class WatermelonService {
 		status: string;
 		isAdvisory: boolean;
 	}) {
+		await this.ensureDatabaseReady();
+
+		// Double-check database availability
+		if (!database || typeof database.write !== 'function') {
+			throw new Error('Database not properly initialized');
+		}
+
 		const { trackerId, date, status, isAdvisory } = data;
 		const workTracks = database.get<WorkTrack>('work_tracks');
 		const existingRecord = await workTracks
@@ -114,6 +228,8 @@ export default class WatermelonService {
 		trackerId: string,
 		entries: TrackerEntryData[]
 	) {
+		await this.ensureDatabaseReady();
+
 		const workTracks = database.get<WorkTrack>('work_tracks');
 
 		for (const entry of entries) {
@@ -155,6 +271,8 @@ export default class WatermelonService {
 
 	// Sync Management
 	async getUnsyncedRecords(): Promise<WorkTrack[]> {
+		await this.ensureDatabaseReady();
+
 		return await database
 			.get<WorkTrack>('work_tracks')
 			.query(Q.where('needs_sync', true))
@@ -162,6 +280,8 @@ export default class WatermelonService {
 	}
 
 	async getFailedSyncRecords(): Promise<WorkTrack[]> {
+		await this.ensureDatabaseReady();
+
 		return await database
 			.get<WorkTrack>('work_tracks')
 			.query(
@@ -173,6 +293,8 @@ export default class WatermelonService {
 
 	@writer
 	async markRecordsAsSynced(records: WorkTrack[]) {
+		await this.ensureDatabaseReady();
+
 		for (const record of records) {
 			await record.update((rec: WorkTrack) => {
 				rec.needsSync = false;
@@ -184,6 +306,8 @@ export default class WatermelonService {
 
 	@writer
 	async markRecordsWithSyncError(records: WorkTrack[], errorMessage: string) {
+		await this.ensureDatabaseReady();
+
 		for (const record of records) {
 			await record.update((rec: WorkTrack) => {
 				rec.needsSync = true; // Keep it marked for retry
@@ -198,18 +322,55 @@ export default class WatermelonService {
 	async getRecordsExceedingRetryLimit(
 		maxRetries: number = 3
 	): Promise<WorkTrack[]> {
+		await this.ensureDatabaseReady();
+
 		return await database
 			.get<WorkTrack>('work_tracks')
 			.query(
 				Q.where('needs_sync', true),
+				Q.where('sync_error', Q.notEq(null)),
 				Q.where('retry_count', Q.gte(maxRetries))
 			)
+			.fetch();
+	}
+
+	// Get entries for a specific tracker
+	async getEntriesForTracker(trackerId: string): Promise<WorkTrack[]> {
+		console.log('getEntriesForTracker called with trackerId:', trackerId);
+
+		await this.ensureDatabaseReady();
+
+		const db = this.getDatabaseInstance();
+		console.log('getEntriesForTracker - database object:', db);
+		console.log('getEntriesForTracker - database type:', typeof db);
+
+		// Double-check database availability
+		if (!db || typeof db.write !== 'function') {
+			console.error(
+				'getEntriesForTracker - Database not properly initialized'
+			);
+			console.error('getEntriesForTracker - database object:', db);
+			console.error('getEntriesForTracker - database type:', typeof db);
+			throw new Error('Database not properly initialized');
+		}
+
+		return await database
+			.get<WorkTrack>('work_tracks')
+			.query(Q.where('tracker_id', trackerId))
 			.fetch();
 	}
 
 	// Reset retry count for successful syncs
 	@writer
 	async resetRetryCount(records: WorkTrack[]) {
+		await this.ensureDatabaseReady();
+
+		const db = this.getDatabaseInstance();
+		// Double-check database availability
+		if (!db || typeof db.write !== 'function') {
+			throw new Error('Database not properly initialized');
+		}
+
 		for (const record of records) {
 			await record.update((rec: WorkTrack) => {
 				rec.retryCount = 0;
@@ -330,10 +491,110 @@ export default class WatermelonService {
 
 	// Utility: Fetch a single tracker by ID
 	async getTrackerById(trackerId: string): Promise<Tracker | null> {
+		console.log('getTrackerById called with trackerId:', trackerId);
+
+		await this.ensureDatabaseReady();
+
+		const db = this.getDatabaseInstance();
+		console.log('getTrackerById - database object:', db);
+		console.log('getTrackerById - database type:', typeof db);
+
+		// Double-check database availability
+		if (!db || typeof db.write !== 'function') {
+			console.error('getTrackerById - Database not properly initialized');
+			console.error('getTrackerById - database object:', db);
+			console.error('getTrackerById - database type:', typeof db);
+			throw new Error('Database not properly initialized');
+		}
+
 		try {
 			return await database.get<Tracker>('trackers').find(trackerId);
 		} catch {
 			return null;
 		}
+	}
+
+	// Get trackers owned by the user
+	async getMyTrackers(userId: string): Promise<Tracker[]> {
+		await this.ensureDatabaseReady();
+		return await database
+			.get<Tracker>('trackers')
+			.query(Q.where('owner_id', userId))
+			.fetch();
+	}
+
+	// Get trackers shared by the user (with sharing info)
+	async getTrackersSharedByMe(userId: string): Promise<
+		{
+			tracker: Tracker;
+			share: SharedTracker;
+		}[]
+	> {
+		await this.ensureDatabaseReady();
+
+		// Get all trackers owned by the user
+		const myTrackers = await this.getMyTrackers(userId);
+
+		// Get all shares for these trackers
+		const shares = await database
+			.get<SharedTracker>('shared_trackers')
+			.query(Q.where('tracker_id', Q.oneOf(myTrackers.map((t) => t.id))))
+			.fetch();
+
+		// Group shares by tracker
+		const sharesByTracker = new Map<string, SharedTracker[]>();
+		shares.forEach((share) => {
+			if (!sharesByTracker.has(share.trackerId)) {
+				sharesByTracker.set(share.trackerId, []);
+			}
+			sharesByTracker.get(share.trackerId)!.push(share);
+		});
+
+		// Combine trackers with their shares
+		const result: { tracker: Tracker; share: SharedTracker }[] = [];
+		myTrackers.forEach((tracker) => {
+			const trackerShares = sharesByTracker.get(tracker.id) || [];
+			trackerShares.forEach((share) => {
+				result.push({ tracker, share });
+			});
+		});
+
+		return result;
+	}
+
+	// Get trackers shared with the user (with sharing info)
+	async getTrackersSharedWithMe(userId: string): Promise<
+		{
+			tracker: Tracker;
+			share: SharedTracker;
+		}[]
+	> {
+		await this.ensureDatabaseReady();
+
+		// Get all shares where the user is the recipient
+		const shares = await database
+			.get<SharedTracker>('shared_trackers')
+			.query(Q.where('shared_with', userId))
+			.fetch();
+
+		// Get the corresponding trackers
+		const result: { tracker: Tracker; share: SharedTracker }[] = [];
+		for (const share of shares) {
+			try {
+				const tracker = await database
+					.get<Tracker>('trackers')
+					.find(share.trackerId);
+				if (tracker) {
+					result.push({ tracker, share });
+				}
+			} catch {
+				// Tracker not found, skip this share
+				console.warn(
+					`Tracker ${share.trackerId} not found for share ${share.id}`
+				);
+			}
+		}
+
+		return result;
 	}
 }

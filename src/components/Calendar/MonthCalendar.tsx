@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { WORK_STATUS } from '../../constants/workStatus';
+import { useResponsiveLayout } from '../../hooks/useResponsive';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
 import { MarkedDayStatus } from '../../types/calendar';
@@ -15,6 +16,7 @@ type MonthCalendarProps = {
 	onDayPress: (date: string) => void;
 	daySize: number;
 	width: number;
+	horizontalPadding?: number;
 };
 
 const MonthCalendar: React.FC<MonthCalendarProps> = ({
@@ -23,7 +25,11 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
 	onDayPress,
 	daySize,
 	width,
+	horizontalPadding = 20,
 }) => {
+	const { getResponsiveMargin } = useResponsiveLayout();
+	const responsivePadding = horizontalPadding || getResponsiveMargin(5);
+
 	const getDaysInMonth = (date: Date) => {
 		const year = date.getFullYear();
 		const month = date.getMonth();
@@ -37,9 +43,11 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
 		const days = [];
 		const totalDays = 42; // 6 rows of 7 days
 
+		const emptyDayStyle = { width: daySize, height: daySize };
+
 		// Add empty cells for days before the first day of the month
 		for (let i = 0; i < firstDayOfMonth; i++) {
-			days.push(<View key={`empty-${i}`} style={styles.emptyDay} />);
+			days.push(<View key={`empty-${i}`} style={emptyDayStyle} />);
 		}
 
 		// Add days of the month
@@ -93,7 +101,7 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
 		// Fill remaining days in the last row
 		const remainingDays = totalDays - days.length;
 		for (let i = 0; i < remainingDays; i++) {
-			days.push(<View key={`empty-end-${i}`} style={styles.emptyDay} />);
+			days.push(<View key={`empty-end-${i}`} style={emptyDayStyle} />);
 		}
 
 		return days;
@@ -101,7 +109,14 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
 
 	return (
 		<View style={[styles.monthContainer, { width }]}>
-			<View style={styles.daysContainer}>{renderDays()}</View>
+			<View
+				style={[
+					styles.daysContainer,
+					{ paddingHorizontal: responsivePadding },
+				]}
+			>
+				{renderDays()}
+			</View>
 		</View>
 	);
 };
@@ -127,17 +142,12 @@ const styles = StyleSheet.create({
 	daysContainer: {
 		flexDirection: 'row',
 		flexWrap: 'wrap',
-		paddingHorizontal: 20,
-		paddingTop: 8,
-		paddingBottom: 10,
+		paddingTop: 4,
+		paddingBottom: 2,
 	},
 	dayContainer: {
 		alignItems: 'center',
 		justifyContent: 'center',
-	},
-	emptyDay: {
-		width: '14.28%',
-		aspectRatio: 1,
 	},
 });
 

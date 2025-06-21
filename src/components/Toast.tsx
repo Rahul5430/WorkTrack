@@ -21,7 +21,7 @@ export const Toast: React.FC<ToastProps> = ({
 	message,
 	type = 'info',
 	duration = 3000,
-	position = 'top',
+	position = 'bottom',
 	onHide,
 }) => {
 	const fadeAnim = useRef(new Animated.Value(0)).current;

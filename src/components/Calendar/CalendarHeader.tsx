@@ -10,12 +10,15 @@ export interface CalendarHeaderProps {
 	month: Date;
 	/** Callback for header onLayout */
 	onHeaderLayout?: ViewProps['onLayout'];
+	/** Horizontal padding to match calendar alignment */
+	horizontalPadding?: number;
 }
 
 const CalendarHeader = (props: CalendarHeaderProps) => {
-	const { month, onHeaderLayout } = props;
+	const { month, onHeaderLayout, horizontalPadding } = props;
 
-	const { RFValue, getResponsiveSize } = useResponsiveLayout();
+	const { RFValue, getResponsiveMargin } = useResponsiveLayout();
+	const responsivePadding = horizontalPadding ?? getResponsiveMargin(5);
 
 	const date = new Date(month).toLocaleDateString('en-US', {
 		month: 'long',
@@ -45,13 +48,10 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 				{day}
 			</Text>
 		));
-	}, []);
+	}, [RFValue]);
 
 	return (
-		<View
-			onLayout={onHeaderLayout}
-			style={{ paddingHorizontal: getResponsiveSize(5).width }}
-		>
+		<View onLayout={onHeaderLayout}>
 			<View style={styles.header}>
 				<View style={styles.headerContainer}>
 					<Text
@@ -62,7 +62,14 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 					</Text>
 				</View>
 			</View>
-			<View style={styles.week}>{renderWeekDays}</View>
+			<View
+				style={[
+					styles.weekContainer,
+					{ paddingHorizontal: responsivePadding },
+				]}
+			>
+				<View style={styles.week}>{renderWeekDays}</View>
+			</View>
 		</View>
 	);
 };
@@ -83,13 +90,17 @@ const styles = StyleSheet.create({
 		color: colors.text.primary,
 	},
 	week: {
-		marginTop: 7,
+		marginTop: 4,
 		flexDirection: 'row',
 		justifyContent: 'space-around',
 	},
+	weekContainer: {
+		paddingTop: 4,
+		paddingBottom: 3,
+	},
 	dayHeader: {
-		marginTop: 2,
-		marginBottom: 7,
+		marginTop: 1,
+		marginBottom: 4,
 		width: 32,
 		textAlign: 'center',
 		fontFamily: fonts.PoppinsMedium,
