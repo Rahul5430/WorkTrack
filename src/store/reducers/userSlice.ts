@@ -5,6 +5,8 @@ export interface GoogleUser {
 	name: string;
 	email: string;
 	photo?: string;
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export interface UserState {

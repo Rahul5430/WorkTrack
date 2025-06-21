@@ -6,7 +6,12 @@ import {
 	GoogleAuthProvider,
 	signInWithCredential,
 } from '@react-native-firebase/auth';
-import { doc, getFirestore, setDoc } from '@react-native-firebase/firestore';
+import {
+	doc,
+	getDoc,
+	getFirestore,
+	setDoc,
+} from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -50,22 +55,25 @@ const WelcomeScreen: React.FC<
 
 					// Create or update user in Firestore
 					const db = getFirestore(getApp());
-					await setDoc(
-						doc(db, 'users', firebaseUser.uid),
-						{
-							name: userInfo.name,
-							email: userInfo.email.toLowerCase(),
-							photo: userInfo.photo,
-							createdAt: new Date(),
-							updatedAt: new Date(),
-						},
-						{ merge: true }
-					);
+					const userRef = doc(db, 'users', firebaseUser.uid);
+					const userSnapshot = await getDoc(userRef);
+
+					const userData: GoogleUser = {
+						...userInfo,
+						email: userInfo.email.toLowerCase(),
+						updatedAt: new Date(),
+					};
+
+					if (!userSnapshot.exists()) {
+						userData.createdAt = new Date();
+					}
+
+					await setDoc(userRef, userData, { merge: true });
 
 					// Trigger initial sync before updating UI state
 					const syncService = SyncService.getInstance();
 					await syncService.syncFromFirebase();
-					await syncService.startPeriodicSync();
+					syncService.startPeriodicSync();
 
 					// Only update UI state after sync is complete
 					await AsyncStorage.setItem(

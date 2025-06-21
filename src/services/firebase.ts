@@ -189,7 +189,19 @@ export default class FirebaseService {
 			where('sharedWithId', '==', userId)
 		);
 
-		const sharesSnapshot = await getDocs(sharesQuery);
+		let sharesSnapshot;
+		try {
+			sharesSnapshot = await getDocs(sharesQuery);
+		} catch (err: any) {
+			if (err.code === 'permission-denied') {
+				console.warn(
+					'Permission denied on shares query. Returning empty list.'
+				);
+				return [];
+			}
+			throw err;
+		}
+
 		if (sharesSnapshot.empty) {
 			return [];
 		}
