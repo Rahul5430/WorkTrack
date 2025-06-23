@@ -14,22 +14,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import CalendarComponent from '../../components/Calendar';
-import CommonBottomSheet, {
-	CommonBottomSheetRef,
-} from '../../components/CommonBottomSheet';
-import DayMarkingBottomSheet from '../../components/DayMarkingBottomSheet';
-import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
-import Label from '../../components/Label';
-import Summary from '../../components/Summary';
-import { SyncErrorBanner } from '../../components/SyncErrorBanner';
-import { SyncStatusIndicator } from '../../components/SyncStatusIndicator';
-import WorkTrackSwitcher from '../../components/WorkTrackSwitcher';
+import type { CommonBottomSheetRef } from '../../components';
+import {
+	Calendar,
+	CommonBottomSheet,
+	DayMarkingBottomSheet,
+	FocusAwareStatusBar,
+	Label,
+	Summary,
+	SyncErrorBanner,
+	SyncStatusIndicator,
+	WorkTrackSwitcher,
+} from '../../components';
 import { WorkTrack } from '../../db/watermelon';
-import { useResponsiveLayout } from '../../hooks/useResponsive';
-import { useSharedWorkTracks } from '../../hooks/useSharedWorkTracks';
-import SyncService from '../../services/sync';
-import WatermelonService from '../../services/watermelon';
+import { useResponsiveLayout, useSharedWorkTracks } from '../../hooks';
+import { SyncService, WatermelonService } from '../../services';
+import { AppDispatch, RootState } from '../../store';
 import {
 	addOrUpdateEntry,
 	rollbackEntry,
@@ -37,11 +37,8 @@ import {
 	setLoading,
 	setWorkTrackData,
 } from '../../store/reducers/workTrackSlice';
-import { AppDispatch, RootState } from '../../store/store';
-import { fonts } from '../../themes';
-import { colors } from '../../themes/colors';
-import { MarkedDayStatus } from '../../types/calendar';
-import { AuthenticatedStackScreenProps } from '../../types/navigation';
+import { colors, fonts } from '../../themes';
+import { AuthenticatedStackScreenProps, MarkedDayStatus } from '../../types';
 
 const getDisplayName = (name: string, isOwnWorkTrack: boolean) => {
 	if (isOwnWorkTrack) return 'My WorkTrack';
@@ -452,33 +449,51 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					</Pressable>
 
 					<View style={styles.headerActions}>
-						<SyncStatusIndicator showText={false} />
-						<Pressable
-							onPress={() =>
-								navigation.navigate('ProfileScreen', {})
-							}
-							style={({ pressed }) => [
-								styles.profileButton,
-								pressed && { opacity: 0.8 },
-							]}
+						<View
+							style={{
+								position: 'relative',
+								width: 40,
+								height: 40,
+							}}
 						>
-							{user?.photo ? (
-								<Image
-									source={{ uri: user.photo }}
-									style={styles.profileImage}
-								/>
-							) : (
-								<View style={styles.profilePlaceholder}>
-									<Text style={styles.profilePlaceholderText}>
-										{user?.name?.[0]?.toUpperCase() ?? '?'}
-									</Text>
-								</View>
-							)}
-						</Pressable>
+							<Pressable
+								onPress={() =>
+									navigation.navigate('ProfileScreen', {})
+								}
+								style={({ pressed }) => [
+									styles.profileButton,
+									pressed && { opacity: 0.8 },
+								]}
+							>
+								{user?.photo ? (
+									<Image
+										source={{ uri: user.photo }}
+										style={styles.profileImage}
+									/>
+								) : (
+									<View style={styles.profilePlaceholder}>
+										<Text
+											style={
+												styles.profilePlaceholderText
+											}
+										>
+											{user?.name?.[0]?.toUpperCase() ??
+												'?'}
+										</Text>
+									</View>
+								)}
+							</Pressable>
+							<View
+								style={styles.syncBadgeContainer}
+								pointerEvents='none'
+							>
+								<SyncStatusIndicator style={styles.syncBadge} />
+							</View>
+						</View>
 					</View>
 				</View>
 				{error && <Text style={styles.errorText}>{error}</Text>}
-				<CalendarComponent
+				<Calendar
 					onDatePress={onDatePress}
 					onMonthChange={handleMonthChange}
 				/>
@@ -491,14 +506,24 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				onChange={handleDayMarkingSheetChanges}
 				snapPoints={['40%']}
 			>
-				{selectedDate && (
-					<DayMarkingBottomSheet
-						selectedDate={selectedDate}
-						onSave={handleSave}
-						loading={loading}
-						onCancel={() => dayMarkingSheetRef.current?.close()}
-					/>
-				)}
+				{selectedDate &&
+					(() => {
+						const entry = workTrackData.find(
+							(e) => e.date === selectedDate
+						);
+						return (
+							<DayMarkingBottomSheet
+								selectedDate={selectedDate}
+								onSave={handleSave}
+								loading={loading}
+								onCancel={() =>
+									dayMarkingSheetRef.current?.close()
+								}
+								initialStatus={entry?.status}
+								initialIsAdvisory={entry?.isAdvisory ?? false}
+							/>
+						);
+					})()}
 			</CommonBottomSheet>
 
 			<CommonBottomSheet
@@ -600,6 +625,23 @@ const styles = StyleSheet.create({
 	headerActions: {
 		flexDirection: 'row',
 		alignItems: 'center',
+	},
+	syncBadgeContainer: {
+		position: 'absolute',
+		left: -6,
+		bottom: -6,
+		zIndex: 10,
+	},
+	syncBadge: {
+		width: 22,
+		height: 22,
+		borderRadius: 11,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'white',
+		borderWidth: 2,
+		borderColor: 'white',
+		padding: 0,
 	},
 });
 

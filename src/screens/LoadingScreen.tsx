@@ -1,18 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 
-import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
+import { FocusAwareStatusBar } from '../components';
 import { loadWorkTrackDataFromDB } from '../db/watermelon/worktrack/load';
-import { useResponsiveLayout } from '../hooks/useResponsive';
+import { useResponsiveLayout } from '../hooks';
 import {
 	setErrorMessage,
 	setLoggedIn,
 	setUser,
 } from '../store/reducers/userSlice';
 import { setWorkTrackData } from '../store/reducers/workTrackSlice';
-import { LoadingStackScreenProps } from '../types/navigation';
+import { LoadingStackScreenProps } from '../types';
 
 const LoadingScreen: React.FC<
 	LoadingStackScreenProps<'LoadingScreen'>

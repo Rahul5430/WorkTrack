@@ -17,7 +17,7 @@ const initializeWeekendData = async () => {
 		const existingRecords = await collection.query().fetch();
 		const existingDates = new Set(existingRecords.map((r) => r.date));
 
-		let currentDate = new Date(startDate);
+		const currentDate = new Date(startDate);
 		while (currentDate <= endDate) {
 			const dateString = currentDate.toISOString().split('T')[0];
 			const day = currentDate.getDay();
@@ -29,7 +29,7 @@ const initializeWeekendData = async () => {
 					await collection.create((record) => {
 						record.date = dateString;
 						record.status = 'holiday';
-						record.synced = true;
+						record.needsSync = false;
 						record.lastModified = Date.now();
 					});
 				}
@@ -72,7 +72,7 @@ export async function addMarkedDay(entry: MarkedDay) {
 			await existing.update((record) => {
 				record.status = entry.status;
 				record.isAdvisory = entry.isAdvisory ?? false;
-				record.synced = false;
+				record.needsSync = true;
 				record.lastModified = Date.now();
 			});
 		} else {
@@ -80,7 +80,7 @@ export async function addMarkedDay(entry: MarkedDay) {
 				record.date = entry.date;
 				record.status = entry.status;
 				record.isAdvisory = entry.isAdvisory ?? false;
-				record.synced = false;
+				record.needsSync = true;
 				record.lastModified = Date.now();
 			});
 		}

@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import Building from '../assets/icons/building.svg';
-import Forecast from '../assets/icons/forecast.svg';
-import Home from '../assets/icons/home.svg';
-import Plus from '../assets/icons/plus.svg';
-import { WORK_STATUS, WORK_STATUS_LABELS } from '../constants/workStatus';
-import { useResponsiveLayout } from '../hooks/useResponsive';
-import { fonts } from '../themes';
-import { colors } from '../themes/colors';
+import Building from '../../assets/icons/building.svg';
+import Forecast from '../../assets/icons/forecast.svg';
+import Home from '../../assets/icons/home.svg';
+import Plus from '../../assets/icons/plus.svg';
+import { WORK_STATUS, WORK_STATUS_LABELS } from '../../constants/workStatus';
+import { useResponsiveLayout } from '../../hooks';
+import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 
 const Label = () => {
 	const { RFValue, getResponsiveSize } = useResponsiveLayout();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import ToastQueueService, { ToastMessage } from '../services/toastQueue';
+import { type ToastMessage, ToastQueueService } from '../../services';
 import { Toast } from './Toast';
 
 export const GlobalToast: React.FC = () => {

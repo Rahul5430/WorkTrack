@@ -1,4 +1,4 @@
-import { colors } from '../themes/colors';
+import { colors } from '../themes';
 import { MarkedDayStatus } from '../types/calendar';
 
 export const WORK_STATUS = {

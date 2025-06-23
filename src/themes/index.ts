@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+// Font exports
 export const fonts = {
 	...Platform.select({
 		ios: {
@@ -16,3 +17,9 @@ export const fonts = {
 		},
 	}),
 };
+
+// Color exports
+export * from './colors';
+
+// Theme exports
+export * from './theme';

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants/trackerTypes';
-import FirebaseService from '../services/firebase';
+import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants';
+import { FirebaseService } from '../services';
 import { setLoading } from '../store/reducers/workTrackSlice';
 import { RootState } from '../store/store';
 

@@ -12,11 +12,10 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 
-import { useResponsiveLayout } from '../hooks/useResponsive';
-import { SharedWorkTrack } from '../hooks/useSharedWorkTracks';
-import { RootState } from '../store/store';
-import { fonts } from '../themes';
-import { colors } from '../themes/colors';
+import { type SharedWorkTrack, useResponsiveLayout } from '../../hooks';
+import { RootState } from '../../store/store';
+import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 
 type Props = {
 	sharedWorkTracks: SharedWorkTrack[];

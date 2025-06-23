@@ -7,6 +7,7 @@ import {
 } from '@nozbe/watermelondb/decorators';
 
 import { MarkedDayStatus } from '../../../types/calendar';
+import Tracker from '../tracker/model';
 
 export default class WorkTrack extends Model {
 	static readonly table = 'work_tracks';
@@ -25,7 +26,7 @@ export default class WorkTrack extends Model {
 	@readonly @date('created_at') createdAt!: Date;
 	@field('last_modified') lastModified!: number;
 
-	@relation('trackers', 'tracker_id') tracker: any;
+	@relation('trackers', 'tracker_id') tracker?: Tracker;
 
 	// Validation method
 	validate() {

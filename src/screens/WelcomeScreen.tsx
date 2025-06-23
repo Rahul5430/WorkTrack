@@ -18,17 +18,16 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
-import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
-import SyncService from '../services/sync';
+import { FocusAwareStatusBar } from '../components';
+import { SyncService } from '../services';
+import { AppDispatch, RootState } from '../store';
 import {
 	GoogleUser,
 	setErrorMessage,
 	setIsFetching,
-	setLoggedIn,
 	setUser,
 } from '../store/reducers/userSlice';
-import { AppDispatch, RootState } from '../store/store';
-import { WelcomeStackScreenProps } from '../types/navigation';
+import { WelcomeStackScreenProps } from '../types';
 
 GoogleSignin.configure({
 	webClientId: GOOGLE_SIGN_IN_CLIENT_ID,
@@ -81,7 +80,6 @@ const WelcomeScreen: React.FC<
 						JSON.stringify(userInfo)
 					);
 					dispatch(setUser(userInfo));
-					dispatch(setLoggedIn(true));
 				} catch (error) {
 					console.error('Error during login sync:', error);
 					dispatch(

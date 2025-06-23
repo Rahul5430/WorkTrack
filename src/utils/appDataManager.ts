@@ -1,6 +1,6 @@
 import { database } from '../db/watermelon';
+import { store } from '../store';
 import { setWorkTrackData } from '../store/reducers/workTrackSlice';
-import { store } from '../store/store';
 
 export const clearAppData = async () => {
 	try {

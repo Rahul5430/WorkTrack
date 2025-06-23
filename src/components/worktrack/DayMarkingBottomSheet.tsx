@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { HelperText, Switch } from 'react-native-paper';
 
-import { WORK_STATUS_COLORS } from '../constants/workStatus';
-import { useResponsiveLayout } from '../hooks/useResponsive';
-import { fonts } from '../themes';
-import { colors } from '../themes/colors';
-import { MarkedDayStatus } from '../types/calendar';
+import { WORK_STATUS_COLORS } from '../../constants/workStatus';
+import { useResponsiveLayout } from '../../hooks';
+import { colors, fonts } from '../../themes';
+import { MarkedDayStatus } from '../../types/calendar';
 
 type Props = {
 	onSave: (status: MarkedDayStatus, isAdvisory: boolean) => void;
@@ -42,28 +41,11 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 		});
 	};
 
-	const validateDate = (dateString: string) => {
-		const selectedDate = new Date(dateString);
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-
-		if (selectedDate > today) {
-			setError('Cannot mark future dates');
-			return false;
-		}
-		setError(null);
-		return true;
-	};
-
 	const handleConfirm = () => {
 		if (!status) {
 			setError('Please select a status');
 			return;
 		}
-
-		// if (!validateDate(selectedDate)) {
-		// 	return;
-		// }
 
 		onSave(status, isAdvisory);
 	};

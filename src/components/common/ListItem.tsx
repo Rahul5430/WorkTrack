@@ -1,8 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ViewProps } from 'react-native';
 
-import { fonts } from '../../themes';
-import { colors } from '../../themes/colors';
+import { colors, fonts } from '../../themes';
 
 interface ListItemProps extends ViewProps {
 	title: string | React.ReactNode;

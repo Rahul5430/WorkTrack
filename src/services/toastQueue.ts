@@ -1,4 +1,4 @@
-import { ToastType } from '../components/Toast';
+import { ToastType } from '../components/ui/Toast';
 
 export interface ToastMessage {
 	id: string;

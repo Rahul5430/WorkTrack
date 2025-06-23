@@ -7,7 +7,7 @@
 			"esnext"
 		],
 		"moduleResolution": "bundler",
-		"experimentalDecorators": true, 
+		"experimentalDecorators": true,
 		"noEmit": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
@@ -34,5 +34,20 @@
 			"node"
 		]
 	},
+	"include": [
+		"src/**/*",
+		"**/*.ts",
+		"**/*.tsx",
+		"**/*.js",
+		"**/*.jsx"
+	],
+	"exclude": [
+		"node_modules",
+		"android",
+		"ios",
+		"web-build",
+		".expo",
+		".expo-shared"
+	],
 	"extends": "@react-native/typescript-config/tsconfig.json"
 }

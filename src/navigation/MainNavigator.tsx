@@ -2,9 +2,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import WatermelonService from '../services/watermelon';
+import { WatermelonService } from '../services';
 import { RootState } from '../store/store';
-import { MainStackParamList } from '../types/navigation';
+import { MainStackParamList } from '../types';
 import AuthenticatedNavigator from './AuthenticatedNavigator';
 import LoadingNavigator from './LoadingNavigator';
 import WelcomeNavigator from './WelcomeNavigator';

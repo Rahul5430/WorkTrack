@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { RootState } from '../store/store';
-import { MarkedDay, MarkedDayStatus } from '../types/calendar';
+import { MarkedDayStatus } from '../types/calendar';
 
 type MonthData = {
 	[key: string]: {
@@ -11,7 +11,7 @@ type MonthData = {
 	};
 };
 
-export const useMonthData = (currentMonth: Date) => {
+export const useMonthData = (currentDate: Date) => {
 	const workTrackData = useSelector(
 		(state: RootState) => state.workTrack.data
 	);
@@ -19,8 +19,8 @@ export const useMonthData = (currentMonth: Date) => {
 	const [isInitialized, setIsInitialized] = useState(false);
 	const monthDataCache = useRef<{ [key: string]: MonthData }>({});
 	const currentMonthKey = useMemo(
-		() => currentMonth.toISOString().slice(0, 7),
-		[currentMonth]
+		() => currentDate.toISOString().slice(0, 7),
+		[currentDate]
 	);
 
 	const getMonthData = useCallback(
@@ -59,18 +59,16 @@ export const useMonthData = (currentMonth: Date) => {
 
 		try {
 			// Get previous month
-			const prevMonth = new Date(currentMonth);
+			const prevMonth = new Date(currentDate);
 			prevMonth.setMonth(prevMonth.getMonth() - 1);
-			const prevMonthKey = prevMonth.toISOString().slice(0, 7);
 
 			// Get next month
-			const nextMonth = new Date(currentMonth);
+			const nextMonth = new Date(currentDate);
 			nextMonth.setMonth(nextMonth.getMonth() + 1);
-			const nextMonthKey = nextMonth.toISOString().slice(0, 7);
 
 			// Load data for all three months in parallel
 			await Promise.all([
-				loadMonthData(currentMonth),
+				loadMonthData(currentDate),
 				loadMonthData(prevMonth),
 				loadMonthData(nextMonth),
 			]);
@@ -81,7 +79,7 @@ export const useMonthData = (currentMonth: Date) => {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [currentMonth, loadMonthData, isInitialized]);
+	}, [currentDate, loadMonthData, isInitialized]);
 
 	// Initial load
 	useEffect(() => {
@@ -106,10 +104,66 @@ export const useMonthData = (currentMonth: Date) => {
 		return monthDataCache.current[currentMonthKey] || {};
 	}, [currentMonthKey]);
 
+	const monthData = useMemo(() => {
+		const year = currentDate.getFullYear();
+		const month = currentDate.getMonth();
+
+		// Get the first day of the month
+		const firstDay = new Date(year, month, 1);
+		// Get the last day of the month
+		const lastDay = new Date(year, month + 1, 0);
+
+		// Get the day of the week for the first day (0 = Sunday, 1 = Monday, etc.)
+		const firstDayOfWeek = firstDay.getDay();
+		// Adjust for Monday as first day of week (0 = Monday, 1 = Tuesday, etc.)
+		const adjustedFirstDayOfWeek =
+			firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+		// Calculate the start date for the calendar (including previous month's days)
+		const startDate = new Date(firstDay);
+		startDate.setDate(startDate.getDate() - adjustedFirstDayOfWeek);
+
+		// Calculate the end date for the calendar (including next month's days)
+		const endDate = new Date(lastDay);
+		endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()));
+
+		const days: Array<{
+			date: Date;
+			isCurrentMonth: boolean;
+			isToday: boolean;
+			dayNumber: number;
+		}> = [];
+
+		const currentDateObj = new Date();
+		const today = new Date(
+			currentDateObj.getFullYear(),
+			currentDateObj.getMonth(),
+			currentDateObj.getDate()
+		);
+
+		const currentDay = new Date(startDate);
+		while (currentDay <= endDate) {
+			const isCurrentMonth = currentDay.getMonth() === month;
+			const isToday = currentDay.getTime() === today.getTime();
+
+			days.push({
+				date: new Date(currentDay),
+				isCurrentMonth,
+				isToday,
+				dayNumber: currentDay.getDate(),
+			});
+
+			currentDay.setDate(currentDay.getDate() + 1);
+		}
+
+		return days;
+	}, [currentDate]);
+
 	return {
 		isLoading: isLoading || !isInitialized,
 		getMarkedDaysForMonth,
 		currentMonthData,
 		isInitialized,
+		monthData,
 	};
 };

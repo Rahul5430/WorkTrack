@@ -1,7 +1,7 @@
 import { Database, Q } from '@nozbe/watermelondb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { TRACKER_TYPES, TrackerType } from '../constants/trackerTypes';
+import { TRACKER_TYPES, TrackerType } from '../constants';
 import { SharedTracker, Tracker, WorkTrack } from '../db/watermelon';
 import { MarkedDayStatus } from '../types/calendar';
 import { TrackerData, TrackerEntryData } from './firebase';

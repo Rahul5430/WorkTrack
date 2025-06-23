@@ -8,10 +8,9 @@ import {
 	View,
 } from 'react-native';
 
-import { useToast } from '../hooks/useToast';
-import SyncService from '../services/sync';
-import WatermelonService from '../services/watermelon';
-import { colors } from '../themes/colors';
+import { useToast } from '../../hooks';
+import { SyncService, WatermelonService } from '../../services';
+import { colors } from '../../themes';
 
 interface SyncErrorBannerProps {
 	onSyncComplete?: () => void;

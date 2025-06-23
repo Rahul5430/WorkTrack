@@ -18,21 +18,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import Dialog from '../../components/common/Dialog';
-import ScreenHeader from '../../components/common/ScreenHeader';
-import FocusAwareStatusBar from '../../components/FocusAwareStatusBar';
-import ProfileInfo from '../../components/Profile/ProfileInfo';
-import SharedWithMeListItem from '../../components/Profile/SharedWithMeListItem';
-import ShareListItem from '../../components/Profile/ShareListItem';
+import {
+	Dialog,
+	FocusAwareStatusBar,
+	ProfileInfo,
+	ScreenHeader,
+	SharedWithMeListItem,
+	ShareListItem,
+} from '../../components';
 import { database } from '../../db/watermelon';
-import { useResponsiveLayout } from '../../hooks/useResponsive';
-import SyncService, { SharePermission } from '../../services/sync';
+import { useResponsiveLayout } from '../../hooks';
+import { type SharePermission, SyncService } from '../../services';
+import { AppDispatch, RootState } from '../../store';
 import { logout } from '../../store/reducers/userSlice';
 import { setLoading } from '../../store/reducers/workTrackSlice';
-import { AppDispatch, RootState } from '../../store/store';
-import { fonts } from '../../themes';
-import { colors } from '../../themes/colors';
-import { AuthenticatedStackScreenProps } from '../../types/navigation';
+import { colors, fonts } from '../../themes';
+import { AuthenticatedStackScreenProps } from '../../types';
 import { clearAppData } from '../../utils/appDataManager';
 
 const ProfileScreen: React.FC<
@@ -104,7 +105,7 @@ const ProfileScreen: React.FC<
 			setTimeout(() => {
 				sharedWithMeSectionRef.current?.measureLayout(
 					scrollViewRef.current?.getInnerViewNode() as number,
-					(x, y) => {
+					(_x, y) => {
 						scrollViewRef.current?.scrollTo({ y, animated: true });
 					},
 					() => {}
@@ -205,15 +206,24 @@ const ProfileScreen: React.FC<
 			setShareEmail('');
 			setIsShareDialogVisible(false);
 			await loadShares();
-		} catch (error: any) {
-			if (error.code === 'permission-denied') {
+		} catch (error: unknown) {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'permission-denied'
+			) {
 				showAlert(
 					'Permission Denied',
 					'You do not have permission to share trackers. Please try logging out and logging back in.',
 					() => setShareEmail('')
 				);
 			} else {
-				showAlert('Error', error.message ?? 'Failed to share tracker');
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: 'Failed to share tracker';
+				showAlert('Error', errorMessage);
 			}
 		} finally {
 			dispatch(setLoading(false));
@@ -339,8 +349,12 @@ const ProfileScreen: React.FC<
 			showAlert('Success', 'Permission updated successfully');
 			setIsEditDialogVisible(false);
 			await loadShares();
-		} catch (error: any) {
-			showAlert('Error', error.message ?? 'Failed to update permission');
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Failed to update permission';
+			showAlert('Error', errorMessage);
 		} finally {
 			dispatch(setLoading(false));
 		}

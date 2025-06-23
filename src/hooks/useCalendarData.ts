@@ -2,7 +2,7 @@ import { Q } from '@nozbe/watermelondb';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { WORK_STATUS } from '../constants/workStatus';
+import { WORK_STATUS } from '../constants';
 import { database } from '../db/watermelon';
 import WorkTrack from '../db/watermelon/worktrack/model';
 import {
@@ -49,7 +49,7 @@ export const useCalendarData = () => {
 			nextYear.setFullYear(today.getFullYear() + 1);
 
 			const batch: WorkTrackRecord[] = [];
-			let currentDate = new Date(pastYear);
+			const currentDate = new Date(pastYear);
 
 			while (currentDate <= nextYear) {
 				const dayOfWeek = currentDate.getDay();

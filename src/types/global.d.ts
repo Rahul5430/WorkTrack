@@ -2,7 +2,7 @@ declare module '@env' {
 	export const GOOGLE_SIGN_IN_CLIENT_ID: string;
 }
 declare module 'eslint-plugin-import' {
-	const value: Record<string, any>;
+	const value: Record<string, unknown>;
 	export = value;
 }
 declare module '*.jpg';

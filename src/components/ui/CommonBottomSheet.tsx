@@ -1,12 +1,13 @@
 import BottomSheet, {
 	BottomSheetBackdrop,
+	BottomSheetBackdropProps,
 	BottomSheetProps,
 	BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { colors } from '../themes/colors';
+import { colors } from '../../themes';
 
 interface Props extends BottomSheetProps {
 	children: React.ReactNode;
@@ -55,7 +56,7 @@ const CommonBottomSheet = forwardRef<CommonBottomSheetRef, Props>(
 		);
 
 		const renderBackdrop = useCallback(
-			(props: any) => (
+			(props: BottomSheetBackdropProps) => (
 				<BottomSheetBackdrop
 					{...props}
 					disappearsOnIndex={-1}
@@ -82,6 +83,8 @@ const CommonBottomSheet = forwardRef<CommonBottomSheetRef, Props>(
 		);
 	}
 );
+
+CommonBottomSheet.displayName = 'CommonBottomSheet';
 
 const styles = StyleSheet.create({
 	container: {

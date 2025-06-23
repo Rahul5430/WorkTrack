@@ -66,4 +66,6 @@ const CalendarComponent = React.memo(
 	}
 );
 
+CalendarComponent.displayName = 'Calendar';
+
 export default CalendarComponent;

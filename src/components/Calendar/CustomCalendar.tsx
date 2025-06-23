@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { useResponsiveLayout } from '../../hooks/useResponsive';
-import { colors } from '../../themes/colors';
+import { colors } from '../../themes';
 import { MarkedDayStatus } from '../../types/calendar';
 import CalendarHeader from './CalendarHeader';
 import MonthCalendar from './MonthCalendar';
@@ -161,7 +161,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 	};
 
 	const getItemLayout = useCallback(
-		(_: any, index: number) => ({
+		(_: ArrayLike<Date> | null | undefined, index: number) => ({
 			length: calendarWidth,
 			offset: calendarWidth * index,
 			index,

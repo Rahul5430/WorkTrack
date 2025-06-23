@@ -15,8 +15,11 @@ import {
 	writeBatch,
 } from '@react-native-firebase/firestore';
 
-import { FIREBASE_COLLECTIONS } from '../constants/firebase';
-import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants/trackerTypes';
+import {
+	DEFAULT_TRACKER_TYPE,
+	FIREBASE_COLLECTIONS,
+	TrackerType,
+} from '../constants';
 import { Tracker, WorkTrack } from '../db/watermelon';
 import { MarkedDayStatus } from '../types/calendar';
 
@@ -174,7 +177,7 @@ export default class FirebaseService {
 				name: trackerData?.name,
 				exists: trackerDoc.exists(),
 			});
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(`Error ensuring tracker ${trackerId} exists:`, error);
 			throw error;
 		}
@@ -244,10 +247,17 @@ export default class FirebaseService {
 			try {
 				await batch.commit();
 				console.log('Batch committed successfully');
-			} catch (error: any) {
+			} catch (error: unknown) {
 				console.error('Batch commit failed:', error);
-				console.error('Error code:', error.code);
-				console.error('Error message:', error.message);
+				if (error && typeof error === 'object' && 'code' in error) {
+					console.error(
+						'Error code:',
+						(error as { code: string }).code
+					);
+				}
+				if (error instanceof Error) {
+					console.error('Error message:', error.message);
+				}
 				throw error;
 			}
 		}
@@ -288,8 +298,13 @@ export default class FirebaseService {
 		let sharesSnapshot;
 		try {
 			sharesSnapshot = await getDocs(sharesQuery);
-		} catch (err: any) {
-			if (err.code === 'permission-denied') {
+		} catch (err: unknown) {
+			if (
+				err &&
+				typeof err === 'object' &&
+				'code' in err &&
+				(err as { code: string }).code === 'permission-denied'
+			) {
 				console.warn(
 					'Permission denied on shares query. Returning empty list.'
 				);
@@ -379,16 +394,23 @@ export default class FirebaseService {
 						(doc) => doc.data() as TrackerEntryData
 					);
 					return { trackerId: tracker.id, data: entriesData };
-				} catch (error: any) {
+				} catch (error: unknown) {
 					// Handle permission errors specifically
-					if (error.code === 'permission-denied') {
+					if (
+						error &&
+						typeof error === 'object' &&
+						'code' in error &&
+						(error as { code: string }).code === 'permission-denied'
+					) {
 						console.log(
 							`Permission denied for tracker ${tracker.id} (${tracker.name}). This tracker may no longer be shared with you.`
 						);
 					} else {
+						const errorMessage =
+							error instanceof Error ? error.message : error;
 						console.warn(
 							`Failed to fetch entries for tracker ${tracker.id} (${tracker.name}):`,
-							error.message ?? error
+							errorMessage
 						);
 					}
 					return { trackerId: tracker.id, data: [] };
@@ -399,16 +421,23 @@ export default class FirebaseService {
 			console.log('entries', entries);
 
 			return { trackers: allTrackers, entries };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			// Handle top-level permission errors
-			if (error.code === 'permission-denied') {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				(error as { code: string }).code === 'permission-denied'
+			) {
 				console.log(
 					'Permission denied for Firebase sync. This may be due to security rules or authentication issues.'
 				);
 			} else {
+				const errorMessage =
+					error instanceof Error ? error.message : error;
 				console.warn(
 					'Firebase sync failed, returning empty data:',
-					error.message ?? error
+					errorMessage
 				);
 			}
 			return { trackers: [], entries: [] };

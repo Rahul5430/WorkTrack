@@ -139,12 +139,16 @@ export default class SyncService {
 	}
 
 	private categorizeError(
-		error: any
+		error: unknown
 	): 'network' | 'auth' | 'server' | 'unknown' {
 		if (!error) return 'unknown';
 
-		const errorMessage = error.message?.toLowerCase() ?? '';
-		const errorCode = error.code?.toLowerCase() ?? '';
+		const errorMessage =
+			error instanceof Error ? (error.message?.toLowerCase() ?? '') : '';
+		const errorCode =
+			error && typeof error === 'object' && 'code' in error
+				? ((error as { code: string }).code?.toLowerCase() ?? '')
+				: '';
 
 		// Network errors
 		if (

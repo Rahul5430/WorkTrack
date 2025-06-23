@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { fonts } from '../themes';
-import { colors } from '../themes/colors';
+import { fonts } from '../../themes';
+import { colors } from '../../themes/colors';
 
 export type ToastType = 'success' | 'error' | 'info';
 export type ToastPosition = 'top' | 'bottom';
