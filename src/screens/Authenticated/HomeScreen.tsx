@@ -66,61 +66,81 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		id: string;
 		name: string;
 	} | null>(null);
-	const [isWorkTrackSwitcherOpen, setIsWorkTrackSwitcherOpen] =
-		useState(false);
 	const dayMarkingSheetRef = useRef<CommonBottomSheetRef>(null);
 	const workTrackSwitcherRef = useRef<CommonBottomSheetRef>(null);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const [selectedMonth, setSelectedMonth] = useState(new Date());
 	const rotateAnim = useRef(new Animated.Value(0)).current;
-	const isAnimating = useRef(false);
 
 	useEffect(() => {
 		// Start periodic sync
 		const syncService = SyncService.getInstance();
 		syncService.startPeriodicSync();
 
-		// Load initial work track - default to user's own tracker
-		setCurrentWorkTrack({
-			id: user?.id ?? '',
-			name: user?.name ?? 'My WorkTrack',
-		});
+		// Load initial work track - we'll set this properly in the data loading effect
+		// Don't set currentWorkTrack here, let the data loading effect handle it
+		console.log('HomeScreen: Initializing with user:', user?.id);
 
 		return () => {
 			syncService.stopPeriodicSync();
 		};
 	}, [user]);
 
-	// Add a new effect to handle data loading when currentWorkTrack changes
+	// Add a new effect to handle data loading when user changes
 	useEffect(() => {
 		const loadData = async () => {
-			console.log('loadData', currentWorkTrack?.id);
-			if (!currentWorkTrack?.id) return;
+			console.log('loadData - user ID:', user?.id);
+			console.log('loadData - tracker:', workTrackData);
+			if (!user?.id) return;
 
 			dispatch(setLoading(true));
 			try {
 				// Add a small delay to ensure JSI bridge is ready
-				// await new Promise((resolve) => setTimeout(resolve, 100));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 
-				// Trigger sync to get latest data
-				await SyncService.getInstance().triggerSync();
-
-				// Load data from local database for the current tracker
+				// Check and fix any records without trackerId (from old schema)
 				const watermelonService = WatermelonService.getInstance();
-				console.log('HomeScreen: About to call getTrackerById');
-				const tracker = await watermelonService.getTrackerById(
-					currentWorkTrack.id
+				try {
+					await watermelonService.checkAndFixRecordsWithoutTrackerId();
+				} catch (error) {
+					console.warn(
+						'Error checking records, continuing anyway:',
+						error
+					);
+				}
+
+				// FIRST: Sync from Firebase to get any existing trackers
+				console.log('HomeScreen: Syncing from Firebase first...');
+				try {
+					await SyncService.getInstance().syncFromFirebase();
+					console.log('HomeScreen: Firebase sync completed');
+				} catch (syncError) {
+					console.warn(
+						'Firebase sync failed, continuing with local data:',
+						syncError
+					);
+				}
+
+				// SECOND: Now check for existing tracker after sync
+				const tracker = await watermelonService.ensureUserHasTracker(
+					user.id
 				);
-				console.log('HomeScreen: getTrackerById result:', tracker);
 
 				if (tracker) {
 					console.log(
-						'HomeScreen: Tracker exists, calling getEntriesForTracker'
+						'HomeScreen: Found existing tracker after sync:',
+						tracker.id
 					);
+					// Update currentWorkTrack with the correct tracker ID and name
+					setCurrentWorkTrack({
+						id: tracker.id,
+						name: tracker.name,
+					});
+
 					// Get all entries for this tracker using the service
 					const entries =
 						await watermelonService.getEntriesForTracker(
-							currentWorkTrack.id
+							tracker.id
 						);
 
 					const workTrackData = entries.map((entry: WorkTrack) => ({
@@ -132,24 +152,20 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					dispatch(setWorkTrackData(workTrackData));
 				} else {
 					console.log(
-						'HomeScreen: No tracker found, calling createTracker'
+						'HomeScreen: Failed to ensure user has tracker'
 					);
-					// If no tracker found, create a default one for the user
-					// await watermelonService.createTracker({
-					// 	name: 'My WorkTrack',
-					// 	color: '#007AFF',
-					// 	trackerType: 'work_track',
-					// 	ownerId: currentWorkTrack.id,
-					// });
-					dispatch(setWorkTrackData([]));
+					dispatch(setError('Failed to load or create tracker'));
 				}
+
+				// Note: No need to call triggerSync() here since we already synced from Firebase
+				// and any new tracker creation will be synced to Firebase on the next periodic sync
 			} catch (error) {
-				console.error('Error syncing data:', error);
+				console.error('Error loading data:', error);
 				dispatch(
 					setError(
 						error instanceof Error
 							? error.message
-							: 'Failed to sync data'
+							: 'Failed to load data'
 					)
 				);
 			} finally {
@@ -158,17 +174,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		};
 
 		loadData();
-	}, [currentWorkTrack?.id, dispatch]);
+	}, [user?.id, dispatch]);
 
 	const handleDayMarkingSheetChanges = useCallback((index: number) => {
 		if (index === -1) {
 			setSelectedDate(null);
 		}
-	}, []);
-
-	const handleWorkTrackSwitcherChanges = useCallback((index: number) => {
-		const isOpen = index > -1;
-		setIsWorkTrackSwitcherOpen(isOpen);
 	}, []);
 
 	const handlePressIn = useCallback(() => {
@@ -247,6 +258,30 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				}));
 
 				dispatch(setWorkTrackData(workTrackData));
+			} else if (user?.id) {
+				// If currentWorkTrack is not set yet, try to load it
+				const watermelonService = WatermelonService.getInstance();
+				const tracker = await watermelonService.ensureUserHasTracker(
+					user.id
+				);
+				if (tracker) {
+					setCurrentWorkTrack({
+						id: tracker.id,
+						name: tracker.name,
+					});
+
+					const entries =
+						await watermelonService.getEntriesForTracker(
+							tracker.id
+						);
+					const workTrackData = entries.map((entry: WorkTrack) => ({
+						date: entry.date,
+						status: entry.status,
+						isAdvisory: entry.isAdvisory,
+					}));
+
+					dispatch(setWorkTrackData(workTrackData));
+				}
 			}
 		} catch (error) {
 			console.error('Error syncing data:', error);
@@ -260,7 +295,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		} finally {
 			dispatch(setLoading(false));
 		}
-	}, [dispatch, currentWorkTrack?.id]);
+	}, [dispatch, currentWorkTrack?.id, user?.id]);
 
 	const handleSave = async (status: MarkedDayStatus, isAdvisory: boolean) => {
 		if (selectedDate === null || !currentWorkTrack?.id) {
@@ -272,17 +307,48 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			dispatch(setLoading(true));
 			dispatch(setError(null));
 
-			// Add a small delay to ensure JSI bridge is ready
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
 			// Optimistic update in Redux
 			dispatch(
 				addOrUpdateEntry({ date: selectedDate, status, isAdvisory })
 			);
+			console.log('handleSave - currentWorkTrack:', currentWorkTrack);
+
+			// Ensure we have the correct tracker ID
+			let trackerId = currentWorkTrack.id;
+			let trackerName = currentWorkTrack.name;
+
+			// If currentWorkTrack.id might be a user ID, try to get the actual tracker
+			if (currentWorkTrack.id === user?.id) {
+				console.log(
+					'handleSave - currentWorkTrack.id is user ID, looking up tracker'
+				);
+				const watermelonService = WatermelonService.getInstance();
+				const tracker = await watermelonService.getTrackerByOwnerId(
+					currentWorkTrack.id
+				);
+				if (tracker) {
+					trackerId = tracker.id;
+					trackerName = tracker.name;
+					console.log('handleSave - found tracker ID:', trackerId);
+
+					// Update currentWorkTrack state with the correct tracker ID
+					setCurrentWorkTrack({
+						id: trackerId,
+						name: trackerName,
+					});
+				} else {
+					console.error(
+						'handleSave - no tracker found for user ID:',
+						currentWorkTrack.id
+					);
+					dispatch(setError('No tracker found for user'));
+					return;
+				}
+			}
 
 			// Save to WatermelonDB using the new service
 			await WatermelonService.getInstance().createOrUpdateRecord({
-				trackerId: currentWorkTrack.id,
+				trackerId: trackerId,
 				date: selectedDate,
 				status,
 				isAdvisory,
@@ -353,7 +419,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 								{currentWorkTrack?.name
 									? getDisplayName(
 											currentWorkTrack.name,
-											currentWorkTrack.id === user?.id
+											true // Always show as own work track for now, can be enhanced later for shared trackers
 										)
 									: 'My WorkTrack'}
 							</Text>
@@ -438,7 +504,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			<CommonBottomSheet
 				ref={workTrackSwitcherRef}
 				snapPoints={['50%']}
-				onChange={handleWorkTrackSwitcherChanges}
 				onBackdropPress={handleCloseAnimation}
 				onClose={handleCloseAnimation}
 			>

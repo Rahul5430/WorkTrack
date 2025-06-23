@@ -183,11 +183,43 @@ export default class SyncService {
 
 	async syncToFirebase() {
 		const recordsToSync = await this.watermelonService.getUnsyncedRecords();
+		console.log('recordsToSync', recordsToSync);
+		console.log('recordsToSync length:', recordsToSync.length);
+
+		// Debug: Log each record's trackerId
+		recordsToSync.forEach((record, index) => {
+			console.log(`Record ${index}:`, {
+				id: record.id,
+				trackerId: record.trackerId,
+				date: record.date,
+				status: record.status,
+				needsSync: record.needsSync,
+			});
+		});
+
 		if (recordsToSync.length > 0) {
 			console.log(
 				`Syncing ${recordsToSync.length} records to Firebase...`
 			);
 			try {
+				const userId = getAuth().currentUser?.uid;
+				if (!userId) throw new Error('User not authenticated');
+
+				const trackerIds = new Set(
+					recordsToSync.map((r) => r.trackerId)
+				);
+				console.log('trackerIds', trackerIds);
+				console.log('trackerIds size:', trackerIds.size);
+
+				for (const trackerId of trackerIds) {
+					const user = getAuth().currentUser;
+					if (!user) throw new Error('User not authenticated');
+					await this.firebaseService.ensureTrackerStructure(
+						trackerId,
+						{ uid: user.uid, email: user.email ?? '' }
+					);
+				}
+
 				await this.firebaseService.syncToFirebase(recordsToSync);
 				// After successful sync, mark records as synced
 				await this.watermelonService.markRecordsAsSynced(recordsToSync);
@@ -212,29 +244,45 @@ export default class SyncService {
 		}
 
 		console.log('Syncing from Firebase...');
-		const { trackers, entries } =
-			await this.firebaseService.syncFromFirebase(
-				userId,
-				this.lastSyncTime
+		try {
+			const { trackers, entries } =
+				await this.firebaseService.syncFromFirebase(
+					userId,
+					this.lastSyncTime
+				);
+
+			// Sync trackers
+			if (trackers.length > 0) {
+				console.log(
+					`Received ${trackers.length} trackers from Firebase.`
+				);
+				await this.watermelonService.createOrUpdateTrackers(trackers);
+			}
+
+			// Clean up orphaned trackers that no longer exist in Firebase
+			const firebaseTrackerIds = trackers.map((t) => t.id);
+			await this.watermelonService.cleanupOrphanedTrackers(
+				firebaseTrackerIds
 			);
 
-		// Sync trackers
-		if (trackers.length > 0) {
-			console.log(`Received ${trackers.length} trackers from Firebase.`);
-			await this.watermelonService.createOrUpdateTrackers(trackers);
-		}
-
-		// Sync entries
-		for (const entryGroup of entries) {
-			if (entryGroup.data.length > 0) {
-				console.log(
-					`Received ${entryGroup.data.length} entries for tracker ${entryGroup.trackerId}.`
-				);
-				await this.watermelonService.createOrUpdateEntries(
-					entryGroup.trackerId,
-					entryGroup.data
-				);
+			// Sync entries
+			for (const entryGroup of entries) {
+				if (entryGroup.data.length > 0) {
+					console.log(
+						`Received ${entryGroup.data.length} entries for tracker ${entryGroup.trackerId}.`
+					);
+					await this.watermelonService.createOrUpdateEntries(
+						entryGroup.trackerId,
+						entryGroup.data
+					);
+				}
 			}
+		} catch (error) {
+			console.warn(
+				'Firebase sync failed, continuing with local data:',
+				error
+			);
+			// Don't throw the error, just log it and continue
 		}
 	}
 

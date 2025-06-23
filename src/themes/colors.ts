@@ -9,6 +9,7 @@ export const colors = {
 	leave: '#DBEAFE',
 	leavePressed: '#BFDBFE',
 	forecast: '#9C27B0',
+	success: '#4CAF50',
 
 	// Background Colors
 	background: {

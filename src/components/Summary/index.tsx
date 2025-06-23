@@ -194,7 +194,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 										fontSize: RFValue(18),
 										color: attendanceStats.quarterly
 											.meetsRequirement
-											? colors.office
+											? colors.success
 											: colors.error,
 									},
 								]}
@@ -212,7 +212,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 											{
 												color: attendanceStats.quarterly
 													.meetsRequirement
-													? colors.office
+													? colors.success
 													: colors.error,
 												fontSize: RFValue(12),
 											},
@@ -281,6 +281,7 @@ const styles = StyleSheet.create({
 	requirementText: {
 		fontFamily: fonts.PoppinsRegular,
 		marginTop: 2,
+		fontWeight: 600,
 	},
 	subHeader: {
 		color: colors.text.secondary,

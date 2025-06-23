@@ -51,7 +51,10 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 	}, [RFValue]);
 
 	return (
-		<View onLayout={onHeaderLayout}>
+		<View
+			onLayout={onHeaderLayout}
+			style={{ paddingHorizontal: responsivePadding }}
+		>
 			<View style={styles.header}>
 				<View style={styles.headerContainer}>
 					<Text
@@ -62,12 +65,7 @@ const CalendarHeader = (props: CalendarHeaderProps) => {
 					</Text>
 				</View>
 			</View>
-			<View
-				style={[
-					styles.weekContainer,
-					{ paddingHorizontal: responsivePadding },
-				]}
-			>
+			<View style={styles.weekContainer}>
 				<View style={styles.week}>{renderWeekDays}</View>
 			</View>
 		</View>

@@ -85,16 +85,22 @@ export default class FirebaseService {
 
 	private getEntriesCollection(trackerId: string) {
 		return collection(
-			this.getTrackersCollection(),
-			trackerId,
+			doc(
+				getFirestore(getApp()),
+				FIREBASE_COLLECTIONS.TRACKERS,
+				trackerId
+			),
 			FIREBASE_COLLECTIONS.ENTRIES
 		);
 	}
 
 	private getSharesCollection(trackerId: string) {
 		return collection(
-			this.getTrackersCollection(),
-			trackerId,
+			doc(
+				getFirestore(getApp()),
+				FIREBASE_COLLECTIONS.TRACKERS,
+				trackerId
+			),
 			FIREBASE_COLLECTIONS.SHARES
 		);
 	}
@@ -102,6 +108,8 @@ export default class FirebaseService {
 	// New Tracker Methods
 	async createTracker(tracker: Tracker): Promise<void> {
 		const trackerRef = doc(this.getTrackersCollection(), tracker.id);
+
+		// Create the tracker document
 		await setDoc(trackerRef, {
 			name: tracker.name,
 			color: tracker.color,
@@ -110,6 +118,8 @@ export default class FirebaseService {
 			isDefault: tracker.isDefault,
 			trackerType: tracker.trackerType,
 		});
+
+		console.log(`Successfully created tracker ${tracker.id} in Firebase`);
 	}
 
 	async updateTracker(tracker: Tracker): Promise<void> {
@@ -125,25 +135,102 @@ export default class FirebaseService {
 		);
 	}
 
+	// Ensure tracker exists before writing entries
+	async ensureTrackerExists(
+		trackerId: string,
+		ownerId: string
+	): Promise<void> {
+		const trackerRef = doc(this.getTrackersCollection(), trackerId);
+
+		try {
+			// Try to create the tracker directly with merge option
+			// This will create if it doesn't exist, or update if it does
+			await setDoc(
+				trackerRef,
+				{
+					name: 'Default Tracker',
+					color: '#000000',
+					ownerId: ownerId,
+					createdAt: Timestamp.now(),
+					isDefault: false,
+					trackerType: DEFAULT_TRACKER_TYPE,
+				},
+				{ merge: true }
+			);
+
+			console.log(
+				`Ensured tracker ${trackerId} exists for user ${ownerId}`
+			);
+
+			// Verify the tracker was created properly by reading it back
+			const trackerDoc = await getDoc(trackerRef);
+			if (!trackerDoc.exists()) {
+				throw new Error(`Failed to create tracker ${trackerId}`);
+			}
+
+			const trackerData = trackerDoc.data();
+			console.log(`Tracker ${trackerId} data:`, {
+				ownerId: trackerData?.ownerId,
+				name: trackerData?.name,
+				exists: trackerDoc.exists(),
+			});
+		} catch (error: any) {
+			console.error(`Error ensuring tracker ${trackerId} exists:`, error);
+			throw error;
+		}
+	}
+
 	// Entry Sync Methods
 	async syncToFirebase(records: WorkTrack[]): Promise<void> {
 		if (records.length === 0) return;
 
+		const currentUser = getAuth().currentUser;
+		if (!currentUser) {
+			throw new Error('User not authenticated');
+		}
+
+		console.log(
+			`syncToFirebase: Syncing ${records.length} records for user ${currentUser.uid}`
+		);
+
 		const BATCH_SIZE = 500; // Firestore batch limit
 		const db = getFirestore();
+
+		// Ensure tracker structure for each trackerId before writing entries
+		const trackerIds = Array.from(new Set(records.map((r) => r.trackerId)));
+		for (const trackerId of trackerIds) {
+			await this.ensureTrackerStructure(trackerId, {
+				uid: currentUser.uid,
+				email: currentUser.email ?? '',
+			});
+		}
 
 		for (let i = 0; i < records.length; i += BATCH_SIZE) {
 			const batch = writeBatch(db);
 			const batchRecords = records.slice(i, i + BATCH_SIZE);
 
+			console.log(
+				`Processing batch ${i / BATCH_SIZE + 1} with ${batchRecords.length} records`
+			);
+
 			for (const record of batchRecords) {
 				const { trackerId, date } = record;
-				if (!trackerId) continue; // Should not happen
+				if (!trackerId) {
+					console.warn('Record without trackerId:', record);
+					continue; // Should not happen
+				}
+
+				console.log(
+					`Processing record: trackerId=${trackerId}, date=${date}`
+				);
 
 				const entryRef = doc(
 					this.getEntriesCollection(trackerId),
 					date
 				);
+
+				console.log(`Writing entry to: ${entryRef.path}`);
+
 				batch.set(entryRef, {
 					date: record.date,
 					status: record.status,
@@ -153,7 +240,16 @@ export default class FirebaseService {
 				});
 			}
 
-			await batch.commit();
+			console.log('Committing batch...');
+			try {
+				await batch.commit();
+				console.log('Batch committed successfully');
+			} catch (error: any) {
+				console.error('Batch commit failed:', error);
+				console.error('Error code:', error.code);
+				console.error('Error message:', error.message);
+				throw error;
+			}
 		}
 	}
 
@@ -238,49 +334,85 @@ export default class FirebaseService {
 		trackers: TrackerData[];
 		entries: { trackerId: string; data: TrackerEntryData[] }[];
 	}> {
-		// 1. Fetch trackers owned by the user
-		const ownedTrackersQuery = query(
-			this.getTrackersCollection(),
-			where('ownerId', '==', userId)
-		);
-		const ownedTrackersSnapshot = await getDocs(ownedTrackersQuery);
-		const ownedTrackers = ownedTrackersSnapshot.docs.map(
-			(doc) => ({ id: doc.id, ...doc.data() }) as TrackerData
-		);
-
-		// 2. Fetch trackers shared with the user
-		const sharedTrackers = await this.getTrackersSharedWithUser(userId);
-
-		// 3. Combine and deduplicate
-		const allTrackersMap = new Map<string, TrackerData>();
-		[...ownedTrackers, ...sharedTrackers.map((s) => s.tracker)].forEach(
-			(t) => allTrackersMap.set(t.id, t)
-		);
-		const allTrackers = Array.from(allTrackersMap.values());
-
-		// 4. Fetch entries for each tracker
-		const entriesPromises = allTrackers.map(async (tracker) => {
-			const entriesQuery = lastSyncedAt
-				? query(
-						this.getEntriesCollection(tracker.id),
-						where(
-							'lastModified',
-							'>',
-							Timestamp.fromMillis(lastSyncedAt)
-						)
-					)
-				: this.getEntriesCollection(tracker.id);
-
-			const entriesSnapshot = await getDocs(entriesQuery);
-			const entriesData = entriesSnapshot.docs.map(
-				(doc) => doc.data() as TrackerEntryData
+		try {
+			// 1. Fetch trackers owned by the user
+			const ownedTrackersQuery = query(
+				this.getTrackersCollection(),
+				where('ownerId', '==', userId)
 			);
-			return { trackerId: tracker.id, data: entriesData };
-		});
+			const ownedTrackersSnapshot = await getDocs(ownedTrackersQuery);
+			const ownedTrackers = ownedTrackersSnapshot.docs.map(
+				(doc) => ({ id: doc.id, ...doc.data() }) as TrackerData
+			);
 
-		const entries = await Promise.all(entriesPromises);
+			// 2. Fetch trackers shared with the user
+			const sharedTrackers = await this.getTrackersSharedWithUser(userId);
 
-		return { trackers: allTrackers, entries };
+			// 3. Combine and deduplicate
+			const allTrackersMap = new Map<string, TrackerData>();
+			[...ownedTrackers, ...sharedTrackers.map((s) => s.tracker)].forEach(
+				(t) => allTrackersMap.set(t.id, t)
+			);
+			const allTrackers = Array.from(allTrackersMap.values());
+
+			console.log(
+				`Found ${allTrackers.length} trackers to sync (${ownedTrackers.length} owned, ${sharedTrackers.length} shared)`
+			);
+
+			// 4. Fetch entries for each tracker
+			const entriesPromises = allTrackers.map(async (tracker) => {
+				try {
+					const entriesQuery = lastSyncedAt
+						? query(
+								this.getEntriesCollection(tracker.id),
+								where(
+									'lastModified',
+									'>',
+									Timestamp.fromMillis(lastSyncedAt)
+								)
+							)
+						: this.getEntriesCollection(tracker.id);
+
+					console.log('entriesQuery', entriesQuery, tracker);
+					const entriesSnapshot = await getDocs(entriesQuery);
+					const entriesData = entriesSnapshot.docs.map(
+						(doc) => doc.data() as TrackerEntryData
+					);
+					return { trackerId: tracker.id, data: entriesData };
+				} catch (error: any) {
+					// Handle permission errors specifically
+					if (error.code === 'permission-denied') {
+						console.log(
+							`Permission denied for tracker ${tracker.id} (${tracker.name}). This tracker may no longer be shared with you.`
+						);
+					} else {
+						console.warn(
+							`Failed to fetch entries for tracker ${tracker.id} (${tracker.name}):`,
+							error.message ?? error
+						);
+					}
+					return { trackerId: tracker.id, data: [] };
+				}
+			});
+
+			const entries = await Promise.all(entriesPromises);
+			console.log('entries', entries);
+
+			return { trackers: allTrackers, entries };
+		} catch (error: any) {
+			// Handle top-level permission errors
+			if (error.code === 'permission-denied') {
+				console.log(
+					'Permission denied for Firebase sync. This may be due to security rules or authentication issues.'
+				);
+			} else {
+				console.warn(
+					'Firebase sync failed, returning empty data:',
+					error.message ?? error
+				);
+			}
+			return { trackers: [], entries: [] };
+		}
 	}
 
 	async getSharedWorkTracks(): Promise<SharedWorkTrackData[]> {
@@ -329,5 +461,77 @@ export default class FirebaseService {
 		}
 
 		return sharedWorkTracks;
+	}
+
+	// Ensures both tracker doc and share doc exist for a tracker and user
+	async ensureTrackerStructure(
+		trackerId: string,
+		user: { uid: string; email: string }
+	): Promise<void> {
+		const trackerRef = doc(this.getTrackersCollection(), trackerId);
+		const shareRef = doc(this.getSharesCollection(trackerId), user.uid);
+
+		try {
+			// 1. Ensure tracker doc exists (set createdAt only if missing, always set updatedAt)
+			const trackerSnap = await getDoc(trackerRef);
+			let createdAt = Timestamp.now();
+			if (trackerSnap.exists()) {
+				const data = trackerSnap.data();
+				createdAt = data?.createdAt ?? Timestamp.now();
+				console.log(
+					`[ensureTrackerStructure] Existing tracker doc for ${trackerId}, preserving createdAt:`,
+					createdAt
+				);
+			} else {
+				console.log(
+					`[ensureTrackerStructure] Creating tracker doc for ${trackerId} with createdAt:`,
+					createdAt
+				);
+			}
+			await setDoc(
+				trackerRef,
+				{
+					ownerId: user.uid,
+					name: 'Default Tracker', // If you have a name, pass it in
+					isDefault: false, // If you have this info, pass it in
+					trackerType: 'work_track', // If you have this info, pass it in
+					createdAt,
+					updatedAt: Timestamp.now(),
+				},
+				{ merge: true }
+			);
+			console.log(
+				`[ensureTrackerStructure] Ensured tracker doc for ${trackerId}`
+			);
+		} catch (error) {
+			console.error(
+				`[ensureTrackerStructure] Failed to ensure tracker doc for ${trackerId}:`,
+				error
+			);
+			throw error;
+		}
+
+		try {
+			// 2. Ensure share doc exists (merge: true)
+			await setDoc(
+				shareRef,
+				{
+					sharedWithId: user.uid,
+					permission: 'write',
+					sharedWithEmail: user.email,
+					createdAt: Timestamp.now(),
+				},
+				{ merge: true }
+			);
+			console.log(
+				`[ensureTrackerStructure] Ensured share doc for tracker ${trackerId} and user ${user.uid}`
+			);
+		} catch (error) {
+			console.error(
+				`[ensureTrackerStructure] Failed to ensure share doc for tracker ${trackerId} and user ${user.uid}:`,
+				error
+			);
+			throw error;
+		}
 	}
 }

@@ -61,9 +61,9 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			return;
 		}
 
-		if (!validateDate(selectedDate)) {
-			return;
-		}
+		// if (!validateDate(selectedDate)) {
+		// 	return;
+		// }
 
 		onSave(status, isAdvisory);
 	};
