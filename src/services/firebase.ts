@@ -21,6 +21,7 @@ import {
 	TrackerType,
 } from '../constants';
 import { Tracker, WorkTrack } from '../db/watermelon';
+import { colors } from '../themes/colors';
 import { MarkedDayStatus } from '../types/calendar';
 
 export interface TrackerData {
@@ -152,7 +153,7 @@ export default class FirebaseService {
 				trackerRef,
 				{
 					name: 'Default Tracker',
-					color: '#000000',
+					color: colors.ui.black,
 					ownerId: ownerId,
 					createdAt: Timestamp.now(),
 					isDefault: false,

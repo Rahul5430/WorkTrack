@@ -46,43 +46,7 @@ export const useSharedWorkTracks = () => {
 				trackerType: track.trackerType ?? DEFAULT_TRACKER_TYPE,
 			}));
 
-			// Add mock data for testing
-			const mockTracks = [
-				{
-					id: 'mock1',
-					ownerName: 'John Doe',
-					ownerEmail: 'john.doe@example.com',
-					permission: 'write' as const,
-					isCurrent: false,
-					trackerType: DEFAULT_TRACKER_TYPE,
-				},
-				{
-					id: 'mock2',
-					ownerName: 'Jane Smith',
-					ownerEmail: 'jane.smith@example.com',
-					permission: 'read' as const,
-					isCurrent: false,
-					trackerType: DEFAULT_TRACKER_TYPE,
-				},
-				{
-					id: 'mock3',
-					ownerName: 'Mike Johnson',
-					ownerEmail: 'mike.johnson@example.com',
-					permission: 'write' as const,
-					isCurrent: false,
-					trackerType: DEFAULT_TRACKER_TYPE,
-				},
-				{
-					id: 'mock4',
-					ownerName: 'Sarah Wilson',
-					ownerEmail: 'sarah.wilson@example.com',
-					permission: 'read' as const,
-					isCurrent: false,
-					trackerType: DEFAULT_TRACKER_TYPE,
-				},
-			];
-
-			setSharedWorkTracks([...transformedTracks, ...mockTracks]);
+			setSharedWorkTracks([...transformedTracks]);
 		} catch (error) {
 			console.error('Error loading shared worktracks:', error);
 		} finally {

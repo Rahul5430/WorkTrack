@@ -25,6 +25,7 @@ import {
 	GoogleUser,
 	setErrorMessage,
 	setIsFetching,
+	setLoggedIn,
 	setUser,
 } from '../store/reducers/userSlice';
 import { WelcomeStackScreenProps } from '../types';
@@ -45,6 +46,7 @@ const WelcomeScreen: React.FC<
 		const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
 			if (firebaseUser) {
 				try {
+					dispatch(setIsFetching(true));
 					const userInfo: GoogleUser = {
 						id: firebaseUser.uid,
 						name: firebaseUser.displayName ?? 'Unknown',
@@ -80,6 +82,7 @@ const WelcomeScreen: React.FC<
 						JSON.stringify(userInfo)
 					);
 					dispatch(setUser(userInfo));
+					dispatch(setLoggedIn(true));
 				} catch (error) {
 					console.error('Error during login sync:', error);
 					dispatch(
@@ -87,6 +90,8 @@ const WelcomeScreen: React.FC<
 							'Failed to sync data. Please try again.'
 						)
 					);
+				} finally {
+					dispatch(setIsFetching(false));
 				}
 			}
 		});

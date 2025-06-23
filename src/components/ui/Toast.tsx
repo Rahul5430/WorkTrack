@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 12,
 		borderRadius: 8,
 		borderLeftWidth: 4,
-		shadowColor: '#000',
+		shadowColor: colors.ui.shadow,
 		shadowOffset: {
 			width: 0,
 			height: 2,

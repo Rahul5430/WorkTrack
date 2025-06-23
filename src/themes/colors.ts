@@ -41,6 +41,12 @@ export const colors = {
 	ui: {
 		white: '#FFFFFF',
 		black: '#000000',
+		// Additional colors for components
+		loading: '#0000ff',
+		checkCircle: '#4CAF50',
+		accountIcon: '#666',
+		shadow: '#000',
+		backdrop: 'rgba(0, 0, 0, 0.5)',
 		gray: {
 			100: '#F3F4F6',
 			200: '#E5E7EB',

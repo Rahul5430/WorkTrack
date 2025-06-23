@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
 		borderRadius: 10,
 		marginHorizontal: 10,
 		overflow: 'hidden',
-		shadowColor: '#000',
+		shadowColor: colors.ui.shadow,
 		shadowOffset: {
 			width: 0,
 			height: 2,

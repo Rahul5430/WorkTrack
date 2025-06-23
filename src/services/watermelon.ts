@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { TRACKER_TYPES, TrackerType } from '../constants';
 import { SharedTracker, Tracker, WorkTrack } from '../db/watermelon';
+import { colors } from '../themes/colors';
 import { MarkedDayStatus } from '../types/calendar';
 import { TrackerData, TrackerEntryData } from './firebase';
 
@@ -841,7 +842,7 @@ export default class WatermelonService {
 				// Create a default tracker for the user
 				const defaultTracker = await this.createTracker({
 					name: 'My WorkTrack',
-					color: '#007AFF',
+					color: colors.office,
 					trackerType: TRACKER_TYPES.WORK_TRACK,
 					ownerId: userId,
 				});
