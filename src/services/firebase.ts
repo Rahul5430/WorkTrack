@@ -378,16 +378,32 @@ export default class FirebaseService {
 			// 4. Fetch entries for each tracker
 			const entriesPromises = allTrackers.map(async (tracker) => {
 				try {
-					const entriesQuery = lastSyncedAt
-						? query(
+					// Smart sync: Use lastSyncedAt filter for performance, but detect when full sync is needed
+					let entriesQuery;
+
+					if (lastSyncedAt) {
+						// If lastSyncTime is very old (more than 30 days), do a full sync to ensure we don't miss data
+						const thirtyDaysAgo =
+							Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+						if (lastSyncedAt < thirtyDaysAgo) {
+							entriesQuery = this.getEntriesCollection(
+								tracker.id
+							);
+						} else {
+							entriesQuery = query(
 								this.getEntriesCollection(tracker.id),
 								where(
 									'lastModified',
 									'>',
 									Timestamp.fromMillis(lastSyncedAt)
 								)
-							)
-						: this.getEntriesCollection(tracker.id);
+							);
+						}
+					} else {
+						// First time sync - get all data
+						entriesQuery = this.getEntriesCollection(tracker.id);
+					}
 
 					console.log('entriesQuery', entriesQuery, tracker);
 					const entriesSnapshot = await getDocs(entriesQuery);

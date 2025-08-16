@@ -80,6 +80,12 @@ export const useCalendarData = () => {
 	const loadData = useCallback(async () => {
 		if (loadingRef.current || hasLoadedRef.current) return;
 
+		// Check if we already have data in Redux store
+		if (Object.keys(markedDays).length > 0) {
+			setHasLoaded(true);
+			return;
+		}
+
 		setLoading(true);
 
 		try {
@@ -112,7 +118,7 @@ export const useCalendarData = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [dispatch]);
+	}, [dispatch, markedDays]);
 
 	useEffect(() => {
 		initializeDatabase();

@@ -224,14 +224,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		}
 	};
 
-	const handleAddWorkTrack = () => {
-		workTrackSwitcherRef.current?.close();
-		navigation.navigate('ProfileScreen', {
-			scrollToSection: 'sharedWithMe',
-			highlightWorkTrackId: currentWorkTrack?.id,
-		});
-	};
-
 	const onRefresh = useCallback(async () => {
 		dispatch(setLoading(true));
 		try {
@@ -241,36 +233,31 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			// Trigger sync to get latest data
 			await SyncService.getInstance().triggerSync();
 
-			// Reload data for current tracker
-			if (currentWorkTrack?.id) {
-				const watermelonService = WatermelonService.getInstance();
-				const entries = await watermelonService.getEntriesForTracker(
-					currentWorkTrack.id
-				);
-
-				const workTrackData = entries.map((entry: WorkTrack) => ({
-					date: entry.date,
-					status: entry.status,
-					isAdvisory: entry.isAdvisory,
-				}));
-
-				dispatch(setWorkTrackData(workTrackData));
-			} else if (user?.id) {
-				// If currentWorkTrack is not set yet, try to load it
+			// Always ensure we have the current tracker and load its data
+			if (user?.id) {
 				const watermelonService = WatermelonService.getInstance();
 				const tracker = await watermelonService.ensureUserHasTracker(
 					user.id
 				);
-				if (tracker) {
-					setCurrentWorkTrack({
-						id: tracker.id,
-						name: tracker.name,
-					});
 
+				if (tracker) {
+					// Update currentWorkTrack if it's not set or different
+					if (
+						!currentWorkTrack?.id ||
+						currentWorkTrack.id !== tracker.id
+					) {
+						setCurrentWorkTrack({
+							id: tracker.id,
+							name: tracker.name,
+						});
+					}
+
+					// Load entries for this tracker
 					const entries =
 						await watermelonService.getEntriesForTracker(
 							tracker.id
 						);
+
 					const workTrackData = entries.map((entry: WorkTrack) => ({
 						date: entry.date,
 						status: entry.status,
@@ -278,6 +265,8 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					}));
 
 					dispatch(setWorkTrackData(workTrackData));
+				} else {
+					dispatch(setError('Failed to load tracker'));
 				}
 			}
 		} catch (error) {
@@ -536,7 +525,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					sharedWorkTracks={sharedWorkTracks}
 					loading={sharedWorkTracksLoading}
 					onWorkTrackSelect={handleWorkTrackSelect}
-					onAddWorkTrack={handleAddWorkTrack}
 					currentWorkTrackId={currentWorkTrack?.id}
 					defaultWorkTrackId={user?.id}
 				/>

@@ -47,7 +47,6 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 	const [currentVisibleMonth, setCurrentVisibleMonth] =
 		useState(currentMonth);
 	const isMonthChangeInProgress = useRef(false);
-	const lastMarkedDaysUpdate = useRef<number>(Date.now());
 
 	const generateMonths = useCallback(() => {
 		const months = [];
@@ -112,29 +111,6 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 		},
 		[generateMonths, handleMonthChange]
 	);
-
-	// Refresh data for visible months when markedDays changes
-	useEffect(() => {
-		if (
-			!isInitialLoad &&
-			visibleMonths.length > 0 &&
-			initialDataLoadDone.current
-		) {
-			const now = Date.now();
-			// Prevent rapid consecutive updates
-			if (now - lastMarkedDaysUpdate.current > 100) {
-				// Only refresh the current visible month
-				onMonthChange(currentVisibleMonth);
-				lastMarkedDaysUpdate.current = now;
-			}
-		}
-	}, [
-		markedDays,
-		visibleMonths,
-		currentVisibleMonth,
-		onMonthChange,
-		isInitialLoad,
-	]);
 
 	const getWeeksInMonth = useCallback((date: Date) => {
 		const year = date.getFullYear();
