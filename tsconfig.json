@@ -42,12 +42,13 @@
 		"**/*.jsx"
 	],
 	"exclude": [
-		"node_modules",
+		"**/node_modules",
+		"**/Pods",
 		"android",
 		"ios",
 		"web-build",
 		".expo",
 		".expo-shared"
 	],
-	"extends": "@react-native/typescript-config/tsconfig.json"
+	"extends": "@react-native/typescript-config",
 }
