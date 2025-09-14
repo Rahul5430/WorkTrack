@@ -18,8 +18,12 @@ import Animated, {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 
-import { type SharedWorkTrack, useResponsiveLayout } from '../../hooks';
-import { SyncService } from '../../services';
+import {
+	type SharedWorkTrack,
+	useResponsiveLayout,
+	useWorkTrackManager,
+} from '../../hooks';
+import { logger } from '../../logging';
 import { RootState } from '../../store/store';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
@@ -42,7 +46,6 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 	const { RFValue, getResponsiveSize } = useResponsiveLayout();
 	const user = useSelector((state: RootState) => state.user.user);
 
-	// Animation for refresh button
 	const rotation = useSharedValue(0);
 	const isRefreshing = useSharedValue(false);
 
@@ -52,12 +55,12 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 		};
 	});
 
+	const manager = useWorkTrackManager();
 	const handleRefresh = useCallback(async () => {
 		if (isRefreshing.value) return;
 
 		isRefreshing.value = true;
 
-		// Reset rotation to 0 first, then start continuous clockwise rotation
 		rotation.value = 0;
 		rotation.value = withRepeat(
 			withTiming(360, { duration: 1000 }),
@@ -66,11 +69,10 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 		);
 
 		try {
-			await SyncService.getInstance().manualSync();
+			await manager.sync();
 		} catch (error) {
-			console.error('Refresh failed:', error);
+			logger.error('Refresh failed:', { error });
 		} finally {
-			// Animate clockwise to next full rotation to ensure clockwise return
 			const current = rotation.value;
 			const nextFull = Math.ceil(current / 360) * 360;
 			const degreesLeft = nextFull - current;
@@ -292,10 +294,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 				<View style={styles.list}>
 					{otherWorkTracks.length > 0 ? (
 						<>
-							{/* My WorkTrack */}
 							{renderMyWorkTrack()}
-
-							{/* Shared WorkTracks */}
 							{renderOtherWorkTracks()}
 						</>
 					) : (

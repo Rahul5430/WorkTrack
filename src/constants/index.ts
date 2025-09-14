@@ -1,6 +1,3 @@
-// Firebase constants
-export * from './firebase';
-
 // Tracker types
 export * from './trackerTypes';
 

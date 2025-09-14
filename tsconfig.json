@@ -8,6 +8,8 @@
 		],
 		"moduleResolution": "bundler",
 		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+		"emitDecoratorMetadata": true,
 		"noEmit": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
@@ -50,5 +52,11 @@
 		".expo",
 		".expo-shared"
 	],
+	"ts-node": {
+		"compilerOptions": {
+			"experimentalDecorators": true,
+			"emitDecoratorMetadata": true
+		}
+	},
 	"extends": "@react-native/typescript-config",
 }

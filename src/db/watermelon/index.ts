@@ -1,6 +1,7 @@
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
+import { logger } from '../../logging';
 import schema from './schema';
 import SharedTracker from './shared_tracker/model';
 import Tracker from './tracker/model';
@@ -10,7 +11,7 @@ const adapter = new SQLiteAdapter({
 	schema,
 	jsi: true,
 	onSetUpError: (error) => {
-		console.error('Database setup error:', error);
+		logger.error('Database setup error:', { error });
 	},
 });
 

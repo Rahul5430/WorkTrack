@@ -26,9 +26,12 @@ import {
 	SyncStatusIndicator,
 	WorkTrackSwitcher,
 } from '../../components';
-import { WorkTrack } from '../../db/watermelon';
-import { useResponsiveLayout, useSharedWorkTracks } from '../../hooks';
-import { SyncService, WatermelonService } from '../../services';
+import {
+	useResponsiveLayout,
+	useSharedWorkTracks,
+	useWorkTrackManager,
+} from '../../hooks';
+import { logger } from '../../logging';
 import { AppDispatch, RootState } from '../../store';
 import {
 	addOrUpdateEntry,
@@ -68,65 +71,45 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const [selectedMonth, setSelectedMonth] = useState(new Date());
 	const rotateAnim = useRef(new Animated.Value(0)).current;
+	const manager = useWorkTrackManager();
 
-	useEffect(() => {
-		// Start periodic sync
-		const syncService = SyncService.getInstance();
-		syncService.startPeriodicSync();
-
-		// Load initial work track - we'll set this properly in the data loading effect
-		// Don't set currentWorkTrack here, let the data loading effect handle it
-		console.log('HomeScreen: Initializing with user:', user?.id);
-
-		return () => {
-			syncService.stopPeriodicSync();
-		};
-	}, [user]);
-
-	// Add a new effect to handle data loading when user changes
 	useEffect(() => {
 		const loadData = async () => {
-			console.log('loadData - user ID:', user?.id);
-			console.log('loadData - tracker:', workTrackData);
+			logger.debug('loadData - user ID:', { userId: user?.id });
+			logger.debug('loadData - tracker:', { workTrackData });
 			if (!user?.id) return;
 
 			dispatch(setLoading(true));
 			try {
-				// Add a small delay to ensure JSI bridge is ready
-				await new Promise((resolve) => setTimeout(resolve, 100));
-
 				// Check and fix any records without trackerId (from old schema)
-				const watermelonService = WatermelonService.getInstance();
 				try {
-					await watermelonService.checkAndFixRecordsWithoutTrackerId();
+					await manager.userManagement.checkAndFixRecordsWithoutTrackerId();
 				} catch (error) {
-					console.warn(
-						'Error checking records, continuing anyway:',
-						error
-					);
+					logger.warn('Error checking records, continuing anyway:', {
+						error,
+					});
 				}
 
 				// FIRST: Sync from Firebase to get any existing trackers
-				console.log('HomeScreen: Syncing from Firebase first...');
+				logger.info('HomeScreen: Syncing from Firebase first...');
 				try {
-					await SyncService.getInstance().syncFromFirebase();
-					console.log('HomeScreen: Firebase sync completed');
+					await manager.syncFromRemote();
+					logger.info('HomeScreen: Firebase sync completed');
 				} catch (syncError) {
-					console.warn(
+					logger.warn(
 						'Firebase sync failed, continuing with local data:',
-						syncError
+						{ syncError }
 					);
 				}
 
 				// SECOND: Now check for existing tracker after sync
-				const tracker = await watermelonService.ensureUserHasTracker(
-					user.id
-				);
+				const tracker =
+					await manager.userManagement.ensureUserHasTracker(user.id);
 
 				if (tracker) {
-					console.log(
+					logger.info(
 						'HomeScreen: Found existing tracker after sync:',
-						tracker.id
+						{ trackerId: tracker.id }
 					);
 					// Update currentWorkTrack with the correct tracker ID and name
 					setCurrentWorkTrack({
@@ -135,20 +118,19 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					});
 
 					// Get all entries for this tracker using the service
-					const entries =
-						await watermelonService.getEntriesForTracker(
-							tracker.id
-						);
+					const entries = await manager.entry.getEntriesForTracker(
+						tracker.id
+					);
 
-					const workTrackData = entries.map((entry: WorkTrack) => ({
+					const workTrackData = entries.map((entry) => ({
 						date: entry.date,
-						status: entry.status,
+						status: entry.status as MarkedDayStatus,
 						isAdvisory: entry.isAdvisory,
 					}));
 
 					dispatch(setWorkTrackData(workTrackData));
 				} else {
-					console.log(
+					logger.warn(
 						'HomeScreen: Failed to ensure user has tracker'
 					);
 					dispatch(setError('Failed to load or create tracker'));
@@ -157,7 +139,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				// Note: No need to call triggerSync() here since we already synced from Firebase
 				// and any new tracker creation will be synced to Firebase on the next periodic sync
 			} catch (error) {
-				console.error('Error loading data:', error);
+				logger.error('Error loading data:', { error });
 				dispatch(
 					setError(
 						error instanceof Error
@@ -220,7 +202,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				workTrackSwitcherRef.current?.close();
 			}
 		} catch (error) {
-			console.error('Error switching worktrack:', error);
+			logger.error('Error switching worktrack:', { error });
 		}
 	};
 
@@ -231,14 +213,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			// Trigger sync to get latest data
-			await SyncService.getInstance().triggerSync();
+			await manager.triggerSync();
 
 			// Always ensure we have the current tracker and load its data
 			if (user?.id) {
-				const watermelonService = WatermelonService.getInstance();
-				const tracker = await watermelonService.ensureUserHasTracker(
-					user.id
-				);
+				const tracker =
+					await manager.userManagement.ensureUserHasTracker(user.id);
 
 				if (tracker) {
 					// Update currentWorkTrack if it's not set or different
@@ -253,14 +233,13 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					}
 
 					// Load entries for this tracker
-					const entries =
-						await watermelonService.getEntriesForTracker(
-							tracker.id
-						);
+					const entries = await manager.entry.getEntriesForTracker(
+						tracker.id
+					);
 
-					const workTrackData = entries.map((entry: WorkTrack) => ({
+					const workTrackData = entries.map((entry) => ({
 						date: entry.date,
-						status: entry.status,
+						status: entry.status as MarkedDayStatus,
 						isAdvisory: entry.isAdvisory,
 					}));
 
@@ -270,7 +249,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				}
 			}
 		} catch (error) {
-			console.error('Error syncing data:', error);
+			logger.error('Error syncing data:', { error });
 			dispatch(
 				setError(
 					error instanceof Error
@@ -283,9 +262,35 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		}
 	}, [dispatch, currentWorkTrack?.id, user?.id]);
 
+	const resolveTrackerId = async (): Promise<string> => {
+		if (!currentWorkTrack?.id) {
+			throw new Error('No tracker available');
+		}
+
+		// If currentWorkTrack.id is a user ID, resolve to actual tracker
+		if (currentWorkTrack.id === user?.id) {
+			const tracker = await manager.userManagement.getTrackerByOwnerId(
+				currentWorkTrack.id
+			);
+			if (!tracker) {
+				throw new Error('No tracker found for user');
+			}
+
+			// Update state with resolved tracker info
+			setCurrentWorkTrack({
+				id: tracker.id,
+				name: tracker.name,
+			});
+
+			return tracker.id;
+		}
+
+		return currentWorkTrack.id;
+	};
+
 	const handleSave = async (status: MarkedDayStatus, isAdvisory: boolean) => {
-		if (selectedDate === null || !currentWorkTrack?.id) {
-			dispatch(setError('No date selected or no tracker available'));
+		if (selectedDate === null) {
+			dispatch(setError('No date selected'));
 			return;
 		}
 
@@ -297,55 +302,24 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			dispatch(
 				addOrUpdateEntry({ date: selectedDate, status, isAdvisory })
 			);
-			console.log('handleSave - currentWorkTrack:', currentWorkTrack);
 
-			// Ensure we have the correct tracker ID
-			let trackerId = currentWorkTrack.id;
-			let trackerName = currentWorkTrack.name;
-
-			// If currentWorkTrack.id might be a user ID, try to get the actual tracker
-			if (currentWorkTrack.id === user?.id) {
-				console.log(
-					'handleSave - currentWorkTrack.id is user ID, looking up tracker'
-				);
-				const watermelonService = WatermelonService.getInstance();
-				const tracker = await watermelonService.getTrackerByOwnerId(
-					currentWorkTrack.id
-				);
-				if (tracker) {
-					trackerId = tracker.id;
-					trackerName = tracker.name;
-					console.log('handleSave - found tracker ID:', trackerId);
-
-					// Update currentWorkTrack state with the correct tracker ID
-					setCurrentWorkTrack({
-						id: trackerId,
-						name: trackerName,
-					});
-				} else {
-					console.error(
-						'handleSave - no tracker found for user ID:',
-						currentWorkTrack.id
-					);
-					dispatch(setError('No tracker found for user'));
-					return;
-				}
-			}
+			// Resolve tracker ID
+			const trackerId = await resolveTrackerId();
 
 			// Save to WatermelonDB using the new service
-			await WatermelonService.getInstance().createOrUpdateRecord({
-				trackerId: trackerId,
+			await manager.entry.createOrUpdateEntry({
+				trackerId,
 				date: selectedDate,
 				status,
 				isAdvisory,
 			});
 
 			// Trigger sync to send to Firebase
-			await SyncService.getInstance().triggerSync();
+			await manager.triggerSync();
 
 			dayMarkingSheetRef.current?.close();
 		} catch (error) {
-			console.error('Error saving work status:', error);
+			logger.error('Error saving work status:', { error });
 			dispatch(
 				setError(
 					error instanceof Error
@@ -606,9 +580,6 @@ const styles = StyleSheet.create({
 		fontFamily: fonts.PoppinsMedium,
 		textAlign: 'center',
 		marginVertical: 10,
-	},
-	workTrackSwitcherScroll: {
-		flex: 1,
 	},
 	headerActions: {
 		flexDirection: 'row',

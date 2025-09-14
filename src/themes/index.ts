@@ -20,6 +20,3 @@ export const fonts = {
 
 // Color exports
 export * from './colors';
-
-// Theme exports
-export * from './theme';

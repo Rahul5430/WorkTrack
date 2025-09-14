@@ -2,9 +2,9 @@ import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { SharePermission } from '../../services/sync';
 import { fonts } from '../../themes';
 import { colors } from '../../themes/colors';
+import { SharePermission } from '../../use-cases/shareReadUseCase';
 import ListItem from '../common/ListItem';
 
 interface ShareListItemProps {

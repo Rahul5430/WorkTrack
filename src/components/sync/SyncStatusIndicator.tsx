@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { SyncService } from '../../services';
+import { useWorkTrackManager } from '../../hooks';
 import { colors } from '../../themes';
 
 interface SyncStatusIndicatorProps {
@@ -19,6 +19,7 @@ interface SyncStatusIndicatorProps {
 export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	style,
 }) => {
+	const manager = useWorkTrackManager();
 	const [syncStatus, setSyncStatus] = useState<{
 		isSyncing: boolean;
 		isOnline: boolean;
@@ -31,9 +32,9 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	const rotation = useSharedValue(0);
 
 	const updateStatus = useCallback(async () => {
-		const status = await SyncService.getInstance().getSyncStatus();
+		const status = await manager.getSyncStatus();
 		setSyncStatus(status);
-	}, []);
+	}, [manager]);
 
 	// Handle rotating animation for syncing state
 	useEffect(() => {

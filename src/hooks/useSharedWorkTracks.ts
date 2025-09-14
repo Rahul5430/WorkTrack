@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { DEFAULT_TRACKER_TYPE, TrackerType } from '../constants';
-import { FirebaseService } from '../services';
+import { logger } from '../logging';
 import { setLoading } from '../store/reducers/workTrackSlice';
 import { RootState } from '../store/store';
+import { useWorkTrackManager } from './useWorkTrackManager';
 
 export type SharedWorkTrack = {
 	id: string;
@@ -23,6 +24,7 @@ export const useSharedWorkTracks = () => {
 	);
 	const [isLoading, setIsLoading] = useState(false);
 	const user = useSelector((state: RootState) => state.user.user);
+	const manager = useWorkTrackManager();
 
 	const loadSharedWorkTracks = useCallback(async () => {
 		if (!user?.id) return;
@@ -32,8 +34,7 @@ export const useSharedWorkTracks = () => {
 
 		try {
 			// Get shared worktracks from Firestore
-			const db = FirebaseService.getInstance();
-			const sharedTracks = await db.getSharedWorkTracks();
+			const sharedTracks = await manager.shareRead.getSharedWithMe();
 
 			// Transform the data
 			const transformedTracks = sharedTracks.map((track) => ({
@@ -43,12 +44,13 @@ export const useSharedWorkTracks = () => {
 				ownerPhoto: track.ownerPhoto,
 				permission: track.permission,
 				isCurrent: track.ownerId === user.id,
-				trackerType: track.trackerType ?? DEFAULT_TRACKER_TYPE,
+				trackerType:
+					(track.trackerType as TrackerType) ?? DEFAULT_TRACKER_TYPE,
 			}));
 
 			setSharedWorkTracks([...transformedTracks]);
 		} catch (error) {
-			console.error('Error loading shared worktracks:', error);
+			logger.error('Error loading shared worktracks:', { error });
 		} finally {
 			setIsLoading(false);
 			dispatch(setLoading(false));

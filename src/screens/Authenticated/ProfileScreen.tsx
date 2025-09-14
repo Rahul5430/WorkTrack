@@ -27,14 +27,16 @@ import {
 	ShareListItem,
 } from '../../components';
 import { database } from '../../db/watermelon';
-import { useResponsiveLayout } from '../../hooks';
-import { type SharePermission, SyncService } from '../../services';
+import { useResponsiveLayout, useWorkTrackManager } from '../../hooks';
+import { logger } from '../../logging';
 import { AppDispatch, RootState } from '../../store';
 import { logout } from '../../store/reducers/userSlice';
 import { setLoading } from '../../store/reducers/workTrackSlice';
 import { colors, fonts } from '../../themes';
 import { AuthenticatedStackScreenProps } from '../../types';
+import { type SharePermission } from '../../use-cases/shareReadUseCase';
 import { clearAppData } from '../../utils/appDataManager';
+import { ShareValidationUtils } from '../../utils/shareValidation';
 
 const ProfileScreen: React.FC<
 	AuthenticatedStackScreenProps<'ProfileScreen'>
@@ -65,6 +67,7 @@ const ProfileScreen: React.FC<
 	const [highlightedWorkTrackId, setHighlightedWorkTrackId] = useState<
 		string | null
 	>(null);
+	const manager = useWorkTrackManager();
 	const sharedWithMeSectionRef = useRef<View>(null);
 
 	useEffect(() => {
@@ -89,9 +92,17 @@ const ProfileScreen: React.FC<
 	}, []);
 
 	useEffect(() => {
-		const syncService = SyncService.getInstance();
-		setDefaultViewUserId(syncService.getDefaultViewUserId());
-	}, []);
+		const loadDefaultView = async () => {
+			try {
+				const userId =
+					await manager.userManagement.getDefaultViewUserId();
+				setDefaultViewUserId(userId);
+			} catch (error) {
+				logger.error('Failed to load default view user ID', { error });
+			}
+		};
+		loadDefaultView();
+	}, [manager.userManagement]);
 
 	useEffect(() => {
 		const params = route.params as
@@ -120,13 +131,16 @@ const ProfileScreen: React.FC<
 	}, [route.params]);
 
 	const loadShares = async () => {
-		const syncService = SyncService.getInstance();
-		const [mySharesData, sharedWithMeData] = await Promise.all([
-			syncService.getMyShares(),
-			syncService.getSharedWithMe(),
-		]);
-		setMyShares(mySharesData);
-		setSharedWithMe(sharedWithMeData);
+		try {
+			const [mySharesData, sharedWithMeData] = await Promise.all([
+				manager.shareRead.getMyShares(),
+				manager.shareRead.getSharedWithMe(),
+			]);
+			setMyShares(mySharesData);
+			setSharedWithMe(sharedWithMeData);
+		} catch (error) {
+			logger.error('Failed to load shares', { error });
+		}
 	};
 
 	const showAlert = (
@@ -164,44 +178,25 @@ const ProfileScreen: React.FC<
 			return;
 		}
 
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if (!emailRegex.test(shareEmail)) {
-			showAlert(
-				'Invalid Email',
-				'Please enter a valid email address',
-				() => setShareEmail('')
+		try {
+			// Comprehensive validation
+			ShareValidationUtils.validateShareRequest(
+				shareEmail,
+				user?.email,
+				myShares
 			);
-			return;
-		}
-
-		if (shareEmail.toLowerCase() === user?.email?.toLowerCase()) {
-			showAlert(
-				'Invalid Share',
-				'You cannot share your tracker with yourself.',
-				() => setShareEmail('')
-			);
-			return;
-		}
-
-		const existingShare = myShares.find(
-			(share) =>
-				share.sharedWithEmail.toLowerCase() === shareEmail.toLowerCase()
-		);
-		if (existingShare) {
-			showAlert(
-				'Already Shared',
-				`Tracker is already shared with ${shareEmail}`,
-				() => setShareEmail('')
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'Validation failed';
+			showAlert('Validation Error', errorMessage, () =>
+				setShareEmail('')
 			);
 			return;
 		}
 
 		try {
 			dispatch(setLoading(true));
-			await SyncService.getInstance().shareWorkTrack(
-				shareEmail.toLowerCase(),
-				sharePermission
-			);
+			await manager.share(shareEmail.toLowerCase(), sharePermission);
 			showAlert('Success', 'Tracker shared successfully');
 			setShareEmail('');
 			setIsShareDialogVisible(false);
@@ -245,26 +240,12 @@ const ProfileScreen: React.FC<
 				{
 					text: 'Remove',
 					style: 'destructive',
-					onPress: () => {
+					onPress: async () => {
 						try {
-							const syncService = SyncService.getInstance();
-							syncService
-								.removeShare(sharedWithId)
-								.then(() => {
-									loadShares();
-								})
-								.catch((error) => {
-									console.error(
-										'Error removing share:',
-										error
-									);
-									showAlert(
-										'Error',
-										'Failed to remove share. Please try again.'
-									);
-								});
+							await manager.shareRead.removeShare(sharedWithId);
+							loadShares();
 						} catch (error) {
-							console.error('Error removing share:', error);
+							logger.error('Error removing share:', { error });
 							showAlert(
 								'Error',
 								'Failed to remove share. Please try again.'
@@ -278,14 +259,14 @@ const ProfileScreen: React.FC<
 
 	const handleSetDefaultView = async (userId: string) => {
 		try {
-			const syncService = SyncService.getInstance();
-			const currentDefaultView = syncService.getDefaultViewUserId();
+			const currentDefaultView =
+				await manager.userManagement.getDefaultViewUserId();
 			const newDefaultView =
 				currentDefaultView === userId ? null : userId;
-			syncService.setDefaultViewUserId(newDefaultView);
+			await manager.userManagement.setDefaultViewUserId(newDefaultView);
 			setDefaultViewUserId(newDefaultView);
 		} catch (error) {
-			console.error('Error setting default view:', error);
+			logger.error('Error setting default view:', { error });
 		}
 	};
 
@@ -304,15 +285,15 @@ const ProfileScreen: React.FC<
 				await auth.signOut();
 			}
 			await AsyncStorage.removeItem('user');
-			SyncService.getInstance().setDefaultViewUserId(null);
+			await manager.userManagement.setDefaultViewUserId(null);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
 			dispatch(logout());
 		} catch (error) {
-			console.error('Logout error:', error);
+			logger.error('Logout error:', { error });
 			await AsyncStorage.removeItem('user');
-			SyncService.getInstance().setDefaultViewUserId(null);
+			await manager.userManagement.setDefaultViewUserId(null);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
@@ -325,7 +306,7 @@ const ProfileScreen: React.FC<
 		try {
 			await loadShares();
 		} catch (error) {
-			console.error('Error refreshing:', error);
+			logger.error('Error refreshing:', { error });
 		} finally {
 			setIsRefreshing(false);
 		}
@@ -342,7 +323,7 @@ const ProfileScreen: React.FC<
 
 		try {
 			dispatch(setLoading(true));
-			await SyncService.getInstance().updateSharePermission(
+			await manager.updateSharePermission(
 				editingShare.sharedWithId,
 				sharePermission
 			);

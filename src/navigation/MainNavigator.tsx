@@ -2,7 +2,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { WatermelonService } from '../services';
+import { useWorkTrackManager } from '../hooks/useWorkTrackManager';
+import { logger } from '../logging';
 import { RootState } from '../store/store';
 import { MainStackParamList } from '../types';
 import AuthenticatedNavigator from './AuthenticatedNavigator';
@@ -13,23 +14,23 @@ const Stack = createNativeStackNavigator<MainStackParamList>();
 
 const MainNavigator: () => React.JSX.Element = () => {
 	const { isLoggedIn } = useSelector((state: RootState) => state.user);
+	const manager = useWorkTrackManager();
 
-	// Initialize database when the app starts
 	useEffect(() => {
 		const initializeDatabase = async () => {
 			try {
-				await WatermelonService.getInstance().ensureDatabaseReady();
-				console.log('Database initialized in MainNavigator');
+				await manager.userManagement.ensureDatabaseReady();
+				logger.info('Database initialized in MainNavigator');
 			} catch (error) {
-				console.error(
+				logger.error(
 					'Failed to initialize database in MainNavigator:',
-					error
+					{ error }
 				);
 			}
 		};
 
 		initializeDatabase();
-	}, []);
+	}, [manager.userManagement]);
 
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false }}>

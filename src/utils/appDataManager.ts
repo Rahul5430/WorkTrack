@@ -1,4 +1,5 @@
 import { database } from '../db/watermelon';
+import { logger } from '../logging';
 import { store } from '../store';
 import { setWorkTrackData } from '../store/reducers/workTrackSlice';
 
@@ -12,7 +13,7 @@ export const clearAppData = async () => {
 			localStorage.clear();
 			sessionStorage.clear();
 		} catch (e) {
-			console.warn('Error clearing storage:', e);
+			logger.warn('Error clearing storage:', { error: e });
 		}
 
 		// Clear WatermelonDB data last
@@ -22,7 +23,7 @@ export const clearAppData = async () => {
 
 		return true;
 	} catch (error) {
-		console.error('Error clearing app data:', error);
+		logger.error('Error clearing app data:', { error });
 		throw error;
 	}
 };

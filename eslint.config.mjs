@@ -58,7 +58,7 @@ export default tseslint.config(
 		...baseConfig,
 		rules: {
 			// ✅ General Best Practices
-			'no-console': 'warn',
+			'no-console': 'error',
 			'prettier/prettier': 'error',
 
 			// ✅ Jest Rules

@@ -19,7 +19,8 @@ import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { FocusAwareStatusBar } from '../components';
-import { SyncService } from '../services';
+import { useWorkTrackManager } from '../hooks';
+import { logger } from '../logging';
 import { AppDispatch, RootState } from '../store';
 import {
 	GoogleUser,
@@ -39,8 +40,8 @@ const WelcomeScreen: React.FC<
 > = () => {
 	const { isFetching } = useSelector((state: RootState) => state.user);
 	const dispatch = useDispatch<AppDispatch>();
+	const manager = useWorkTrackManager();
 
-	// Handle Firebase auth state change
 	useEffect(() => {
 		const auth = getAuth(getApp());
 		const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -72,9 +73,8 @@ const WelcomeScreen: React.FC<
 					await setDoc(userRef, userData, { merge: true });
 
 					// Trigger initial sync before updating UI state
-					const syncService = SyncService.getInstance();
-					await syncService.syncFromFirebase();
-					syncService.startPeriodicSync();
+					await manager.syncFromRemote();
+					await manager.startPeriodicSync();
 
 					// Only update UI state after sync is complete
 					await AsyncStorage.setItem(
@@ -84,7 +84,7 @@ const WelcomeScreen: React.FC<
 					dispatch(setUser(userInfo));
 					dispatch(setLoggedIn(true));
 				} catch (error) {
-					console.error('Error during login sync:', error);
+					logger.error('Error during login sync:', { error });
 					dispatch(
 						setErrorMessage(
 							'Failed to sync data. Please try again.'

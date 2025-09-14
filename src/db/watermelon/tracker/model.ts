@@ -1,7 +1,7 @@
 import { Model } from '@nozbe/watermelondb';
 import { date, field, readonly } from '@nozbe/watermelondb/decorators';
 
-import { TrackerType } from '../../../constants/trackerTypes';
+import type { TrackerType } from '../../../constants/trackerTypes';
 
 export default class Tracker extends Model {
 	static readonly table = 'trackers';

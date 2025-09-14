@@ -8,8 +8,8 @@ import {
 	View,
 } from 'react-native';
 
-import { useToast } from '../../hooks';
-import { SyncService, WatermelonService } from '../../services';
+import { useToast, useWorkTrackManager } from '../../hooks';
+import { logger } from '../../logging';
 import { colors } from '../../themes';
 
 interface SyncErrorBannerProps {
@@ -36,29 +36,26 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 	const [loading, setLoading] = useState(false);
 
 	const { show } = useToast();
+	const manager = useWorkTrackManager();
 
 	const checkForErrors = async () => {
 		try {
-			const failedRecords =
-				await WatermelonService.getInstance().getFailedSyncRecords();
+			const failedRecords = await manager.entry.getFailedSyncRecords();
 			const exceededLimitRecords =
-				await WatermelonService.getInstance().getRecordsExceedingRetryLimit(
-					3
-				);
+				await manager.entry.getRecordsExceedingRetryLimit(3);
 
 			setHasErrors(failedRecords.length > 0);
 			setFailedCount(failedRecords.length);
 			setExceededRetryLimit(exceededLimitRecords.length > 0);
 		} catch (error) {
-			console.error('Error checking for sync errors:', error);
+			logger.error('Error checking for sync errors:', { error });
 		}
 	};
 
 	const loadFailedRecords = async () => {
 		setLoading(true);
 		try {
-			const records =
-				await WatermelonService.getInstance().getFailedSyncRecords();
+			const records = await manager.entry.getFailedSyncRecords();
 			setFailedRecords(
 				records.map((record) => ({
 					id: record.id,
@@ -69,7 +66,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 				}))
 			);
 		} catch (error) {
-			console.error('Error loading failed records:', error);
+			logger.error('Error loading failed records:', { error });
 		} finally {
 			setLoading(false);
 		}
@@ -78,12 +75,11 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 	const handleRetry = async () => {
 		setIsRetrying(true);
 		try {
-			await SyncService.getInstance().triggerSync();
+			await manager.sync();
 			await checkForErrors(); // Re-check after sync
 
 			// Show success toast if no more errors
-			const remainingErrors =
-				await WatermelonService.getInstance().getFailedSyncRecords();
+			const remainingErrors = await manager.entry.getFailedSyncRecords();
 			if (remainingErrors.length === 0) {
 				show('Sync completed successfully!', 'success');
 			} else {
@@ -95,7 +91,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 
 			onSyncComplete?.();
 		} catch (error) {
-			console.error('Sync retry failed:', error);
+			logger.error('Sync retry failed:', { error });
 			show('Sync failed. Please try again.', 'error');
 		} finally {
 			setIsRetrying(false);

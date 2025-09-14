@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { View } from 'react-native';
+import { useSelector } from 'react-redux';
 
-import { useCalendarData } from '../../hooks/useCalendarData';
 import { useResponsiveLayout } from '../../hooks/useResponsive';
+import { RootState } from '../../store';
 import CustomCalendar from './CustomCalendar';
 
 type CalendarComponentProps = {
@@ -13,7 +14,9 @@ type CalendarComponentProps = {
 const CalendarComponent = React.memo(
 	({ onDatePress, onMonthChange }: CalendarComponentProps) => {
 		const { getResponsiveSize } = useResponsiveLayout();
-		const { markedDays } = useCalendarData();
+		const { data: markedDays } = useSelector(
+			(state: RootState) => state.workTrack
+		);
 		const [currentMonth, setCurrentMonth] = useState(new Date());
 
 		const handlePressDate = useCallback(
@@ -36,10 +39,10 @@ const CalendarComponent = React.memo(
 		);
 
 		// Transform markedDays to match the expected format
-		const transformedMarkedDays = Object.entries(markedDays).reduce(
-			(acc, [date, day]) => ({
+		const transformedMarkedDays = markedDays.reduce(
+			(acc, day) => ({
 				...acc,
-				[date]: {
+				[day.date]: {
 					status: day.status,
 					isAdvisory: day.isAdvisory ?? false,
 				},

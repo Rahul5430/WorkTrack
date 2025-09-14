@@ -6,8 +6,8 @@ import {
 	relation,
 } from '@nozbe/watermelondb/decorators';
 
-import { MarkedDayStatus } from '../../../types/calendar';
-import Tracker from '../tracker/model';
+import type { MarkedDayStatus } from '../../../types/calendar';
+import type Tracker from '../tracker/model';
 
 export default class WorkTrack extends Model {
 	static readonly table = 'work_tracks';

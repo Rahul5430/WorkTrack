@@ -1,7 +1,3 @@
-// Calendar hooks
-export { useCalendarData } from './useCalendarData';
-export { useMonthData } from './useMonthData';
-
 // UI hooks
 export { useResponsiveLayout } from './useResponsive';
 export { useToast } from './useToast';
@@ -14,3 +10,6 @@ export {
 
 // Redux types
 export * from './redux';
+
+// Manager
+export { useWorkTrackManager } from './useWorkTrackManager';

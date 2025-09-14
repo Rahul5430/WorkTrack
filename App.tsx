@@ -7,14 +7,13 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { GlobalToast } from './src/components';
 import MainNavigator from './src/navigation/MainNavigator';
 import { store } from './src/store';
-import { theme } from './src/themes';
 
 export default function App() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<SafeAreaProvider>
 				<ReduxProvider store={store}>
-					<PaperProvider theme={theme}>
+					<PaperProvider>
 						<NavigationContainer>
 							<MainNavigator />
 							<GlobalToast />
