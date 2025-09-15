@@ -1,15 +1,14 @@
-import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import {
 	collection,
 	getDocs,
-	getFirestore,
 	query,
 	where,
 } from '@react-native-firebase/firestore';
 
 import { SyncError } from '../errors';
 import { logger } from '../logging';
+import { getFirestoreInstance } from '../services';
 import { IShareRepository, ITrackerRepository, Permission } from '../types';
 
 export interface ShareUseCase {
@@ -34,7 +33,7 @@ export class ShareUseCaseImpl implements ShareUseCase {
 	private async resolveUserIdByEmail(
 		email: string
 	): Promise<{ id: string; email: string }> {
-		const db = getFirestore(getApp());
+		const db = getFirestoreInstance();
 		const usersQuery = query(
 			collection(db, 'users'),
 			where('email', '==', email)

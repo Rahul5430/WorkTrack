@@ -1,19 +1,13 @@
 // Silence WatermelonDB/React Native timers warnings in JSDOM
 jest.useFakeTimers();
 
-// Basic mocks for react-native-firebase
-jest.mock('@react-native-firebase/app', () => ({ getApp: () => ({}) }));
-jest.mock('@react-native-firebase/auth', () => ({
-	getAuth: () => ({
-		currentUser: { uid: 'test-user', email: 'test@example.com' },
-	}),
-}));
-jest.mock('@react-native-firebase/firestore', () => ({
-	Timestamp: {
-		fromDate: (d) => ({ toMillis: () => d.getTime() }),
-		fromMillis: (ms) => ({ toMillis: () => ms }),
-	},
-}));
+// Ensure RN Firebase modules load their manual mocks from __mocks__
+jest.mock('@react-native-firebase/app');
+jest.mock('@react-native-firebase/auth');
+jest.mock('@react-native-firebase/firestore');
+
+// Provide env vars globally for tests
+jest.mock('@env', () => ({ FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080' }));
 
 // AsyncStorage mock
 jest.mock('@react-native-async-storage/async-storage', () =>

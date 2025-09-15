@@ -1,10 +1,8 @@
-import { getApp } from '@react-native-firebase/app';
 import {
 	collection,
 	deleteDoc,
 	doc,
 	getDocs,
-	getFirestore,
 	setDoc,
 } from '@react-native-firebase/firestore';
 
@@ -14,12 +12,13 @@ import {
 	entryDTOToFirestore,
 	entryFirestoreToDTO,
 } from '../mappers/entryMapper';
+import { getFirestoreInstance } from '../services';
 import { EntryDTO, IRemoteEntryRepository } from '../types';
 
 export class FirebaseEntryRepository implements IRemoteEntryRepository {
 	async upsertMany(trackerId: string, entries: EntryDTO[]): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const entriesRef = collection(db, 'trackers', trackerId, 'entries');
 
 			for (const entry of entries) {
@@ -51,7 +50,7 @@ export class FirebaseEntryRepository implements IRemoteEntryRepository {
 
 	async getEntriesForTracker(trackerId: string): Promise<EntryDTO[]> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const entriesRef = collection(db, 'trackers', trackerId, 'entries');
 			const querySnapshot = await getDocs(entriesRef);
 
@@ -101,7 +100,7 @@ export class FirebaseEntryRepository implements IRemoteEntryRepository {
 
 	async getAllEntries(): Promise<EntryDTO[]> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const trackersRef = collection(db, 'trackers');
 			const trackersSnapshot = await getDocs(trackersRef);
 
@@ -160,7 +159,7 @@ export class FirebaseEntryRepository implements IRemoteEntryRepository {
 
 	async delete(entryId: string): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 
 			// We need to find which tracker this entry belongs to
 			// Since we don't have trackerId, we'll need to search across all trackers

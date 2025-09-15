@@ -1,9 +1,7 @@
-import { getApp } from '@react-native-firebase/app';
 import {
 	collectionGroup,
 	doc,
 	getDocs,
-	getFirestore,
 	query,
 	setDoc,
 	where,
@@ -12,13 +10,14 @@ import {
 import { SyncError } from '../errors';
 import { logger } from '../logging';
 import { shareDTOToFirestore } from '../mappers/shareMapper';
+import { getFirestoreInstance } from '../services';
 import { IShareRepository, Permission, ShareDTO } from '../types';
 
 export class FirebaseShareRepository implements IShareRepository {
 	async share(share: ShareDTO): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
-			// Store share in /trackers/{trackerId}/shares/{sharedWithId}
+			const db = getFirestoreInstance();
+
 			const shareRef = doc(
 				db,
 				'trackers',
@@ -43,7 +42,7 @@ export class FirebaseShareRepository implements IShareRepository {
 	): Promise<void> {
 		try {
 			// Find the share document using collectionGroup query
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const sharesQuery = query(
 				collectionGroup(db, 'shares'),
 				where('sharedWithId', '==', shareId)
@@ -71,7 +70,7 @@ export class FirebaseShareRepository implements IShareRepository {
 
 	async unshare(trackerId: string, sharedWithId: string): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const shareRef = doc(
 				db,
 				'trackers',

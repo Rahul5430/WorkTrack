@@ -1,15 +1,14 @@
-import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
 import {
 	collectionGroup,
 	getDocs,
-	getFirestore,
 	query,
 	where,
 } from '@react-native-firebase/firestore';
 
 import { SyncError } from '../errors';
 import { logger } from '../logging';
+import { getFirestoreInstance } from '../services';
 import { IShareRepository, ITrackerRepository, Permission } from '../types';
 
 export interface SharePermission {
@@ -46,7 +45,7 @@ export class ShareReadUseCaseImpl implements ShareReadUseCase {
 		}
 
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			// Query all shares and filter by checking if user owns the tracker
 			const sharesQuery = query(collectionGroup(db, 'shares'));
 			const querySnapshot = await getDocs(sharesQuery);
@@ -54,7 +53,7 @@ export class ShareReadUseCaseImpl implements ShareReadUseCase {
 			const shares: SharePermission[] = [];
 			for (const doc of querySnapshot.docs) {
 				const data = doc.data();
-				// Extract trackerId from document path: /trackers/{trackerId}/shares/{sharedWithId}
+
 				const pathParts = doc.ref.path.split('/');
 				const trackerId = pathParts[1];
 
@@ -97,7 +96,7 @@ export class ShareReadUseCaseImpl implements ShareReadUseCase {
 		}
 
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const sharesQuery = query(
 				collectionGroup(db, 'shares'),
 				where('sharedWithId', '==', user.uid)
@@ -107,7 +106,7 @@ export class ShareReadUseCaseImpl implements ShareReadUseCase {
 			const shares: SharePermission[] = [];
 			for (const doc of querySnapshot.docs) {
 				const data = doc.data();
-				// Extract trackerId from document path: /trackers/{trackerId}/shares/{sharedWithId}
+
 				const pathParts = doc.ref.path.split('/');
 				const trackerId = pathParts[1];
 

@@ -1,11 +1,9 @@
-import { getApp } from '@react-native-firebase/app';
 import {
 	collection,
 	collectionGroup,
 	doc,
 	getDoc,
 	getDocs,
-	getFirestore,
 	query,
 	setDoc,
 	Timestamp,
@@ -18,6 +16,7 @@ import {
 	trackerDTOToFirestore,
 	trackerFirestoreToDTO,
 } from '../mappers/trackerMapper';
+import { getFirestoreInstance } from '../services';
 import { ITrackerRepository, TrackerDTO } from '../types';
 
 // Type for Firestore document data
@@ -38,7 +37,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 		}
 
 		const firestoreData = trackerDTOToFirestore(tracker);
-		const db = getFirestore(getApp());
+		const db = getFirestoreInstance();
 		const trackerRef = doc(db, 'trackers', tracker.id);
 		await setDoc(trackerRef, firestoreData);
 	}
@@ -47,7 +46,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 		tracker: Partial<TrackerDTO> & { id: string },
 		userId: string
 	): Promise<void> {
-		const db = getFirestore(getApp());
+		const db = getFirestoreInstance();
 		const trackerRef = doc(db, 'trackers', tracker.id);
 
 		// Get existing tracker to validate ownership
@@ -69,7 +68,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 
 	async listOwned(userId: string): Promise<TrackerDTO[]> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const trackersRef = collection(db, 'trackers');
 			const q = query(trackersRef, where('ownerId', '==', userId));
 			const querySnapshot = await getDocs(q);
@@ -114,7 +113,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 
 	async listSharedWith(userId: string): Promise<TrackerDTO[]> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 
 			// Use collectionGroup query to find all shares where user is sharedWithId
 			const sharesQuery = query(
@@ -125,9 +124,8 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 
 			const trackers: TrackerDTO[] = [];
 			for (const shareDoc of querySnapshot.docs) {
-				// Extract trackerId from the document path: /trackers/{trackerId}/shares/{sharedWithId}
 				const pathParts = shareDoc.ref.path.split('/');
-				const trackerId = pathParts[1]; // trackers/{trackerId}/shares/{sharedWithId}
+				const trackerId = pathParts[1];
 
 				// Fetch the actual tracker data
 				const trackerRef = doc(db, 'trackers', trackerId);
@@ -195,7 +193,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 
 	async ensureExists(id: string, ownerId: string): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 			const trackerRef = doc(db, 'trackers', id);
 			const trackerSnapshot = await getDoc(trackerRef);
 
@@ -235,7 +233,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 
 	async upsertMany(trackers: TrackerDTO[]): Promise<void> {
 		try {
-			const db = getFirestore(getApp());
+			const db = getFirestoreInstance();
 
 			for (const tracker of trackers) {
 				const trackerRef = doc(db, 'trackers', tracker.id);

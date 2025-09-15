@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    /* USERS ---------------------------------------------------------- */
+    match /users/{userId} {
+      allow read, write, create: if request.auth != null && request.auth.uid == userId;
+      allow list: if request.auth != null;
+    }
+
+    /* TRACKERS ------------------------------------------------------- */
+    match /trackers/{trackerId} {
+      function isOwner() { return request.auth != null && request.auth.uid == resource.data.ownerId; }
+      function willBeOwner() { return request.auth != null && request.auth.uid == request.resource.data.ownerId; }
+      function shareDoc(uid) { return get(/databases/$(db)/documents/trackers/$(trackerId)/shares/$(uid)); }
+      function isSharedWith(uid) {
+        return isOwner() || exists(/databases/$(db)/documents/trackers/$(trackerId)/shares/$(uid));
+      }
+      function hasWritePermission(uid) {
+        return isOwner() || (
+          exists(/databases/$(db)/documents/trackers/$(trackerId)/shares/$(uid)) &&
+          get(/databases/$(db)/documents/trackers/$(trackerId)/shares/$(uid)).data.permission == 'write'
+        );
+      }
+
+      /* ---- tracker doc itself ---- */
+      allow get:    if isOwner() || isSharedWith(request.auth.uid);
+      allow list:   if request.auth != null;            //  <-- NEW (needed for queries)
+      allow create: if willBeOwner();
+      allow update,
+            delete: if isOwner();
+
+      /* ---- entries sub-collection ---- */
+      match /entries/{entryId} {
+        allow get, list: if isOwner() || isSharedWith(request.auth.uid);
+        allow create, update, delete:
+            if isOwner() ||
+               (isSharedWith(request.auth.uid) && hasWritePermission(request.auth.uid));
+      }
+
+      /* ---- shares sub-collection ---- */
+      match /shares/{shareId} {
+        allow get:    if isOwner() || shareId == request.auth.uid;
+        allow create,
+              update: if isOwner() || shareId == request.auth.uid;
+        allow delete: if isOwner() || shareId == request.auth.uid;
+      }
+    }
+
+    /* collectionGroup('shares') queries ------------------------------ */
+    match /{path=**}/shares/{shareId} {
+      allow list: if request.auth != null;
+      allow get:  if request.auth != null &&
+                  (resource.data.sharedWithId == request.auth.uid ||
+                   resource.data.ownerId      == request.auth.uid);
+    }
+  }
+}

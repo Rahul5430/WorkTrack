@@ -1,5 +1,6 @@
 declare module '@env' {
 	export const GOOGLE_SIGN_IN_CLIENT_ID: string;
+	export const FIRESTORE_EMULATOR_HOST: string;
 }
 declare module 'eslint-plugin-import' {
 	const value: Record<string, unknown>;

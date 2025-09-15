@@ -6,12 +6,7 @@ import {
 	GoogleAuthProvider,
 	signInWithCredential,
 } from '@react-native-firebase/auth';
-import {
-	doc,
-	getDoc,
-	getFirestore,
-	setDoc,
-} from '@react-native-firebase/firestore';
+import { doc, getDoc, setDoc } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -21,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FocusAwareStatusBar } from '../components';
 import { useWorkTrackManager } from '../hooks';
 import { logger } from '../logging';
+import { getFirestoreInstance } from '../services';
 import { AppDispatch, RootState } from '../store';
 import {
 	GoogleUser,
@@ -56,7 +52,7 @@ const WelcomeScreen: React.FC<
 					};
 
 					// Create or update user in Firestore
-					const db = getFirestore(getApp());
+					const db = getFirestoreInstance();
 					const userRef = doc(db, 'users', firebaseUser.uid);
 					const userSnapshot = await getDoc(userRef);
 

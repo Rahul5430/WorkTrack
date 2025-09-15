@@ -4,9 +4,11 @@ module.exports = {
 	transformIgnorePatterns: [
 		'node_modules/(?!(react-native|@react-native|@nozbe|@react-native-firebase|@react-navigation|react-native-gesture-handler|react-redux)/)',
 	],
-	setupFiles: ['<rootDir>/jest.setup.js'],
+	setupFiles: ['./jest.setup.js'],
 	setupFilesAfterEnv: ['react-native-gesture-handler/jestSetup'],
 	moduleNameMapper: {
 		'^react-native$': 'react-native',
+		'^@env$': './__mocks__/@env.js',
 	},
+	clearMocks: true,
 };
