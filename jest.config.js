@@ -16,7 +16,7 @@ module.exports = {
 	maxWorkers: 1,
 	collectCoverageFrom: ['src/**/*.{ts,tsx}'],
 	coverageDirectory: 'coverage',
-	coverageReporters: ['lcov', 'text-summary'],
+	coverageReporters: ['lcov', 'text', 'text-summary'],
 	coverageThreshold: {
 		global: {
 			branches: 95,

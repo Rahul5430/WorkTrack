@@ -28,6 +28,8 @@ jobs:
                   cache: 'npm'
             - run: npm ci
             - name: Run full test suite with coverage
+              env:
+                  FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
               run: npm run test:coverage
             - name: Upload coverage to Codecov
               uses: codecov/codecov-action@v5
@@ -96,7 +98,7 @@ jobs:
               with:
                   node-version: 20
                   cache: 'npm'
-            - run: npm ci --omit=dev
+            - run: npm ci --omit=dev --ignore-scripts
             - name: Run npm audit
               run: |
                   set -e
