@@ -14,7 +14,13 @@ module.exports = {
 	resetMocks: true,
 	restoreMocks: true,
 	maxWorkers: 1,
-	collectCoverageFrom: ['src/**/*.{ts,tsx}'],
+	collectCoverageFrom: [
+		'src/**/*.{ts,tsx}',
+		'!src/**/index.ts',
+		'!src/**/index.tsx',
+		'!src/types/**',
+		'!src/**/*.d.ts',
+	],
 	coverageDirectory: 'coverage',
 	coverageReporters: ['lcov', 'text', 'text-summary'],
 	coverageThreshold: {

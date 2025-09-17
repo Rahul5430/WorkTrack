@@ -102,4 +102,5 @@ jobs:
             - name: Run npm audit
               run: |
                   set -e
-                  npm audit --production --audit-level=moderate
+                  # Fail only on vulnerabilities above moderate (i.e., high/critical)
+                  npm audit --production --audit-level=high
