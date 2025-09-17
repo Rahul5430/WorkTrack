@@ -95,7 +95,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"bash -lc 'tsc --noEmit --pretty false -p tsconfig.typecheck.json'"
+			"bash -lc 'tsc --noEmit --pretty false'"
 		]
 	}
 }

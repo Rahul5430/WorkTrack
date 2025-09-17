@@ -1,6 +1,3 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Fast feedback: run only unit tests on push
-npm run test:unit --silent || exit 1
+# Fast feedback: run only unit tests on push (quiet output)
+npm run test:unit -- --silent --reporters=summary || exit 1
 
