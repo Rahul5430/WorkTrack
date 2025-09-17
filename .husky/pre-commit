@@ -1,2 +1,5 @@
-# Run ESLint/Prettier and TypeScript only on staged files
-npx lint-staged
+# Run ESLint/Prettier on staged files
+npx lint-staged || exit 1
+
+# Always run full TS type-check to catch errors even if no TS files are staged
+npx tsc --noEmit || exit 1

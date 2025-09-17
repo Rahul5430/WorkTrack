@@ -16,12 +16,12 @@ describe('WatermelonEntryRepository additional', () => {
 				async (cb: (model: Record<string, unknown>) => void) =>
 					cb({
 						_raw: {},
-						set date(v: string) {},
-						set status(v: string) {},
-						set isAdvisory(v: boolean) {},
-						set trackerId(v: string) {},
-						set needsSync(v: boolean) {},
-						set lastModified(v: number) {},
+						set date(_v: string) {},
+						set status(_v: string) {},
+						set isAdvisory(_v: boolean) {},
+						set trackerId(_v: string) {},
+						set needsSync(_v: boolean) {},
+						set lastModified(_v: number) {},
 					})
 			),
 			query: jest
@@ -55,12 +55,12 @@ describe('WatermelonEntryRepository additional', () => {
 				update: jest.fn(
 					async (cb: (model: Record<string, unknown>) => void) =>
 						cb({
-							set date(v: string) {},
-							set status(v: string) {},
-							set isAdvisory(v: boolean) {},
-							set trackerId(v: string) {},
-							set needsSync(v: boolean) {},
-							set lastModified(v: number) {},
+							set date(_v: string) {},
+							set status(_v: string) {},
+							set isAdvisory(_v: boolean) {},
+							set trackerId(_v: string) {},
+							set needsSync(_v: boolean) {},
+							set lastModified(_v: number) {},
 						})
 				),
 			});

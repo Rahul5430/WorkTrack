@@ -14,11 +14,11 @@ describe('WatermelonTrackerRepository', () => {
 				async (cb: (model: Record<string, unknown>) => void) =>
 					cb({
 						_raw: {},
-						set ownerId(v: string) {},
-						set name(v: string) {},
-						set color(v: string) {},
-						set isDefault(v: boolean) {},
-						set trackerType(v: string) {},
+						set ownerId(_v: string) {},
+						set name(_v: string) {},
+						set color(_v: string) {},
+						set isDefault(_v: boolean) {},
+						set trackerType(_v: string) {},
 					})
 			),
 			find: jest.fn(),
@@ -39,10 +39,10 @@ describe('WatermelonTrackerRepository', () => {
 				update: jest.fn(
 					async (cb: (model: Record<string, unknown>) => void) =>
 						cb({
-							set name(v: string) {},
-							set color(v: string) {},
-							set isDefault(v: boolean) {},
-							set trackerType(v: string) {},
+							set name(_v: string) {},
+							set color(_v: string) {},
+							set isDefault(_v: boolean) {},
+							set trackerType(_v: string) {},
 						})
 				),
 			});
@@ -103,11 +103,11 @@ describe('WatermelonTrackerRepository', () => {
 					update: jest.fn(
 						async (cb: (model: Record<string, unknown>) => void) =>
 							cb({
-								set ownerId(v: string) {},
-								set name(v: string) {},
-								set color(v: string) {},
-								set isDefault(v: boolean) {},
-								set trackerType(v: string) {},
+								set ownerId(_v: string) {},
+								set name(_v: string) {},
+								set color(_v: string) {},
+								set isDefault(_v: boolean) {},
+								set trackerType(_v: string) {},
 							})
 					),
 				})
