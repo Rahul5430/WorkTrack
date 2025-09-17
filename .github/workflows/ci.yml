@@ -1,0 +1,103 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    lint-and-typecheck:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - run: npm ci
+            - run: npm run lint
+            - run: npx tsc --noEmit
+
+    test:
+        runs-on: ubuntu-latest
+        needs: lint-and-typecheck
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - run: npm ci
+            - name: Run full test suite with coverage
+              run: npm run test:coverage
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./coverage/lcov.info
+                  flags: unittests
+                  fail_ci_if_error: true
+            - name: Upload coverage artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: jest-coverage
+                  path: coverage
+
+    build-artifacts:
+        runs-on: macos-14
+        needs: test
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - run: npm ci
+            - name: Install Ruby gems (cocoapods)
+              run: |
+                  gem install cocoapods --no-document
+            - name: Install iOS pods
+              working-directory: ios
+              run: pod install --no-repo-update
+            - name: Android build (APK)
+              run: |
+                  cd android
+                  ./gradlew assembleRelease
+            - name: Upload Android APK
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android-apk
+                  path: android/app/build/outputs/apk/release/*.apk
+            - name: iOS build (IPA - unsigned)
+              run: |
+                  xcodebuild \
+                    -workspace ios/WorkTrack.xcworkspace \
+                    -scheme WorkTrack \
+                    -configuration Release \
+                    -sdk iphoneos \
+                    -derivedDataPath ios/build \
+                    CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                    clean build
+                  mkdir -p ios/build/ipa
+                  xcrun -sdk iphoneos packageapplication \
+                    -v ios/build/Build/Products/Release-iphoneos/WorkTrack.app \
+                    -o ios/build/ipa/WorkTrack.ipa || true
+            - name: Upload iOS IPA
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios-ipa
+                  path: ios/build/ipa/*.ipa
+
+    security:
+        runs-on: ubuntu-latest
+        needs: lint-and-typecheck
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - run: npm ci --omit=dev
+            - name: Run npm audit
+              run: |
+                  set -e
+                  npm audit --production --audit-level=moderate

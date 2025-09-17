@@ -6,9 +6,13 @@
 		"android": "react-native run-android",
 		"ios": "react-native run-ios",
 		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
 		"format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc.js",
 		"start": "react-native start",
 		"test": "jest",
+		"test:unit": "jest --testPathPattern=__tests__/unit --runInBand",
+		"test:integration": "jest --testPathPattern=__tests__/integration --runInBand",
+		"test:coverage": "jest --coverage --coverageReporters=lcov,text-summary",
 		"prepare": "husky",
 		"clean": "react-native-clean-project",
 		"dev:ios": "concurrently --kill-others-on-fail --prefix-colors \"cyan,magenta\" \"firebase emulators:start --only firestore\" \"react-native run-ios\"",
@@ -89,6 +93,9 @@
 		"*.{js,jsx,ts,tsx}": [
 			"eslint --fix",
 			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"bash -lc 'tsc --noEmit --pretty false -p tsconfig.typecheck.json'"
 		]
 	}
 }

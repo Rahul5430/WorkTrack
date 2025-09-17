@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Fast feedback: run only unit tests on push
+npm run test:unit --silent || exit 1
+

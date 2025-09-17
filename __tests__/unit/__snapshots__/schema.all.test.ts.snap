@@ -1,0 +1,104 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`All schemas load and snapshot loads main app schema and matches snapshot 1`] = `
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "isIndexed": true,
+          "name": "date",
+          "type": "string",
+        },
+        {
+          "name": "status",
+          "type": "string",
+        },
+        {
+          "name": "created_at",
+          "type": "number",
+        },
+        {
+          "name": "last_modified",
+          "type": "number",
+        },
+        {
+          "name": "is_advisory",
+          "type": "boolean",
+        },
+        {
+          "isIndexed": true,
+          "name": "tracker_id",
+          "type": "string",
+        },
+        {
+          "name": "needs_sync",
+          "type": "boolean",
+        },
+        {
+          "isOptional": true,
+          "name": "sync_error",
+          "type": "string",
+        },
+        {
+          "isOptional": true,
+          "name": "retry_count",
+          "type": "number",
+        },
+      ],
+      "name": "work_tracks",
+    },
+    {
+      "columns": [
+        {
+          "name": "owner_id",
+          "type": "string",
+        },
+        {
+          "name": "name",
+          "type": "string",
+        },
+        {
+          "name": "color",
+          "type": "string",
+        },
+        {
+          "name": "created_at",
+          "type": "number",
+        },
+        {
+          "name": "is_default",
+          "type": "boolean",
+        },
+        {
+          "name": "tracker_type",
+          "type": "string",
+        },
+      ],
+      "name": "trackers",
+    },
+    {
+      "columns": [
+        {
+          "name": "tracker_id",
+          "type": "string",
+        },
+        {
+          "name": "shared_with",
+          "type": "string",
+        },
+        {
+          "name": "permission",
+          "type": "string",
+        },
+        {
+          "name": "created_at",
+          "type": "number",
+        },
+      ],
+      "name": "shared_trackers",
+    },
+  ],
+  "version": Any<Number>,
+}
+`;

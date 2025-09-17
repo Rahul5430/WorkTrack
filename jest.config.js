@@ -11,4 +11,18 @@ module.exports = {
 		'^@env$': './__mocks__/@env.js',
 	},
 	clearMocks: true,
+	resetMocks: true,
+	restoreMocks: true,
+	maxWorkers: 1,
+	collectCoverageFrom: ['src/**/*.{ts,tsx}'],
+	coverageDirectory: 'coverage',
+	coverageReporters: ['lcov', 'text-summary'],
+	coverageThreshold: {
+		global: {
+			branches: 95,
+			functions: 95,
+			lines: 95,
+			statements: 95,
+		},
+	},
 };
