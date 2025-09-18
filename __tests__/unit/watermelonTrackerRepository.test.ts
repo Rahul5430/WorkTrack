@@ -95,6 +95,24 @@ describe('WatermelonTrackerRepository', () => {
 		});
 	});
 
+	it('ensureExists creates default tracker when tracker is not found (returns null)', async () => {
+		await jest.isolateModules(async () => {
+			const { collection, write } = setupDb();
+			collection.find.mockResolvedValueOnce(null); // Tracker not found
+			jest.doMock('../../src/db/watermelon', () => ({
+				database: { get: () => collection, write },
+			}));
+			const {
+				WatermelonTrackerRepository,
+			} = require('../../src/repositories/watermelonTrackerRepository');
+			const repo = new WatermelonTrackerRepository();
+			await expect(
+				repo.ensureExists('t1', 'u1')
+			).resolves.toBeUndefined();
+			expect(write).toHaveBeenCalled();
+		});
+	});
+
 	it('upsertMany updates existing and creates missing; errors wrapped', async () => {
 		await jest.isolateModules(async () => {
 			const { collection, write } = setupDb();

@@ -54,6 +54,33 @@ describe('EntryUseCase', () => {
 			})
 		).rejects.toBeTruthy();
 	});
+
+	it('should get entries for tracker', async () => {
+		const local = new Local();
+		const uc = createEntryUseCase(local);
+
+		const mockEntries: EntryDTO[] = [
+			{
+				id: 'entry1',
+				trackerId: 'tracker1',
+				date: '2025-01-01',
+				status: 'office',
+				isAdvisory: false,
+				needsSync: true,
+				lastModified: Date.now(),
+			},
+		];
+
+		// Mock the repository method
+		jest.spyOn(local, 'getEntriesForTracker').mockResolvedValue(
+			mockEntries
+		);
+
+		const result = await uc.getEntriesForTracker('tracker1');
+
+		expect(local.getEntriesForTracker).toHaveBeenCalledWith('tracker1');
+		expect(result).toEqual(mockEntries);
+	});
 });
 
 // Sync orchestrator (migrated from legacy usecases.test.ts)

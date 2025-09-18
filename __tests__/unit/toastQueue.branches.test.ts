@@ -1,50 +1,169 @@
-import type { ToastQueueSubscriber } from '../../src/services/toastQueue';
+import { ToastType } from '../../src/components/ui/Toast';
 import ToastQueueService from '../../src/services/toastQueue';
 
-describe('ToastQueueService branches', () => {
-	let svc: ToastQueueService;
+describe('ToastQueueService - branch coverage', () => {
+	let toastQueue: ToastQueueService;
+
 	beforeEach(() => {
-		// ToastQueueService is a singleton; ensure a fresh state by clearing queue
-		svc = ToastQueueService.getInstance();
-		// Clear any pending state
-		svc.clear();
+		toastQueue = ToastQueueService.getInstance();
+		toastQueue.clear();
 	});
 
-	it('clear() notifies onToastHide when a toast is currently showing', () => {
-		const shows: string[] = [];
-		const hides: string[] = [];
-		const sub: ToastQueueSubscriber = {
-			onToastShow: (t) => shows.push(t.id),
-			onToastHide: (id) => hides.push(id),
-		};
-		const unsubscribe = svc.subscribe(sub);
-		// Enqueue a toast and let it start processing synchronously
-		const id = svc.show('hello', 'info', 10);
+	describe('show', () => {
+		it('adds toast to queue and processes if not already showing', () => {
+			const mockSubscriber = {
+				onToastShow: jest.fn(),
+				onToastHide: jest.fn(),
+			};
+			toastQueue.subscribe(mockSubscriber);
 
-		// Force processQueue immediate path by calling clear while showing
-		svc.clear();
-		unsubscribe();
+			const id = toastQueue.show('Test message', 'success', 3000, 'top');
 
-		expect(shows.includes(id)).toBe(true);
-		// After clear, currentToastId was nulled, but clear should attempt to notify
-		// Since clear() checks currentToastId before notifying, we expect either 0 or 1 hide.
-		// Ensure it does not throw and leaves service reset
-		const status = svc.getStatus();
-		expect(status.queueLength).toBe(0);
-		expect(status.isShowing).toBe(false);
+			expect(id).toBeDefined();
+			expect(mockSubscriber.onToastShow).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: 'Test message',
+					type: 'success',
+					duration: 3000,
+					position: 'top',
+				})
+			);
+		});
+
+		it('adds toast to queue without processing if already showing', () => {
+			const mockSubscriber = {
+				onToastShow: jest.fn(),
+				onToastHide: jest.fn(),
+			};
+			toastQueue.subscribe(mockSubscriber);
+
+			// Start showing first toast
+			toastQueue.show('First message', 'info');
+			expect(mockSubscriber.onToastShow).toHaveBeenCalledTimes(1);
+
+			// Add second toast while first is showing
+			toastQueue.show('Second message', 'error');
+			expect(mockSubscriber.onToastShow).toHaveBeenCalledTimes(1);
+		});
 	});
 
-	it('subscribe returns unsubscribe that removes the subscriber', () => {
-		const hides: string[] = [];
-		const sub: ToastQueueSubscriber = {
-			onToastShow: () => {},
-			onToastHide: (id) => hides.push(id),
-		};
-		const unsubscribe = svc.subscribe(sub);
-		unsubscribe();
-		// Trigger a cycle to ensure no callbacks occur
-		svc.show('bye', 'success', 1);
-		svc.clear();
-		expect(hides).toHaveLength(0);
+	describe('showMultiple', () => {
+		it('adds multiple toasts to queue', () => {
+			const toasts = [
+				{ message: 'Message 1', type: 'info' as ToastType },
+				{ message: 'Message 2', type: 'success' as ToastType },
+			];
+
+			const ids = toastQueue.showMultiple(toasts);
+			expect(ids).toHaveLength(2);
+			expect(ids[0]).toBeDefined();
+			expect(ids[1]).toBeDefined();
+		});
+	});
+
+	describe('remove', () => {
+		it('removes toast from queue by id', () => {
+			// Add toast manually to queue without processing
+			const toast = {
+				id: 'test-id',
+				message: 'Test message',
+				type: 'info' as const,
+				duration: 3000,
+				position: 'top' as const,
+			};
+			toastQueue['queue'].push(toast);
+
+			// Check that toast was added to queue
+			expect(toastQueue.getStatus().queueLength).toBe(1);
+			// Remove the toast
+			const result = toastQueue.remove('test-id');
+			expect(result).toBe(true);
+			// Check that toast was removed from queue
+			expect(toastQueue.getStatus().queueLength).toBe(0);
+		});
+
+		it('returns false when toast not found', () => {
+			const result = toastQueue.remove('nonexistent');
+			expect(result).toBe(false);
+		});
+	});
+
+	describe('clear', () => {
+		it('clears all toasts from queue', () => {
+			toastQueue.show('Message 1', 'info');
+			toastQueue.show('Message 2', 'error');
+			// Wait for first toast to be processed
+			setTimeout(() => {
+				expect(toastQueue.getStatus().queueLength).toBe(1);
+			}, 100);
+
+			toastQueue.clear();
+			expect(toastQueue.getStatus().queueLength).toBe(0);
+			expect(toastQueue.getStatus().isShowing).toBe(false);
+			expect(toastQueue.getStatus().currentToastId).toBeNull();
+		});
+
+		it('calls onToastHide for current toast when clearing', () => {
+			const mockSubscriber = {
+				onToastShow: jest.fn(),
+				onToastHide: jest.fn(),
+			};
+			toastQueue.subscribe(mockSubscriber);
+
+			// Show a toast to set currentToastId
+			const id = toastQueue.show('Test message', 'info');
+
+			// Clear while toast is showing
+			toastQueue.clear();
+
+			// Should call onToastHide with the current toast id
+			expect(mockSubscriber.onToastHide).toHaveBeenCalledWith(id);
+		});
+
+		it('does not call onToastHide when no current toast', () => {
+			const mockSubscriber = {
+				onToastShow: jest.fn(),
+				onToastHide: jest.fn(),
+			};
+			toastQueue.subscribe(mockSubscriber);
+
+			// Clear without showing any toast
+			toastQueue.clear();
+
+			// Should not call onToastHide
+			expect(mockSubscriber.onToastHide).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('subscribe', () => {
+		it('subscribes to toast events and returns unsubscribe function', () => {
+			const mockSubscriber = {
+				onToastShow: jest.fn(),
+				onToastHide: jest.fn(),
+			};
+
+			const unsubscribe = toastQueue.subscribe(mockSubscriber);
+			expect(typeof unsubscribe).toBe('function');
+
+			toastQueue.show('Test message', 'info');
+			expect(mockSubscriber.onToastShow).toHaveBeenCalled();
+
+			unsubscribe();
+			// Should not be called after unsubscribe
+			const callCount = mockSubscriber.onToastShow.mock.calls.length;
+			toastQueue.show('Another message', 'info');
+			expect(mockSubscriber.onToastShow).toHaveBeenCalledTimes(callCount);
+		});
+	});
+
+	describe('getStatus', () => {
+		it('returns current queue status', () => {
+			const status = toastQueue.getStatus();
+			expect(status).toEqual({
+				queueLength: 0,
+				isShowing: false,
+				currentToastId: null,
+			});
+		});
 	});
 });

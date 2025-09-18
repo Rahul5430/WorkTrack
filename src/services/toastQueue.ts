@@ -74,10 +74,11 @@ export default class ToastQueueService {
 	clear(): void {
 		this.queue = [];
 		this.isShowing = false;
+		const currentToastId = this.currentToastId;
 		this.currentToastId = null;
 		this.subscribers.forEach((subscriber) => {
-			if (this.currentToastId) {
-				subscriber.onToastHide(this.currentToastId);
+			if (currentToastId) {
+				subscriber.onToastHide(currentToastId);
 			}
 		});
 	}
