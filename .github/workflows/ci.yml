@@ -87,25 +87,49 @@ jobs:
                   xcodebuild -version
                   pod --version
                   pod install --no-repo-update
-            - name: iOS build (IPA - unsigned)
+            - name: List available simulators
               run: |
-                  xcodebuild \
-                    -workspace ios/WorkTrack.xcworkspace \
-                    -scheme WorkTrack \
-                    -configuration Release \
-                    -sdk iphoneos \
-                    -derivedDataPath ios/build \
-                    CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-                    clean build
-                  mkdir -p ios/build/ipa
-                  xcrun -sdk iphoneos packageapplication \
-                    -v ios/build/Build/Products/Release-iphoneos/WorkTrack.app \
-                    -o ios/build/ipa/WorkTrack.ipa || true
-            - name: Upload iOS IPA
+                  xcrun simctl list devices available
+            - name: iOS build (Simulator)
+              run: |
+                  # Find available iOS simulators
+                  SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+
+                  if [ -z "$SIMULATOR_DEVICE" ]; then
+                      echo "No iPhone simulators found, trying generic iOS Simulator"
+                      SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iOS Simulator" | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
+                  fi
+
+                  if [ -z "$SIMULATOR_DEVICE" ]; then
+                      echo "No simulators found, building without specific destination"
+                      xcodebuild \
+                        -workspace ios/WorkTrack.xcworkspace \
+                        -scheme WorkTrack \
+                        -configuration Release \
+                        -sdk iphonesimulator \
+                        -derivedDataPath ios/build \
+                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                        clean build
+                  else
+                      echo "Using simulator: $SIMULATOR_DEVICE"
+                      xcodebuild \
+                        -workspace ios/WorkTrack.xcworkspace \
+                        -scheme WorkTrack \
+                        -configuration Release \
+                        -sdk iphonesimulator \
+                        -destination "platform=iOS Simulator,id=$SIMULATOR_DEVICE" \
+                        -derivedDataPath ios/build \
+                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                        clean build
+                  fi
+
+                  mkdir -p ios/build/simulator
+                  cp -r ios/build/Build/Products/Release-iphonesimulator/WorkTrack.app ios/build/simulator/
+            - name: Upload iOS Simulator App
               uses: actions/upload-artifact@v4
               with:
-                  name: ios-ipa
-                  path: ios/build/ipa/*.ipa
+                  name: ios-simulator-app
+                  path: ios/build/simulator/WorkTrack.app
 
     build-summary:
         runs-on: ubuntu-latest
@@ -115,10 +139,10 @@ jobs:
             - name: Build Summary
               run: |
                   echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-                  echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| Android | ${{ needs.build-android.result }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| iOS | ${{ needs.build-ios.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Platform | Status | Artifact |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| Android | ${{ needs.build-android.result }} | APK (Release) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| iOS | ${{ needs.build-ios.result }} | Simulator App |" >> $GITHUB_STEP_SUMMARY
 
     security:
         runs-on: ubuntu-latest
