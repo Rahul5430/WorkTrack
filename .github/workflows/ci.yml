@@ -53,16 +53,33 @@ jobs:
               with:
                   node-version: 20
                   cache: 'npm'
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'temurin'
+                  java-version: '17'
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
             - run: npm ci
             - name: Android build (APK)
               run: |
                   cd android
-                  ./gradlew assembleRelease
+                  echo "Gradle version:"
+                  ./gradlew --version
+                  echo "Building APK..."
+                  ./gradlew assembleDebug --info
+            - name: List APK files
+              run: |
+                  echo "Checking for APK files..."
+                  find android/app/build/outputs -name "*.apk" -type f
+                  ls -la android/app/build/outputs/apk/debug/ || echo "Debug directory not found"
+                  ls -la android/app/build/outputs/ || echo "Outputs directory not found"
             - name: Upload Android APK
               uses: actions/upload-artifact@v4
               with:
-                  name: android-apk
-                  path: android/app/build/outputs/apk/release/*.apk
+                  name: android-apk-debug
+                  path: android/app/build/outputs/apk/debug/*.apk
+                  if-no-files-found: error
 
     build-ios:
         runs-on: macos-15
@@ -141,7 +158,7 @@ jobs:
                   echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
                   echo "| Platform | Status | Artifact |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|--------|----------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| Android | ${{ needs.build-android.result }} | APK (Release) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| Android | ${{ needs.build-android.result }} | APK (Debug) |" >> $GITHUB_STEP_SUMMARY
                   echo "| iOS | ${{ needs.build-ios.result }} | Simulator App |" >> $GITHUB_STEP_SUMMARY
 
     security:
