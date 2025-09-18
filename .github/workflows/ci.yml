@@ -44,8 +44,8 @@ jobs:
                   name: jest-coverage
                   path: coverage
 
-    build-artifacts:
-        runs-on: macos-14
+    build-android:
+        runs-on: macos-15
         needs: test
         steps:
             - uses: actions/checkout@v4
@@ -54,12 +54,6 @@ jobs:
                   node-version: 20
                   cache: 'npm'
             - run: npm ci
-            - name: Install Ruby gems (cocoapods)
-              run: |
-                  gem install cocoapods --no-document
-            - name: Install iOS pods
-              working-directory: ios
-              run: pod install --no-repo-update
             - name: Android build (APK)
               run: |
                   cd android
@@ -69,6 +63,30 @@ jobs:
               with:
                   name: android-apk
                   path: android/app/build/outputs/apk/release/*.apk
+
+    build-ios:
+        runs-on: macos-15
+        needs: test
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - name: Setup Xcode
+              uses: maxim-lobanov/setup-xcode@v1
+              with:
+                  xcode-version: '16.1'
+            - run: npm ci
+            - name: Install Ruby gems (cocoapods)
+              run: |
+                  gem install cocoapods --no-document
+            - name: Install iOS pods
+              working-directory: ios
+              run: |
+                  xcodebuild -version
+                  pod --version
+                  pod install --no-repo-update
             - name: iOS build (IPA - unsigned)
               run: |
                   xcodebuild \
@@ -88,6 +106,19 @@ jobs:
               with:
                   name: ios-ipa
                   path: ios/build/ipa/*.ipa
+
+    build-summary:
+        runs-on: ubuntu-latest
+        needs: [build-android, build-ios]
+        if: always()
+        steps:
+            - name: Build Summary
+              run: |
+                  echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| Android | ${{ needs.build-android.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| iOS | ${{ needs.build-ios.result }} |" >> $GITHUB_STEP_SUMMARY
 
     security:
         runs-on: ubuntu-latest

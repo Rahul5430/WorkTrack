@@ -1,7 +1,7 @@
-![CI](https://github.com/rahulsharma/WorkTrack/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://codecov.io/gh/rahulsharma/WorkTrack/branch/main/graph/badge.svg)
+![CI](https://github.com/Rahul5430/WorkTrack/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://codecov.io/gh/Rahul5430/WorkTrack/branch/main/graph/badge.svg)
 
-### WorkTrack
+# WorkTrack
 
 Minimalistic React Native app for tracking work-from-office/work-from-home attendance.
 
@@ -14,7 +14,7 @@ Features:
 - Role-based sharing with family
 - Playground mode for predictions
 
-### 🚀 Getting Started
+## 🚀 Getting Started
 
 - Start Metro:
 
@@ -35,7 +35,7 @@ cd ios && pod install && cd ..
 npm run ios
 ```
 
-### 🧪 Testing
+## 🧪 Testing
 
 - Full suite with coverage:
 
@@ -45,7 +45,7 @@ npm run test:coverage
 
 - Coverage threshold enforced at 95% via Jest `coverageThreshold`.
 
-### ⚙️ CI/CD
+## ⚙️ CI/CD
 
 GitHub Actions pipeline on pushes to `main`:
 
@@ -55,7 +55,7 @@ GitHub Actions pipeline on pushes to `main`:
 - Build Android APK and iOS IPA artifacts
 - Security audit (`npm audit --production`)
 
-### 📦 Folder Structure
+## 📦 Folder Structure
 
 - `__tests__/` – unit and integration tests
 - `src/` – application code
@@ -65,12 +65,12 @@ GitHub Actions pipeline on pushes to `main`:
     - `services/` – external services (Firebase, toast queue)
     - `utils/` – helpers and validation
 
-### 📖 Learn More
+## 📖 Learn More
 
 - React Native docs: https://reactnative.dev
 - Firebase Emulator: https://firebase.google.com/docs/emulator-suite
 
-### Codecov Setup
+## Codecov Setup
 
 - CI uploads `coverage/lcov.info` via `codecov/codecov-action@v4`.
 - Add `CODECOV_TOKEN` in GitHub repo Settings → Secrets and variables → Actions.
