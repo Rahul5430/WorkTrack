@@ -1,0 +1,99 @@
+# Gitleaks configuration for WorkTrack
+# This file excludes false positives from generated files and common patterns
+
+version = "8.24.3"
+
+# Global settings
+[global]
+    # Scan only the latest commit (faster for CI)
+    scan-commits = true
+    scan-staged = false
+    scan-unstaged = false
+    
+    # Redact secrets in output
+    redact = true
+    
+    # Exit code when leaks are found
+    exit-code = 2
+
+# Exclude patterns for generated files and false positives
+[[rules]]
+    description = "Exclude google-services.json (Firebase config file)"
+    regex = '''google-services\.json'''
+    path = '''android/app/google-services\.json'''
+    tags = ["firebase", "config"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude Podfile.lock (CocoaPods lock file)"
+    regex = '''Podfile\.lock'''
+    path = '''ios/Podfile\.lock'''
+    tags = ["cocoapods", "lockfile"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude package-lock.json (npm lock file)"
+    regex = '''package-lock\.json'''
+    path = '''package-lock\.json'''
+    tags = ["npm", "lockfile"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude yarn.lock (yarn lock file)"
+    regex = '''yarn\.lock'''
+    path = '''yarn\.lock'''
+    tags = ["yarn", "lockfile"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude Gradle wrapper properties"
+    regex = '''gradle-wrapper\.properties'''
+    path = '''android/gradle/wrapper/gradle-wrapper\.properties'''
+    tags = ["gradle", "wrapper"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude build directories"
+    regex = '''.*'''
+    path = '''android/app/build/.*'''
+    tags = ["build", "generated"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude iOS build directories"
+    regex = '''.*'''
+    path = '''ios/build/.*'''
+    tags = ["build", "generated"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude node_modules"
+    regex = '''.*'''
+    path = '''node_modules/.*'''
+    tags = ["dependencies", "generated"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude coverage reports"
+    regex = '''.*'''
+    path = '''coverage/.*'''
+    tags = ["coverage", "generated"]
+    allowlist = true
+
+# Custom rules for React Native specific patterns
+[[rules]]
+    description = "Exclude React Native bundle identifiers (not secrets)"
+    regex = '''com\.reactnative\.[a-zA-Z0-9.-]+'''
+    tags = ["react-native", "bundle-id"]
+    allowlist = true
+
+[[rules]]
+    description = "Exclude common React Native app names"
+    regex = '''WorkTrack'''
+    tags = ["react-native", "app-name"]
+    allowlist = true
+
+# Keep the default rules but with exclusions
+[default]
+    # Use default rules but exclude the patterns above
+    use-default = true
