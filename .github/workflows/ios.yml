@@ -1,0 +1,74 @@
+name: iOS Build
+
+on:
+    workflow_run:
+        workflows: ['Checks']
+        types: [completed]
+
+jobs:
+    build-ios:
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        runs-on: macos-15
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+            - name: Setup Xcode 16.1
+              uses: maxim-lobanov/setup-xcode@v1
+              with:
+                  xcode-version: '16.1'
+            - name: Install Node dependencies
+              run: npm ci
+            - name: Install CocoaPods
+              run: |
+                  gem install cocoapods --no-document
+            - name: Install iOS pods
+              working-directory: ios
+              run: |
+                  xcodebuild -version
+                  pod --version
+                  pod install --no-repo-update
+            - name: List available simulators
+              run: |
+                  xcrun simctl list devices available
+            - name: Build iOS app (Simulator)
+              run: |
+                  SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+
+                  if [ -z "$SIMULATOR_DEVICE" ]; then
+                      echo "No iPhone simulators found, trying generic iOS Simulator"
+                      SIMULATOR_DEVICE=$(xcrun simctl list devices available | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+                  fi
+
+                  if [ -z "$SIMULATOR_DEVICE" ]; then
+                      echo "No simulators found, building without specific destination"
+                      xcodebuild \
+                        -workspace ios/WorkTrack.xcworkspace \
+                        -scheme WorkTrack \
+                        -configuration Release \
+                        -sdk iphonesimulator \
+                        -derivedDataPath ios/build \
+                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                        clean build
+                  else
+                      echo "Using simulator UDID: $SIMULATOR_DEVICE"
+                      xcodebuild \
+                        -workspace ios/WorkTrack.xcworkspace \
+                        -scheme WorkTrack \
+                        -configuration Release \
+                        -sdk iphonesimulator \
+                        -destination "platform=iOS Simulator,id=$SIMULATOR_DEVICE" \
+                        -derivedDataPath ios/build \
+                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                        clean build
+                  fi
+
+                  mkdir -p ios/build/simulator
+                  cp -r ios/build/Build/Products/Release-iphonesimulator/WorkTrack.app ios/build/simulator/
+            - name: Upload iOS simulator app
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios-simulator-app
+                  path: ios/build/simulator/WorkTrack.app

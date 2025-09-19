@@ -1,5 +1,7 @@
-![CI](https://github.com/Rahul5430/WorkTrack/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://codecov.io/gh/Rahul5430/WorkTrack/branch/main/graph/badge.svg)
+[![Checks](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml?query=branch%3Amain)
+[![Android Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml?query=branch%3Amain)
+[![iOS Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml?query=branch%3Amain)
 
 # WorkTrack
 
@@ -47,13 +49,17 @@ npm run test:coverage
 
 ## ⚙️ CI/CD
 
-GitHub Actions pipeline on pushes to `main`:
+Workflows on pushes to `main`:
 
-- Lint + Typecheck (ESLint, `tsc --noEmit`)
-- Jest unit + integration tests with coverage
-- Upload coverage to Codecov and as artifact
-- Build Android APK and iOS IPA artifacts
-- Security audit (`npm audit --production`)
+- Checks: ESLint, TypeScript typecheck, tests with coverage, Codecov, security audit
+- Android Build: builds debug APK and uploads artifact and Release asset
+- iOS Build: builds simulator app and uploads artifact
+
+### 📥 Download Android debug APK
+
+- Latest Release asset (stable link):
+    - https://github.com/Rahul5430/WorkTrack/releases/download/android-debug-latest/app-debug.apk
+- Or visit Releases page: https://github.com/Rahul5430/WorkTrack/releases
 
 ## 📦 Folder Structure
 
