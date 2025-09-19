@@ -1,7 +1,7 @@
 ![Coverage](https://codecov.io/gh/Rahul5430/WorkTrack/branch/main/graph/badge.svg)
 [![Checks](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml?query=branch%3Amain)
-[![Android Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml?query=branch%3Amain)
-[![iOS Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml?query=branch%3Amain)
+[![Android Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml/badge.svg)](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml)
+[![iOS Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml/badge.svg)](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml)
 
 # WorkTrack
 

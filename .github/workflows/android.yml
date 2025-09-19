@@ -5,10 +5,16 @@ on:
         workflows: ['Checks']
         types: [completed]
 
+permissions:
+    contents: write
+
 jobs:
     build-android:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: macos-15
+        concurrency:
+            group: android-${{ github.event.workflow_run.head_branch || github.ref }}
+            cancel-in-progress: true
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
@@ -47,7 +53,7 @@ jobs:
                   if-no-files-found: error
 
             - name: Upload APK to Release (latest)
-              if: ${{ github.ref == 'refs/heads/main' }}
+              if: ${{ github.event.workflow_run.head_branch == 'main' }}
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: android-debug-latest
@@ -57,5 +63,4 @@ jobs:
                   files: |
                       android/app/build/outputs/apk/debug/app-debug.apk
                       android/app/build/outputs/apk/debug/output-metadata.json
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ github.token }}

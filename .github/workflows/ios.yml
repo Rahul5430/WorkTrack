@@ -9,6 +9,9 @@ jobs:
     build-ios:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: macos-15
+        concurrency:
+            group: ios-${{ github.event.workflow_run.head_branch || github.ref }}
+            cancel-in-progress: true
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
@@ -35,7 +38,35 @@ jobs:
                   xcrun simctl list devices available
             - name: Build iOS app (Simulator)
               run: |
-                  SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+                  echo "Selecting best available iPhone simulator (highest iOS, highest model)..."
+                  # Prefer jq-powered JSON selection; fall back to grep if jq unavailable
+                  if command -v jq >/dev/null 2>&1; then
+                    SIMULATOR_DEVICE=$(xcrun simctl list --json devices available | jq -r '
+                      .devices | to_entries
+                      | map({runtime: .key, devices: (.value // [])})
+                      | map(select(.runtime | test("iOS")))
+                      | map(.devices[]
+                           | select(.isAvailable == true and (.name | test("^iPhone")))
+                           | { udid: .udid,
+                               name: .name,
+                               runtime: .runtime,
+                               os: (.runtime | capture("iOS-(?<v>[0-9]+(\\.[0-9]+)*)").v)
+                             }
+                           | .modelWeight = (if (.name|test("Pro Max")) then 5
+                                            elif (.name|test("Pro")) then 4
+                                            elif (.name|test("Plus")) then 3
+                                            elif (.name|test("SE")) then 1
+                                            else 2 end)
+                           | .ver = (.os | gsub("\\.";"") | tonumber)
+                      )
+                      | sort_by(.ver, .modelWeight)
+                      | reverse
+                      | (.[0].udid // "")
+                    ')
+                  else
+                    echo "jq not found; falling back to simple selection"
+                    SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+                  fi
 
                   if [ -z "$SIMULATOR_DEVICE" ]; then
                       echo "No iPhone simulators found, trying generic iOS Simulator"

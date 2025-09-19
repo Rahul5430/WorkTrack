@@ -5,30 +5,27 @@ on:
         branches: [main]
 
 jobs:
-    lint:
+    checks:
         runs-on: ubuntu-latest
+        concurrency:
+            group: checks-${{ github.ref }}
+            cancel-in-progress: true
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
-            - run: npm ci
+            - name: Install dependencies
+              run: npm ci
+            - name: Security audit (high+)
+              run: |
+                  set -e
+                  npm audit --production --audit-level=high
             - name: ESLint
               run: npm run lint
             - name: TypeScript typecheck
               run: npx tsc --noEmit
-
-    test:
-        runs-on: ubuntu-latest
-        needs: lint
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: 'npm'
-            - run: npm ci
             - name: Run tests with coverage
               env:
                   FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
@@ -45,19 +42,3 @@ jobs:
               with:
                   name: jest-coverage
                   path: coverage
-
-    security:
-        runs-on: ubuntu-latest
-        needs: lint
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: 'npm'
-            - name: Install production dependencies
-              run: npm ci --omit=dev --ignore-scripts
-            - name: Security audit (high+)
-              run: |
-                  set -e
-                  npm audit --production --audit-level=high
