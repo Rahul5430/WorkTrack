@@ -1,16 +1,79 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "deps"
-    open-pull-requests-limit: 5
-    reviewers: []
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "ci"
+    # NPM dependencies (main project)
+    - package-ecosystem: 'npm'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      commit-message:
+          prefix: 'deps'
+          include: 'scope'
+      open-pull-requests-limit: 5
+      reviewers: []
+      assignees: []
+      labels: ['dependencies', 'javascript']
+      # Group minor and patch updates together
+      groups:
+          minor-and-patch:
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+      # Ignore major version updates for critical packages
+      ignore:
+          - dependency-name: 'react-native'
+            update-types: ['version-update:semver-major']
+          - dependency-name: 'react'
+            update-types: ['version-update:semver-major']
+          - dependency-name: '@react-native-community/*'
+            update-types: ['version-update:semver-major']
+
+    # GitHub Actions
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      commit-message:
+          prefix: 'ci'
+          include: 'scope'
+      open-pull-requests-limit: 3
+      reviewers: []
+      assignees: []
+      labels: ['ci', 'github-actions']
+
+    # CocoaPods (iOS dependencies)
+    - package-ecosystem: 'bundler'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      commit-message:
+          prefix: 'ios'
+          include: 'scope'
+      open-pull-requests-limit: 3
+      reviewers: []
+      assignees: []
+      labels: ['dependencies', 'ios', 'cocoapods']
+      # Group Ruby gem updates
+      groups:
+          ruby-gems:
+              patterns: ['*']
+              update-types: ['minor', 'patch']
+
+    # Gradle (Android dependencies) - if you have gradle files
+    - package-ecosystem: 'gradle'
+      directory: '/android'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
+      commit-message:
+          prefix: 'android'
+          include: 'scope'
+      open-pull-requests-limit: 3
+      reviewers: []
+      assignees: []
+      labels: ['dependencies', 'android', 'gradle']
