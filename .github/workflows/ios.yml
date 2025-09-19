@@ -41,28 +41,23 @@ jobs:
                   echo "Selecting best available iPhone simulator (highest iOS, highest model)..."
                   # Prefer jq-powered JSON selection; fall back to grep if jq unavailable
                   if command -v jq >/dev/null 2>&1; then
-                    SIMULATOR_DEVICE=$(xcrun simctl list --json devices available | jq -r '
-                      .devices | to_entries
-                      | map({runtime: .key, devices: (.value // [])})
-                      | map(select(.runtime | test("iOS")))
-                      | map(.devices[]
-                           | select(.isAvailable == true and (.name | test("^iPhone")))
-                           | { udid: .udid,
-                               name: .name,
-                               runtime: .runtime,
-                               os: (.runtime | capture("iOS-(?<v>[0-9]+(\\.[0-9]+)*)").v)
-                             }
-                           | .modelWeight = (if (.name|test("Pro Max")) then 5
-                                            elif (.name|test("Pro")) then 4
-                                            elif (.name|test("Plus")) then 3
-                                            elif (.name|test("SE")) then 1
-                                            else 2 end)
-                           | .ver = (.os | gsub("\\.";"") | tonumber)
-                      )
+                    SIMULATOR_DEVICE=$(xcrun simctl list --json devices available | jq -er '
+                      .devices
+                      | to_entries
+                      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-")))
+                      | map(. as $e | $e.value[]
+                          | {udid, name: (.name // ""), runtime: $e.key})
+                      | map(select(.name | startswith("iPhone")))
+                      | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
+                                           elif (.name | contains("Pro")) then 4
+                                           elif (.name | contains("Plus")) then 3
+                                           elif (.name | contains("SE")) then 1
+                                           else 2 end))
+                      | map(.ver = (.runtime | capture("iOS-(?<v>[0-9-]+)").v | gsub("-"; "") | tonumber))
                       | sort_by(.ver, .modelWeight)
-                      | reverse
-                      | (.[0].udid // "")
-                    ')
+                      | last
+                      | .udid
+                    ' 2>/dev/null || true)
                   else
                     echo "jq not found; falling back to simple selection"
                     SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
