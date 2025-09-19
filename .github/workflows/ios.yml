@@ -18,12 +18,18 @@ jobs:
               with:
                   node-version: 20
                   cache: 'npm'
-            - name: Setup Xcode 16.1
+            - name: Setup Xcode 26.0
               uses: maxim-lobanov/setup-xcode@v1
               with:
-                  xcode-version: '16.1'
+                  xcode-version: '26.0'
             - name: Install Node dependencies
               run: npm ci
+            - name: Install jq (for deterministic simulator selection)
+              run: |
+                  if ! command -v jq >/dev/null 2>&1; then
+                    brew update
+                    brew install jq
+                  fi
             - name: Install CocoaPods
               run: |
                   gem install cocoapods --no-document
@@ -38,7 +44,7 @@ jobs:
                   xcrun simctl list devices available
             - name: Build iOS app (Simulator)
               run: |
-                  echo "Selecting best available iPhone simulator matching installed SDK..."
+                  echo "Selecting iPhone 17-series simulator on iOS 26.x (pinned to Xcode 26.0)..."
                   echo "Dumping available devices JSON for debugging:"
                   if command -v jq >/dev/null 2>&1; then
                     xcrun simctl list --json devices available | jq '.'
@@ -50,38 +56,63 @@ jobs:
                     SDK_VER=$(xcodebuild -version -sdk iphonesimulator 2>/dev/null | awk '/SDKVersion/ {print $2; exit}')
                   fi
                   echo "Detected iphonesimulator SDK version: ${SDK_VER:-unknown}"
-                  SDK_VER_DASH=${SDK_VER//./-}
                   # Prefer jq-powered JSON selection; fall back to grep if jq unavailable
-                  if command -v jq >/dev/null 2>&1 && [ -n "$SDK_VER_DASH" ]; then
-                    SIMULATOR_DEVICE=$(xcrun simctl list --json devices available | jq -er --arg ver "iOS-${SDK_VER_DASH}" '
-                      .devices
-                      | to_entries
-                      | map(select(.key | startswith($ver)))
-                      | map(. as $e | $e.value[]
-                          | {udid, name: (.name // ""), runtime: $e.key})
-                      | map(select(.name | startswith("iPhone")))
-                      | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
-                                           elif (.name | contains("Pro")) then 4
-                                           elif (.name | contains("Plus")) then 3
-                                           elif (.name | contains("SE")) then 1
-                                           else 2 end))
-                      | sort_by(.modelWeight)
-                      | last
-                      | .udid
-                    ' 2>/dev/null || true)
-                  else
-                    echo "jq not available or SDK version unknown; falling back to grep-based selection within iOS ${SDK_VER} section"
-                    if [ -n "$SDK_VER" ]; then
-                      # Extract lines under the specific iOS version section and pick preferred models
-                      SECTION=$(xcrun simctl list devices available | awk "/-- iOS ${SDK_VER} --/{flag=1;next}/-- iOS/{flag=0}flag")
-                      CANDIDATE=$(printf "%s\n" "$SECTION" | grep "iPhone 16 Pro Max\|iPhone 16 Pro\|iPhone 16 Plus\|iPhone 16\|iPhone SE" | head -1)
-                      SIMULATOR_DEVICE=$(printf "%s" "$CANDIDATE" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p')
-                    fi
+                  if command -v jq >/dev/null 2>&1; then
+                    # Prefer iOS 26.x runtime and iPhone 17 Pro Max/Pro, then others
+                    read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
+                      xcrun simctl list --json devices available | jq -r '
+                        .devices
+                        | to_entries
+                        | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-26-")))
+                        | map(. as $e | $e.value[]
+                            | {udid, name: (.name // ""), runtime: $e.key})
+                        | map(select(.name | startswith("iPhone")))
+                        | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
+                                             elif (.name | contains("Pro")) then 4
+                                             elif (.name | contains("Plus")) then 3
+                                             elif (.name | contains("SE")) then 1
+                                             else 2 end))
+                        | sort_by(.modelWeight)
+                        | last // empty
+                        | if . then [.udid, .name, .runtime] | @tsv else "" end'
+                    )
                     if [ -z "$SIMULATOR_DEVICE" ]; then
-                      # Final fallback: first available iPhone of any version
-                      SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+                      # Fallback: pick highest iOS runtime available
+                      read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
+                        xcrun simctl list --json devices available | jq -r '
+                          .devices
+                          | to_entries
+                          | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-")))
+                          | map(. as $e | $e.value[]
+                              | {udid, name: (.name // ""), runtime: $e.key})
+                          | map(select(.name | startswith("iPhone")))
+                          | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
+                                               elif (.name | contains("Pro")) then 4
+                                               elif (.name | contains("Plus")) then 3
+                                               elif (.name | contains("SE")) then 1
+                                               else 2 end))
+                          | map(.ver = (.runtime | capture("iOS-(?<v>[0-9-]+)").v | gsub("-"; "") | tonumber))
+                          | sort_by(.ver, .modelWeight)
+                          | last
+                          | [.udid, .name, .runtime]
+                          | @tsv'
+                      )
                     fi
+                  else
+                    echo "jq not available; using simple selection"
+                    # Try newest iOS section first by scanning in order 26, 18.6, 18.5, 18.4
+                    for VER in 26.0 18.6 18.5 18.4; do
+                      SECTION=$(xcrun simctl list devices available | awk "/-- iOS ${VER} --/{flag=1;next}/-- iOS/{flag=0}flag")
+                      if [ -n "$SECTION" ]; then
+                        CANDIDATE=$(printf "%s\n" "$SECTION" | grep "iPhone 17 Pro Max\|iPhone 17 Pro\|iPhone 17\|iPhone 16 Pro Max\|iPhone 16 Pro\|iPhone 16 Plus\|iPhone 16\|iPhone SE" | head -1)
+                        SIMULATOR_DEVICE=$(printf "%s" "$CANDIDATE" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p')
+                        [ -n "$SIMULATOR_DEVICE" ] && break
+                      fi
+                    done
+                    # Final fallback: first available iPhone of any version
+                    [ -z "$SIMULATOR_DEVICE" ] && SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
                   fi
+                  echo "Chosen simulator: UDID=${SIMULATOR_DEVICE:-unknown} NAME=${SIMULATOR_NAME:-unknown} RUNTIME=${SIMULATOR_RUNTIME:-unknown}"
 
                   if [ -z "$SIMULATOR_DEVICE" ]; then
                       echo "No iPhone simulators found, trying generic iOS Simulator"
