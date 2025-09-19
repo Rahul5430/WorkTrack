@@ -64,20 +64,15 @@ jobs:
                   key: ${{ runner.os }}-metro-${{ hashFiles('package-lock.json', 'metro.config.js', 'babel.config.js') }}
                   restore-keys: |
                       ${{ runner.os }}-metro-
-            - name: Download node_modules from Checks
-              uses: actions/download-artifact@v4
+            - name: Cache node_modules
+              uses: actions/cache@v4
               with:
-                  name: node-modules
-                  path: .
-            - name: Verify node_modules
-              run: |
-                  if [ ! -d "node_modules" ]; then
-                      echo "node_modules not found, falling back to npm ci"
-                      npm ci
-                  else
-                      echo "Using cached node_modules from Checks workflow"
-                      ls -la node_modules | head -10
-                  fi
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
+            - name: Install Node dependencies
+              run: npm ci
             - name: Build Android debug APK
               run: |
                   cd android

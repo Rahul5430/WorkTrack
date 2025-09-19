@@ -42,9 +42,3 @@ jobs:
               with:
                   name: jest-coverage
                   path: coverage
-            - name: Upload node_modules artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: node-modules
-                  path: node_modules
-                  retention-days: 1
