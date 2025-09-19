@@ -4,6 +4,28 @@ on:
     workflow_run:
         workflows: ['Checks']
         types: [completed]
+    push:
+        branches: [main]
+        paths:
+            - 'android/**'
+            - 'src/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'metro.config.js'
+            - 'babel.config.js'
+            - 'tsconfig.json'
+            - 'jest.config.js'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'android/**'
+            - 'src/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'metro.config.js'
+            - 'babel.config.js'
+            - 'tsconfig.json'
+            - 'jest.config.js'
 
 permissions:
     contents: write
@@ -28,15 +50,41 @@ jobs:
                   java-version: '17'
             - name: Setup Android SDK
               uses: android-actions/setup-android@v3
-            - name: Install Node dependencies
-              run: npm ci
+            - name: Setup Gradle Build Action
+              uses: gradle/gradle-build-action@v3
+              with:
+                  gradle-version: wrapper
+                  cache-read-only: false
+            - name: Cache Metro bundler
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cache/metro
+                      node_modules/.cache
+                  key: ${{ runner.os }}-metro-${{ hashFiles('package-lock.json', 'metro.config.js', 'babel.config.js') }}
+                  restore-keys: |
+                      ${{ runner.os }}-metro-
+            - name: Download node_modules from Checks
+              uses: actions/download-artifact@v4
+              with:
+                  name: node-modules
+                  path: .
+            - name: Verify node_modules
+              run: |
+                  if [ ! -d "node_modules" ]; then
+                      echo "node_modules not found, falling back to npm ci"
+                      npm ci
+                  else
+                      echo "Using cached node_modules from Checks workflow"
+                      ls -la node_modules | head -10
+                  fi
             - name: Build Android debug APK
               run: |
                   cd android
                   echo "Gradle version:"
                   ./gradlew --version
-                  echo "Building APK..."
-                  ./gradlew assembleDebug --info
+                  echo "Building APK with CI optimizations..."
+                  ./gradlew assembleDebug --info --parallel --build-cache -Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true
             - name: Show APK files
               run: |
                   echo "Checking for APK files..."
