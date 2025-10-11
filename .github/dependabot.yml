@@ -11,8 +11,6 @@ updates:
           prefix: 'deps'
           include: 'scope'
       open-pull-requests-limit: 5
-      reviewers: []
-      assignees: []
       labels: ['dependencies', 'javascript']
       # Group minor and patch updates together
       groups:
@@ -39,8 +37,6 @@ updates:
           prefix: 'ci'
           include: 'scope'
       open-pull-requests-limit: 3
-      reviewers: []
-      assignees: []
       labels: ['ci', 'github-actions']
 
     # CocoaPods (iOS dependencies)
@@ -54,8 +50,6 @@ updates:
           prefix: 'ios'
           include: 'scope'
       open-pull-requests-limit: 3
-      reviewers: []
-      assignees: []
       labels: ['dependencies', 'ios', 'cocoapods']
       # Group Ruby gem updates
       groups:
@@ -74,6 +68,4 @@ updates:
           prefix: 'android'
           include: 'scope'
       open-pull-requests-limit: 3
-      reviewers: []
-      assignees: []
       labels: ['dependencies', 'android', 'gradle']

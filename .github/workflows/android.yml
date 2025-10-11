@@ -2,30 +2,30 @@ name: Android Build
 
 on:
     workflow_run:
-        workflows: ['Checks']
+        workflows: ["Checks"]
         types: [completed]
     push:
         branches: [main]
         paths:
-            - 'android/**'
-            - 'src/**'
-            - 'package.json'
-            - 'package-lock.json'
-            - 'metro.config.js'
-            - 'babel.config.js'
-            - 'tsconfig.json'
-            - 'jest.config.js'
+            - "android/**"
+            - "src/**"
+            - "package.json"
+            - "package-lock.json"
+            - "metro.config.js"
+            - "babel.config.js"
+            - "tsconfig.json"
+            - "jest.config.js"
     pull_request:
         branches: [main]
         paths:
-            - 'android/**'
-            - 'src/**'
-            - 'package.json'
-            - 'package-lock.json'
-            - 'metro.config.js'
-            - 'babel.config.js'
-            - 'tsconfig.json'
-            - 'jest.config.js'
+            - "android/**"
+            - "src/**"
+            - "package.json"
+            - "package-lock.json"
+            - "metro.config.js"
+            - "babel.config.js"
+            - "tsconfig.json"
+            - "jest.config.js"
 
 permissions:
     contents: write
@@ -39,15 +39,17 @@ jobs:
             cancel-in-progress: true
         steps:
             - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Fetch full history
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: 'npm'
+                  cache: "npm"
             - name: Setup Java 17
               uses: actions/setup-java@v4
               with:
-                  distribution: 'temurin'
-                  java-version: '17'
+                  distribution: "temurin"
+                  java-version: "17"
             - name: Setup Android SDK
               uses: android-actions/setup-android@v3
             - name: Setup Gradle Build Action
