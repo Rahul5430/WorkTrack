@@ -4,7 +4,7 @@ module.exports = {
 		'module:react-native-dotenv',
 		['@babel/plugin-proposal-decorators', { legacy: true }],
 		'@babel/plugin-transform-export-namespace-from',
-		'react-native-reanimated/plugin',
+		'react-native-worklets/plugin',
 	],
 	env: {
 		production: {

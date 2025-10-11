@@ -22,7 +22,6 @@ global.__reanimatedWorkletInit = () => {};
 jest.mock('react-native-reanimated', () => ({
 	__esModule: true,
 	default: {
-		addWhitelistedNativeProps: jest.fn(),
 		createAnimatedComponent: (Comp) => Comp,
 	},
 	Easing: { linear: (t) => t },
