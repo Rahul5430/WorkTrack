@@ -19,6 +19,11 @@ import {
 import { getFirestoreInstance } from '../services';
 import { ITrackerRepository, TrackerDTO } from '../types';
 
+type FirestoreDoc = {
+	id: string;
+	data(): Record<string, unknown>;
+};
+
 // Type for Firestore document data
 interface FirestoreTrackerData {
 	id: string;
@@ -74,7 +79,7 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 			const querySnapshot = await getDocs(q);
 
 			const trackers: TrackerDTO[] = [];
-			querySnapshot.forEach((doc) => {
+			querySnapshot.forEach((doc: FirestoreDoc) => {
 				const trackerData: FirestoreTrackerData = {
 					id: doc.id,
 					...doc.data(),

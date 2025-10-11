@@ -4,6 +4,7 @@ import {
 	doc,
 	getDocs,
 	setDoc,
+	Timestamp,
 } from '@react-native-firebase/firestore';
 
 import { SyncError } from '../errors';
@@ -14,6 +15,12 @@ import {
 } from '../mappers/entryMapper';
 import { getFirestoreInstance } from '../services';
 import { EntryDTO, IRemoteEntryRepository } from '../types';
+import { MarkedDayStatus } from '../types/calendar';
+
+type FirestoreDoc = {
+	id: string;
+	data(): Record<string, unknown>;
+};
 
 export class FirebaseEntryRepository implements IRemoteEntryRepository {
 	async upsertMany(trackerId: string, entries: EntryDTO[]): Promise<void> {
@@ -55,16 +62,19 @@ export class FirebaseEntryRepository implements IRemoteEntryRepository {
 			const querySnapshot = await getDocs(entriesRef);
 
 			const entries: EntryDTO[] = [];
-			querySnapshot.forEach((doc) => {
-				const entryData = doc.data();
+			querySnapshot.forEach((docSnapshot: FirestoreDoc) => {
+				const entryData = docSnapshot.data();
 				const completeEntryData = {
-					id: doc.id,
+					id: docSnapshot.id,
 					trackerId: trackerId,
-					date: entryData.date || '',
-					status: entryData.status || 'office',
+					date: (entryData.date as string) || '',
+					status: (entryData.status as MarkedDayStatus) || 'office',
 					isAdvisory: Boolean(entryData.isAdvisory),
-					createdAt: entryData.createdAt || new Date(),
-					lastModified: entryData.lastModified || new Date(),
+					createdAt:
+						(entryData.createdAt as Timestamp) || Timestamp.now(),
+					lastModified:
+						(entryData.lastModified as Timestamp) ||
+						Timestamp.now(),
 					...entryData,
 				};
 				entries.push(entryFirestoreToDTO(completeEntryData));
@@ -116,16 +126,21 @@ export class FirebaseEntryRepository implements IRemoteEntryRepository {
 				);
 				const entriesSnapshot = await getDocs(entriesRef);
 
-				entriesSnapshot.forEach((entryDoc) => {
+				entriesSnapshot.forEach((entryDoc: FirestoreDoc) => {
 					const entryData = entryDoc.data();
 					const completeEntryData = {
 						id: entryDoc.id,
 						trackerId: trackerId,
-						date: entryData.date || '',
-						status: entryData.status || 'office',
+						date: (entryData.date as string) || '',
+						status:
+							(entryData.status as MarkedDayStatus) || 'office',
 						isAdvisory: Boolean(entryData.isAdvisory),
-						createdAt: entryData.createdAt || new Date(),
-						lastModified: entryData.lastModified || new Date(),
+						createdAt:
+							(entryData.createdAt as Timestamp) ||
+							Timestamp.now(),
+						lastModified:
+							(entryData.lastModified as Timestamp) ||
+							Timestamp.now(),
 						...entryData,
 					};
 					allEntries.push(entryFirestoreToDTO(completeEntryData));
