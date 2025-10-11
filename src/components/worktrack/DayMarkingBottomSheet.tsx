@@ -10,7 +10,6 @@ import { MarkedDayStatus } from '../../types/calendar';
 type Props = {
 	onSave: (status: MarkedDayStatus, isAdvisory: boolean) => void;
 	selectedDate: string;
-	loading?: boolean;
 	onCancel?: () => void;
 	initialStatus?: MarkedDayStatus;
 	initialIsAdvisory?: boolean;
@@ -19,7 +18,6 @@ type Props = {
 const DayMarkingBottomSheet: React.FC<Props> = ({
 	onSave,
 	selectedDate,
-	loading = false,
 	onCancel,
 	initialStatus,
 	initialIsAdvisory = false,
@@ -30,6 +28,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 	);
 	const [isAdvisory, setIsAdvisory] = useState(initialIsAdvisory);
 	const [error, setError] = useState<string | null>(null);
+	const [isSaving, setIsSaving] = useState(false);
 
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -41,13 +40,22 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 		});
 	};
 
-	const handleConfirm = () => {
+	const handleConfirm = async () => {
 		if (!status) {
 			setError('Please select a status');
 			return;
 		}
 
-		onSave(status, isAdvisory);
+		setIsSaving(true);
+		setError(null);
+
+		try {
+			await onSave(status, isAdvisory);
+		} catch {
+			setError('Failed to save status');
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	const handleCancel = () => {
@@ -85,11 +93,32 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 				<Text style={[styles.advisoryLabel, { fontSize: RFValue(14) }]}>
 					Advisory Day
 				</Text>
-				<Switch
-					value={isAdvisory}
-					onValueChange={setIsAdvisory}
-					color={colors.forecast}
-				/>
+				<View
+					style={[
+						styles.switchContainer,
+						{
+							borderColor: isAdvisory
+								? colors.forecast
+								: '#D1C4E9', // Purple border
+						},
+					]}
+				>
+					<Switch
+						value={isAdvisory}
+						onValueChange={setIsAdvisory}
+						color={colors.forecast}
+						trackColor={{
+							false: '#E8D5F2', // Light lavender/purple
+							true: colors.forecast + '40',
+						}}
+						thumbColor={
+							isAdvisory ? colors.forecast : '#B19CD9' // Medium purple
+						}
+						ios_backgroundColor={
+							isAdvisory ? colors.forecast + '20' : '#E8D5F2'
+						}
+					/>
+				</View>
 			</View>
 
 			<View
@@ -105,7 +134,8 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 							setError(null);
 						}}
 						style={[styles.statusButton, getStatusStyle('office')]}
-						disabled={loading}
+						disabled={isSaving}
+						testID='office-button'
 					>
 						<Text style={getStatusTextStyle('office')}>WFO</Text>
 					</TouchableOpacity>
@@ -115,7 +145,8 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 							setError(null);
 						}}
 						style={[styles.statusButton, getStatusStyle('wfh')]}
-						disabled={loading}
+						disabled={isSaving}
+						testID='wfh-button'
 					>
 						<Text style={getStatusTextStyle('wfh')}>WFH</Text>
 					</TouchableOpacity>
@@ -127,7 +158,8 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 							setError(null);
 						}}
 						style={[styles.statusButton, getStatusStyle('leave')]}
-						disabled={loading}
+						disabled={isSaving}
+						testID='leave-button'
 					>
 						<Text style={getStatusTextStyle('leave')}>Leave</Text>
 					</TouchableOpacity>
@@ -137,7 +169,8 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 							setError(null);
 						}}
 						style={[styles.statusButton, getStatusStyle('holiday')]}
-						disabled={loading}
+						disabled={isSaving}
+						testID='holiday-button'
 					>
 						<Text style={getStatusTextStyle('holiday')}>
 							Holiday
@@ -147,7 +180,11 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			</View>
 
 			{error && (
-				<HelperText type='error' visible={!!error}>
+				<HelperText
+					type='error'
+					visible={!!error}
+					testID='error-message'
+				>
 					{error}
 				</HelperText>
 			)}
@@ -164,20 +201,22 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 				<TouchableOpacity
 					style={[styles.cancelButton]}
 					onPress={handleCancel}
-					disabled={loading}
+					disabled={isSaving}
+					testID='cancel-button'
 				>
 					<Text style={styles.cancelText}>Cancel</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
 					style={[
 						styles.confirmButton,
-						loading && styles.disabledButton,
+						isSaving && styles.disabledButton,
 					]}
 					onPress={handleConfirm}
-					disabled={!status || loading}
+					disabled={!status || isSaving}
+					testID='confirm-button'
 				>
 					<Text style={styles.confirmText}>
-						{loading ? 'Saving...' : 'Confirm'}
+						{isSaving ? 'Saving...' : 'Confirm'}
 					</Text>
 				</TouchableOpacity>
 			</View>
@@ -205,6 +244,10 @@ const styles = StyleSheet.create({
 	advisoryLabel: {
 		fontFamily: fonts.PoppinsMedium,
 		color: colors.text.primary,
+	},
+	switchContainer: {
+		borderWidth: 1.5,
+		borderRadius: 20,
 	},
 	statusOptions: {
 		flexDirection: 'column',

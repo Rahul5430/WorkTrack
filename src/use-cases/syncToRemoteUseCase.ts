@@ -60,6 +60,7 @@ export class SyncToRemoteUseCaseImpl implements SyncToRemoteUseCase {
 				logger.debug('Ensuring tracker structure exists', {
 					trackerId,
 				});
+				// Check these variables:
 				await this.trackerRepository.ensureExists(
 					trackerId,
 					currentUser.uid

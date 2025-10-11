@@ -1,6 +1,3 @@
-// Silence WatermelonDB/React Native timers warnings in JSDOM
-jest.useFakeTimers();
-
 // Ensure RN Firebase modules load their manual mocks from __mocks__
 jest.mock('@react-native-firebase/app');
 jest.mock('@react-native-firebase/auth');
@@ -46,6 +43,33 @@ jest.mock('@gorhom/bottom-sheet', () => {
 // Vector icons mock
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
 
+// Safe area context mock
+jest.mock('react-native-safe-area-context', () => ({
+	useSafeAreaInsets: jest.fn(() => ({
+		top: 44,
+		bottom: 34,
+		left: 0,
+		right: 0,
+	})),
+}));
+
+// Switch mock
+jest.mock('react-native', () => {
+	const RN = jest.requireActual('react-native');
+	RN.Switch = 'Switch';
+	RN.Platform = {
+		select: jest.fn((obj) => obj.default || obj.ios),
+		OS: 'ios',
+	};
+	RN.useWindowDimensions = jest.fn(() => ({
+		width: 375,
+		height: 812,
+	}));
+	return RN;
+});
+
+// Mock ListItem component - removed to allow real component rendering
+
 // WatermelonDB SQLite adapter mock to avoid JSI in Jest
 jest.mock('@nozbe/watermelondb/adapters/sqlite', () => {
 	return function SQLiteAdapter() {
@@ -54,16 +78,11 @@ jest.mock('@nozbe/watermelondb/adapters/sqlite', () => {
 });
 
 // react-native-gesture-handler mock
-jest.mock('react-native-gesture-handler', () => {
-	const React = require('react');
-	const View = 'View';
-	return {
-		__esModule: true,
-		GestureHandlerRootView: ({ children }) =>
-			React.createElement(View, null, children),
-		createAnimatedComponent: (Comp) => Comp,
-	};
-});
+jest.mock('react-native-gesture-handler', () => ({
+	__esModule: true,
+	GestureHandlerRootView: ({ children }) => children,
+	createAnimatedComponent: (Comp) => Comp,
+}));
 
 // WatermelonDB Database mock to avoid schema/tables access
 jest.mock('@nozbe/watermelondb', () => ({

@@ -69,6 +69,9 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 			setVisibleMonths(months.slice(11, 14)); // Index 12 is current month
 			initialLoadDone.current = true;
 			setIsInitialLoad(false);
+		} else {
+			// Reset initialLoadDone when generateMonths changes
+			initialLoadDone.current = false;
 		}
 	}, [generateMonths]);
 

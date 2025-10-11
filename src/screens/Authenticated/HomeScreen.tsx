@@ -263,6 +263,18 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	}, [dispatch, currentWorkTrack?.id, user?.id]);
 
 	const resolveTrackerId = async (): Promise<string> => {
+		// If no tracker is loaded yet, ensure we have one
+		if (!currentWorkTrack?.id && user?.id) {
+			const tracker = await manager.userManagement.ensureUserHasTracker(
+				user.id
+			);
+			setCurrentWorkTrack({
+				id: tracker.id,
+				name: tracker.name,
+			});
+			return tracker.id;
+		}
+
 		if (!currentWorkTrack?.id) {
 			throw new Error('No tracker available');
 		}
@@ -295,7 +307,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 		}
 
 		try {
-			dispatch(setLoading(true));
 			dispatch(setError(null));
 
 			// Optimistic update in Redux
@@ -303,7 +314,10 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				addOrUpdateEntry({ date: selectedDate, status, isAdvisory })
 			);
 
-			// Resolve tracker ID
+			// Close the sheet immediately for better UX
+			dayMarkingSheetRef.current?.close();
+
+			// Handle async operations in the background
 			const trackerId = await resolveTrackerId();
 
 			// Save to WatermelonDB using the new service
@@ -314,10 +328,11 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				isAdvisory,
 			});
 
-			// Trigger sync to send to Firebase
-			await manager.triggerSync();
-
-			dayMarkingSheetRef.current?.close();
+			// Trigger sync to send to Firebase (non-blocking)
+			manager.triggerSync().catch((syncError) => {
+				logger.error('Background sync failed:', { syncError });
+				// Optionally show a non-blocking error indicator
+			});
 		} catch (error) {
 			logger.error('Error saving work status:', { error });
 			dispatch(
@@ -328,8 +343,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				)
 			);
 			dispatch(rollbackEntry(selectedDate));
-		} finally {
-			dispatch(setLoading(false));
 		}
 	};
 
@@ -478,7 +491,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 							<DayMarkingBottomSheet
 								selectedDate={selectedDate}
 								onSave={handleSave}
-								loading={loading}
 								onCancel={() =>
 									dayMarkingSheetRef.current?.close()
 								}

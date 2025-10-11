@@ -144,8 +144,8 @@ export function useWorkTrackManager(): WorkTrackManager {
 				code: 'auth.unauthenticated',
 			});
 		}
-		await container.sync.execute();
-	}, [container.sync]);
+		await container.syncFromRemote.execute(currentUser.uid);
+	}, [container.syncFromRemote]);
 
 	const getMyTrackers = useCallback(async () => {
 		const userId = getCurrentUserId();

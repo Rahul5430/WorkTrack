@@ -83,9 +83,18 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 				{syncStatus.isSyncing ? (
 					<Animated.View style={animatedStyle}>
 						<MaterialCommunityIcons
-							name='sync'
+							name={getStatusIconProps().name}
 							size={16}
-							color={colors.wfh}
+							color={getStatusIconProps().color}
+							style={{
+								transform: [
+									{
+										rotate: getStatusIconProps().rotate
+											? '0deg'
+											: '0deg',
+									},
+								],
+							}}
 						/>
 					</Animated.View>
 				) : (

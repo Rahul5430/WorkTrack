@@ -20,6 +20,7 @@ import {
 	EntryUseCase,
 	ShareReadUseCase,
 	ShareUseCase,
+	SyncFromRemoteUseCase,
 	SyncFromRemoteUseCaseImpl,
 	SyncToRemoteUseCaseImpl,
 	SyncUseCase,
@@ -33,6 +34,7 @@ export interface Container {
 	firebaseEntries: IRemoteEntryRepository;
 	shares: IShareRepository;
 	sync: SyncUseCase;
+	syncFromRemote: SyncFromRemoteUseCase;
 	share: ShareUseCase;
 	shareRead: ShareReadUseCase;
 	userManagement: UserManagementUseCase;
@@ -74,6 +76,7 @@ export function createDefaultContainer(): Container {
 		firebaseEntries,
 		shares,
 		sync,
+		syncFromRemote,
 		share,
 		shareRead,
 		userManagement,

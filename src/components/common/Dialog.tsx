@@ -41,10 +41,12 @@ const Dialog: React.FC<DialogProps> = ({
 	return (
 		<View style={styles.dialogOverlay}>
 			<Pressable
+				testID='dialog-backdrop'
 				style={styles.dialogBackdrop}
 				onPress={onBackdropPress}
 			/>
 			<Pressable
+				testID='dialog-content'
 				style={styles.dialog}
 				onPress={() => {
 					Keyboard.dismiss();
@@ -55,10 +57,11 @@ const Dialog: React.FC<DialogProps> = ({
 					{subtitle && (
 						<Text style={styles.dialogSubtitle}>{subtitle}</Text>
 					)}
-					{children}
+					<View testID='dialog-children'>{children}</View>
 				</View>
 				<View style={styles.dialogActions}>
 					<Pressable
+						testID='dialog-cancel-button'
 						onPress={() => {
 							Keyboard.dismiss();
 							onDismiss();
@@ -73,6 +76,7 @@ const Dialog: React.FC<DialogProps> = ({
 						</Text>
 					</Pressable>
 					<Pressable
+						testID='dialog-confirm-button'
 						onPress={() => {
 							Keyboard.dismiss();
 							onConfirm();
@@ -86,6 +90,7 @@ const Dialog: React.FC<DialogProps> = ({
 					>
 						{loading ? (
 							<ActivityIndicator
+								testID='activity-indicator'
 								color={colors.background.primary}
 							/>
 						) : (

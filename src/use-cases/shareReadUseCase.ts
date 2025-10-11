@@ -111,9 +111,12 @@ export class ShareReadUseCaseImpl implements ShareReadUseCase {
 				const trackerId = pathParts[1];
 
 				// Get the tracker to get owner information
-				const tracker = await this.trackers.listOwned(
-					data.ownerId || ''
-				);
+				// Skip if ownerId is missing - this was causing the empty userId issue
+				if (!data.ownerId) {
+					continue;
+				}
+
+				const tracker = await this.trackers.listOwned(data.ownerId);
 				const trackerInfo = tracker.find((t) => t.id === trackerId);
 
 				shares.push({

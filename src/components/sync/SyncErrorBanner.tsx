@@ -147,6 +147,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 				]}
 				onPress={handleRetry}
 				disabled={isRetrying}
+				testID='banner'
 			>
 				<Text style={styles.icon}>
 					{isRetrying ? '🔄' : exceededRetryLimit ? '❌' : '⚠️'}
@@ -156,6 +157,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 					style={styles.detailsButton}
 					onPress={handleShowDetails}
 					disabled={isRetrying}
+					testID='details-button'
 				>
 					<Text style={styles.detailsButtonText}>Details</Text>
 				</TouchableOpacity>
@@ -174,6 +176,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 							<TouchableOpacity
 								onPress={() => setShowErrorModal(false)}
 								style={styles.closeButton}
+								testID='close-button'
 							>
 								<Text style={styles.closeButtonText}>✕</Text>
 							</TouchableOpacity>

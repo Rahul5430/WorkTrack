@@ -1,0 +1,117 @@
+import { act, renderHook } from '@testing-library/react';
+
+import { useToast } from '../../../src/hooks/useToast';
+
+// Mock the ToastQueueService
+jest.mock('../../../src/services', () => ({
+	ToastQueueService: {
+		getInstance: jest.fn(() => ({
+			show: jest.fn(),
+			showMultiple: jest.fn(),
+			clear: jest.fn(),
+			remove: jest.fn(),
+			getStatus: jest.fn(),
+		})),
+	},
+}));
+
+describe('useToast', () => {
+	const mockToastService = {
+		show: jest.fn(),
+		showMultiple: jest.fn(),
+		clear: jest.fn(),
+		remove: jest.fn(),
+		getStatus: jest.fn(),
+	};
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		const { ToastQueueService } = require('../../../src/services');
+		ToastQueueService.getInstance.mockReturnValue(mockToastService);
+	});
+
+	it('returns all expected methods', () => {
+		const { result } = renderHook(() => useToast());
+
+		expect(result.current.show).toBeDefined();
+		expect(result.current.showMultiple).toBeDefined();
+		expect(result.current.clear).toBeDefined();
+		expect(result.current.remove).toBeDefined();
+		expect(result.current.getStatus).toBeDefined();
+	});
+
+	it('calls show method with correct parameters', () => {
+		const { result } = renderHook(() => useToast());
+
+		act(() => {
+			result.current.show('Test message', 'success', 5000, 'top');
+		});
+
+		expect(mockToastService.show).toHaveBeenCalledWith(
+			'Test message',
+			'success',
+			5000,
+			'top'
+		);
+	});
+
+	it('calls show method with default parameters', () => {
+		const { result } = renderHook(() => useToast());
+
+		act(() => {
+			result.current.show('Test message');
+		});
+
+		expect(mockToastService.show).toHaveBeenCalledWith(
+			'Test message',
+			'info',
+			3000,
+			'bottom'
+		);
+	});
+
+	it('calls showMultiple method', () => {
+		const { result } = renderHook(() => useToast());
+
+		const toasts = [
+			{ message: 'Message 1', type: 'info' as const },
+			{ message: 'Message 2', type: 'error' as const },
+		];
+
+		act(() => {
+			result.current.showMultiple(toasts);
+		});
+
+		expect(mockToastService.showMultiple).toHaveBeenCalledWith(toasts);
+	});
+
+	it('calls clear method', () => {
+		const { result } = renderHook(() => useToast());
+
+		act(() => {
+			result.current.clear();
+		});
+
+		expect(mockToastService.clear).toHaveBeenCalled();
+	});
+
+	it('calls remove method with toast id', () => {
+		const { result } = renderHook(() => useToast());
+
+		act(() => {
+			result.current.remove('toast-id-123');
+		});
+
+		expect(mockToastService.remove).toHaveBeenCalledWith('toast-id-123');
+	});
+
+	it('calls getStatus method', () => {
+		const { result } = renderHook(() => useToast());
+
+		act(() => {
+			result.current.getStatus();
+		});
+
+		expect(mockToastService.getStatus).toHaveBeenCalled();
+	});
+});

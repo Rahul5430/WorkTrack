@@ -1,0 +1,121 @@
+import { renderHook } from '@testing-library/react';
+
+import { useResponsiveLayout } from '../../../src/hooks/useResponsive';
+
+// Mock react-native modules
+jest.mock('react-native', () => ({
+	Platform: {
+		OS: 'ios',
+	},
+	StatusBar: {
+		currentHeight: 24,
+	},
+	useWindowDimensions: () => ({
+		width: 375,
+		height: 812,
+	}),
+}));
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+	useSafeAreaInsets: () => ({
+		top: 44,
+		bottom: 34,
+		left: 0,
+		right: 0,
+	}),
+}));
+
+describe('useResponsiveLayout', () => {
+	it('returns correct dimensions and orientation', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		expect(result.current.width).toBe(375);
+		expect(result.current.height).toBe(812);
+		expect(result.current.isPortrait).toBe(true);
+	});
+
+	it('calculates correct offset for iOS portrait', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		expect(result.current.offset).toBe(44); // insets.top for iOS
+	});
+
+	it('calculates correct device height', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		// deviceHeight = height - offset = 812 - 44 = 768
+		expect(result.current.deviceHeight).toBe(768);
+	});
+
+	it('calculates RFValue correctly', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		// RFValue = (fontSize * deviceHeight) / baseHeight
+		// RFValue(16) = (16 * 768) / 680 = 18.07... ≈ 18
+		expect(result.current.RFValue(16)).toBe(18);
+	});
+
+	it('calculates RFPercentage correctly', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		// RFPercentage = (percent * deviceHeight) / 100
+		// RFPercentage(10) = (10 * 768) / 100 = 76.8 ≈ 77
+		expect(result.current.RFPercentage(10)).toBe(77);
+	});
+
+	it('calculates responsive size correctly', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		const size = result.current.getResponsiveSize(50, 25);
+
+		expect(size.width).toBe(187.5); // 375 * 0.5
+		expect(size.height).toBe(203); // 812 * 0.25
+	});
+
+	it('calculates responsive margin correctly', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		// margin = (width * marginPercent) / 100
+		// getResponsiveMargin(20) = (375 * 20) / 100 = 75
+		expect(result.current.getResponsiveMargin(20)).toBe(75);
+	});
+
+	it('auto scales image with required width', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		const scaled = result.current.autoScaleImage({
+			imageWidth: 100,
+			imageHeight: 50,
+			requiredWidth: 200,
+		});
+
+		expect(scaled.width).toBe(200);
+		expect(scaled.height).toBe(100); // 200 / (100/50)
+	});
+
+	it('auto scales image with required height', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		const scaled = result.current.autoScaleImage({
+			imageWidth: 100,
+			imageHeight: 50,
+			requiredHeight: 150,
+		});
+
+		expect(scaled.width).toBe(300); // 150 * (100/50)
+		expect(scaled.height).toBe(150);
+	});
+
+	it('returns original dimensions when no requirements', () => {
+		const { result } = renderHook(() => useResponsiveLayout());
+
+		const scaled = result.current.autoScaleImage({
+			imageWidth: 100,
+			imageHeight: 50,
+		});
+
+		expect(scaled.width).toBe(100);
+		expect(scaled.height).toBe(50);
+	});
+});
