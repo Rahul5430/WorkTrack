@@ -226,7 +226,7 @@ jobs:
                   name: ios-simulator-app
                   path: ios/build/simulator/WorkTrack.app
             - name: Generate Job Summary
-              uses: actions/github-script@v7
+              uses: actions/github-script@v8
               with:
                   script: |
                       // Get artifact URLs
