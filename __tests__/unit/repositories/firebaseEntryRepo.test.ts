@@ -312,6 +312,16 @@ describe('FirebaseEntryRepository (isolated)', () => {
 			jest.doMock('@react-native-firebase/firestore', () => ({
 				collection,
 				getDocs,
+				Timestamp: {
+					now: jest.fn(() => ({
+						seconds: Date.now() / 1000,
+						nanoseconds: 0,
+					})),
+					fromDate: jest.fn((date) => ({
+						seconds: date.getTime() / 1000,
+						nanoseconds: 0,
+					})),
+				},
 			}));
 			const {
 				FirebaseEntryRepository,

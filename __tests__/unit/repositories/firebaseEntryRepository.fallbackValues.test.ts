@@ -7,6 +7,13 @@ jest.mock('@react-native-firebase/firestore', () => ({
 	getDocs: jest.fn(),
 	setDoc: jest.fn(),
 	deleteDoc: jest.fn(),
+	Timestamp: {
+		now: jest.fn(() => ({ seconds: Date.now() / 1000, nanoseconds: 0 })),
+		fromDate: jest.fn((date) => ({
+			seconds: date.getTime() / 1000,
+			nanoseconds: 0,
+		})),
+	},
 }));
 
 jest.mock('../../../src/services', () => ({
