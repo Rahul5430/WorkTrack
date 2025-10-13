@@ -159,7 +159,10 @@ describe('FirebaseTrackerRepository', () => {
 			const getDoc = jest
 				.fn()
 				.mockResolvedValueOnce({ exists: () => false })
-				.mockResolvedValueOnce({ exists: () => true });
+				.mockResolvedValueOnce({
+					exists: () => true,
+					data: () => ({ ownerId: 'u1' }),
+				});
 			const doc = jest.fn((_db: unknown, _c: string, id: string) => ({
 				id,
 			}));

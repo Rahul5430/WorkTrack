@@ -73,7 +73,7 @@ describe('Sync from Firestore emulator to local', () => {
 			async getRecordsExceedingRetryLimit(
 				_limit: number
 			): Promise<EntryDTO[]> {
-				void _limit;
+				_limit;
 				return [];
 			}
 		}
@@ -94,7 +94,7 @@ describe('Sync from Firestore emulator to local', () => {
 				return this.records.filter((r) => r.ownerId === ownerId);
 			}
 			async listSharedWith(_userId: string): Promise<TrackerDTO[]> {
-				void _userId;
+				_userId;
 				return [];
 			}
 			async ensureExists(id: string, ownerId: string): Promise<void> {
@@ -123,7 +123,7 @@ describe('Sync from Firestore emulator to local', () => {
 				return ownerId === userId ? [tracker] : [];
 			}
 			async listSharedWith(_userId: string): Promise<TrackerDTO[]> {
-				void _userId;
+				_userId;
 				return [];
 			}
 			async ensureExists(): Promise<void> {

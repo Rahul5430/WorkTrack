@@ -127,14 +127,6 @@ describe('CalendarDay', () => {
 		jest.clearAllMocks();
 	});
 
-	// Helper function to check if component renders with expected content
-	const expectComponentRenders = (component: React.ReactElement) => {
-		const { root } = render(component);
-		expect(root.children.length).toBeGreaterThan(0);
-		// Additional check that the component structure is correct
-		expect(root).toBeTruthy();
-	};
-
 	it('can import CalendarDay component', () => {
 		// Just test if the component can be imported
 		expect(CalendarDay).toBeDefined();
@@ -175,7 +167,7 @@ describe('CalendarDay', () => {
 	});
 
 	it('applies correct style for WFH status', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -183,10 +175,11 @@ describe('CalendarDay', () => {
 				type={WORK_STATUS.WFH}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('applies correct style for OFFICE status', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -194,10 +187,11 @@ describe('CalendarDay', () => {
 				type={WORK_STATUS.OFFICE}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('applies correct style for HOLIDAY status', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -205,10 +199,11 @@ describe('CalendarDay', () => {
 				type={WORK_STATUS.HOLIDAY}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('applies correct style for LEAVE status', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -216,10 +211,11 @@ describe('CalendarDay', () => {
 				type={WORK_STATUS.LEAVE}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('renders with today styling when isToday is true', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -227,10 +223,11 @@ describe('CalendarDay', () => {
 				isToday={true}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('renders with advisory styling when isAdvisory is true', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -238,10 +235,11 @@ describe('CalendarDay', () => {
 				isAdvisory={true}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('renders with different styling when not current month', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -249,6 +247,7 @@ describe('CalendarDay', () => {
 				isCurrentMonth={false}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('handles press in animation', () => {
@@ -259,11 +258,14 @@ describe('CalendarDay', () => {
 				onPress={mockOnPress}
 			/>
 		);
-		const pressable = root.children[0] as unknown as React.ReactElement;
+		const pressable = root.children[0];
+		expect(pressable).toBeTruthy();
 		(fireEvent as unknown as (element: unknown, event: string) => void)(
 			pressable,
 			'pressIn'
 		);
+		// Animation should not throw error - just verify the component renders
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('handles press out animation', () => {
@@ -274,15 +276,18 @@ describe('CalendarDay', () => {
 				onPress={mockOnPress}
 			/>
 		);
-		const pressable = root.children[0] as unknown as React.ReactElement;
+		const pressable = root.children[0];
+		expect(pressable).toBeTruthy();
 		(fireEvent as unknown as (element: unknown, event: string) => void)(
 			pressable,
 			'pressOut'
 		);
+		// Animation should not throw error - just verify the component renders
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('renders advisory with circle container', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -290,10 +295,11 @@ describe('CalendarDay', () => {
 				isAdvisory={true}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('handles multiple status combinations', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={15}
 				dateString='2025-01-15'
@@ -303,10 +309,11 @@ describe('CalendarDay', () => {
 				isAdvisory={false}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('handles edge case with all props false', () => {
-		expectComponentRenders(
+		const { root } = render(
 			<CalendarDay
 				day={1}
 				dateString='2025-01-01'
@@ -316,18 +323,20 @@ describe('CalendarDay', () => {
 				isCurrentMonth={true}
 			/>
 		);
+		expect(root.children.length).toBeGreaterThan(0);
 	});
 
 	it('handles different day numbers', () => {
 		const testDays = [1, 15, 28, 31];
 		testDays.forEach((day) => {
-			expectComponentRenders(
+			const { root } = render(
 				<CalendarDay
 					day={day}
 					dateString={`2025-01-${day.toString().padStart(2, '0')}`}
 					onPress={mockOnPress}
 				/>
 			);
+			expect(root.children.length).toBeGreaterThan(0);
 		});
 	});
 });

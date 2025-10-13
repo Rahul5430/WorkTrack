@@ -58,7 +58,7 @@ describe('Sync to Firestore emulator', () => {
 					return Promise.resolve();
 				};
 				const getDoc = async (ref: { __path: string }) => {
-					void ref;
+					ref;
 					return { exists: () => false };
 				};
 				const getDocs = async () => ({
@@ -164,7 +164,7 @@ class InMemoryLocalEntries implements ILocalEntryRepository {
 		else this.records.push(entry);
 	}
 	async upsertMany(trackerId: string, entries: EntryDTO[]): Promise<void> {
-		void trackerId;
+		trackerId;
 		for (const e of entries) await this.upsertOne(e);
 	}
 	async delete(_entryId: string): Promise<void> {

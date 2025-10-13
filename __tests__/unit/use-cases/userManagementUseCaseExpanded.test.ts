@@ -32,71 +32,71 @@ describe('UserManagementUseCase (expanded)', () => {
 	beforeEach(() => {
 		mockTrackers = {
 			create: jest.fn(async (tracker: TrackerDTO, userId: string) => {
-				void tracker;
-				void userId;
+				tracker;
+				userId;
 			}),
 			update: jest.fn(async () => {}),
 			listOwned: jest.fn(async (userId: string) => {
-				void userId;
+				userId;
 				return [] as TrackerDTO[];
 			}),
 			listSharedWith: jest.fn(async (userId: string) => {
-				void userId;
+				userId;
 				return [] as TrackerDTO[];
 			}),
 			ensureExists: jest.fn(async (id: string, ownerId: string) => {
-				void id;
-				void ownerId;
+				id;
+				ownerId;
 			}),
 			upsertMany: jest.fn(async (trackers: TrackerDTO[]) => {
-				void trackers;
+				trackers;
 			}),
 		};
 		mockEntries = {
 			// IBaseEntryRepository
 			upsertMany: jest.fn(
 				async (_trackerId: string, _entries: EntryDTO[]) => {
-					void _trackerId;
-					void _entries;
+					_trackerId;
+					_entries;
 				}
 			),
 			upsertOne: jest.fn(async (_entry: EntryDTO) => {
-				void _entry;
+				_entry;
 			}),
 			delete: jest.fn(async (_id: string) => {
-				void _id;
+				_id;
 			}),
 			getEntriesForTracker: jest.fn(async (_trackerId: string) => {
-				void _trackerId;
+				_trackerId;
 				return [] as EntryDTO[];
 			}),
 			getAllEntries: jest.fn(async () => [] as EntryDTO[]),
 			// ILocalEntryRepository
 			listUnsynced: jest.fn(async () => [] as EntryDTO[]),
 			markSynced: jest.fn(async (_entries: EntryDTO[]) => {
-				void _entries;
+				_entries;
 			}),
 			getFailedSyncRecords: jest.fn(async () => [] as EntryDTO[]),
 			getRecordsExceedingRetryLimit: jest.fn(async (_limit: number) => {
-				void _limit;
+				_limit;
 				return [] as EntryDTO[];
 			}),
 		};
 		mockFirebaseEntries = {
 			upsertMany: jest.fn(
 				async (_trackerId: string, _entries: EntryDTO[]) => {
-					void _trackerId;
-					void _entries;
+					_trackerId;
+					_entries;
 				}
 			),
 			upsertOne: jest.fn(async (_entry: EntryDTO) => {
-				void _entry;
+				_entry;
 			}),
 			delete: jest.fn(async (_entryId: string) => {
-				void _entryId;
+				_entryId;
 			}),
 			getEntriesForTracker: jest.fn(async (_trackerId: string) => {
-				void _trackerId;
+				_trackerId;
 				return [] as EntryDTO[];
 			}),
 			getAllEntries: jest.fn(async () => [] as EntryDTO[]),

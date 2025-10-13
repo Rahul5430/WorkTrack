@@ -41,16 +41,16 @@ const CommonBottomSheet = forwardRef<CommonBottomSheetRef, Props>(
 		useImperativeHandle(ref, () => ({
 			expand: () => bottomSheetRef.current?.expand(),
 			close: () => bottomSheetRef.current?.close(),
-			snapToIndex: (index: number) =>
-				bottomSheetRef.current?.snapToIndex(index),
+			snapToIndex: (snapIndex: number) =>
+				bottomSheetRef.current?.snapToIndex(snapIndex),
 		}));
 
 		const handleSheetChanges = useCallback(
-			(index: number) => {
-				if (index === -1 && onClose) {
+			(sheetIndex: number) => {
+				if (sheetIndex === -1 && onClose) {
 					onClose();
 				}
-				onChange?.(index);
+				onChange?.(sheetIndex);
 			},
 			[onChange, onClose]
 		);
@@ -64,7 +64,7 @@ const CommonBottomSheet = forwardRef<CommonBottomSheetRef, Props>(
 					onPress={onBackdropPress}
 				/>
 			),
-			[]
+			[onBackdropPress]
 		);
 
 		return (
@@ -75,6 +75,9 @@ const CommonBottomSheet = forwardRef<CommonBottomSheetRef, Props>(
 				enablePanDownToClose
 				onChange={handleSheetChanges}
 				backdropComponent={renderBackdrop}
+				keyboardBehavior='interactive'
+				keyboardBlurBehavior='restore'
+				android_keyboardInputMode='adjustResize'
 			>
 				<BottomSheetView style={styles.container}>
 					{children}

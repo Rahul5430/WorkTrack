@@ -98,12 +98,12 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			text: isAdvisory ? colors.forecast : colors.text.primary,
 			pressed: isAdvisory ? colors.forecast + '60' : colors.ui.gray[200],
 		};
-	}, [isToday, type, isCurrentMonth, dateString, isAdvisory]);
+	}, [isToday, type, isCurrentMonth, isAdvisory]);
 
 	// Update background color when type changes
 	useEffect(() => {
 		backgroundColor.value = dayColors.background;
-	}, [dayColors.background]);
+	}, [backgroundColor, dayColors.background]);
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
@@ -134,7 +134,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			duration: 200,
 		});
 		shadowOpacity.value = withTiming(0.05, { duration: 100 });
-	}, [dayColors.pressed]);
+	}, [backgroundColor, dayColors.pressed, opacity, scale, shadowOpacity]);
 
 	const handlePressOut = useCallback(() => {
 		scale.value = withSpring(1, { damping: 12 });
@@ -143,7 +143,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			duration: 200,
 		});
 		shadowOpacity.value = withTiming(0.1, { duration: 100 });
-	}, [dayColors.background]);
+	}, [backgroundColor, dayColors.background, opacity, scale, shadowOpacity]);
 
 	const containerStyle = useMemo(
 		() => [

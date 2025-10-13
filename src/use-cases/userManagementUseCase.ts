@@ -13,6 +13,7 @@ import { ErrorHandler } from '../utils/errorHandler';
 
 export interface UserManagementUseCase {
 	ensureUserHasTracker(userId: string): Promise<TrackerDTO>;
+	initializeUserData(userId: string): Promise<TrackerDTO>;
 	getTrackerByOwnerId(ownerId: string): Promise<TrackerDTO | null>;
 	getDefaultViewUserId(): Promise<string | null>;
 	setDefaultViewUserId(userId: string | null): Promise<void>;
@@ -58,6 +59,117 @@ export class UserManagementUseCaseImpl implements UserManagementUseCase {
 			'Failed to ensure user has tracker',
 			'tracker.ensure_failed'
 		);
+	}
+
+	async initializeUserData(userId: string): Promise<TrackerDTO> {
+		ErrorHandler.validateRequired(userId, 'userId');
+
+		return ErrorHandler.wrapAsync(
+			async () => {
+				logger.info('Initializing user data', { userId });
+
+				// First, try to get existing tracker from local database
+				const ownedTrackers = await this.trackers.listOwned(userId);
+
+				if (ownedTrackers.length > 0) {
+					logger.info('Found existing tracker in local database', {
+						trackerId: ownedTrackers[0].id,
+					});
+					return ownedTrackers[0];
+				}
+
+				// No local tracker found - check if this is a new user or returning user
+				logger.info(
+					'No local tracker found, checking if user has remote data'
+				);
+
+				// For new users, we'll create a tracker locally first
+				// For returning users, we'll sync from remote first
+				const isNewUser = await this.isNewUser(userId);
+
+				if (isNewUser) {
+					logger.info('Detected new user, creating default tracker');
+					// Create default tracker for new user
+					const defaultTracker: Omit<TrackerDTO, 'ownerId'> = {
+						id: `tracker_${userId}_${Date.now()}`,
+						name: 'Work Tracker',
+						color: '#4CAF50',
+						isDefault: true,
+						trackerType: 'work',
+					};
+
+					await this.trackers.create(
+						{ ...defaultTracker, ownerId: userId },
+						userId
+					);
+
+					logger.info('Created default tracker for new user', {
+						trackerId: defaultTracker.id,
+					});
+
+					return { ...defaultTracker, ownerId: userId };
+				} else {
+					logger.info('Detected returning user, syncing from remote');
+					// For returning users, sync from remote first
+					try {
+						// This will create the tracker in local DB if it exists remotely
+						const syncedTrackers =
+							await this.trackers.listOwned(userId);
+						if (syncedTrackers.length > 0) {
+							return syncedTrackers[0];
+						}
+					} catch (error) {
+						logger.warn(
+							'Failed to sync from remote, creating default tracker',
+							{
+								error,
+							}
+						);
+					}
+
+					// Fallback: create default tracker if sync failed
+					const defaultTracker: Omit<TrackerDTO, 'ownerId'> = {
+						id: `tracker_${userId}_${Date.now()}`,
+						name: 'Work Tracker',
+						color: '#4CAF50',
+						isDefault: true,
+						trackerType: 'work',
+					};
+
+					await this.trackers.create(
+						{ ...defaultTracker, ownerId: userId },
+						userId
+					);
+
+					return { ...defaultTracker, ownerId: userId };
+				}
+			},
+			'Failed to initialize user data',
+			'user.initialize_failed'
+		);
+	}
+
+	private async isNewUser(userId: string): Promise<boolean> {
+		try {
+			// Check if user has any entries in the database
+			const entries = await this.firebaseEntries.getAllEntries();
+			const userHasEntries = entries.some((entry) =>
+				entry.trackerId.includes(userId)
+			);
+
+			logger.debug('Checking if user is new', {
+				userId,
+				hasEntries: userHasEntries,
+				totalEntries: entries.length,
+			});
+
+			return !userHasEntries;
+		} catch (error) {
+			logger.warn('Failed to check if user is new, assuming new user', {
+				error,
+			});
+			return true; // Assume new user if we can't determine
+		}
 	}
 
 	async getTrackerByOwnerId(ownerId: string): Promise<TrackerDTO | null> {

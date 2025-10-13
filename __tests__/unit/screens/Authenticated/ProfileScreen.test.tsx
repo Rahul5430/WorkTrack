@@ -41,7 +41,6 @@ jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
 
 // Mock React Native modules
 jest.mock('react-native', () => {
-	const React = require('react');
 	return {
 		Alert: {
 			alert: jest.fn((_, __, buttons) => {
@@ -64,42 +63,50 @@ jest.mock('react-native', () => {
 					children,
 					style,
 					...props
-				}: Record<string, unknown>) =>
-					React.createElement(
+				}: Record<string, unknown>) => {
+					const ReactLib = require('react');
+					return ReactLib.createElement(
 						'AnimatedView',
 						{ style, ...props },
-						children as React.ReactNode
-					),
+						children
+					);
+				},
 			}
 		),
 		StyleSheet: {
 			create: (styles: Record<string, unknown>) => styles,
 			flatten: (style: unknown) => style,
 		},
-		View: ({ children, testID, ...props }: Record<string, unknown>) =>
-			React.createElement(
+		View: ({ children, testID, ...props }: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement(
 				'View',
 				{ testID, ...props },
-				children as React.ReactNode
-			),
-		Text: ({ children, testID, ...props }: Record<string, unknown>) =>
-			React.createElement(
+				children
+			);
+		},
+		Text: ({ children, testID, ...props }: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement(
 				'Text',
 				{ testID, ...props },
-				children as React.ReactNode
-			),
+				children
+			);
+		},
 		TextInput: ({
 			value,
 			onChangeText,
 			testID,
 			...props
-		}: Record<string, unknown>) =>
-			React.createElement('TextInput', {
+		}: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement('TextInput', {
 				testID,
 				value,
 				onChangeText,
 				...props,
-			}),
+			});
+		},
 		Pressable: ({
 			children,
 			onPress,
@@ -107,40 +114,46 @@ jest.mock('react-native', () => {
 			onPressOut,
 			testID,
 			...props
-		}: Record<string, unknown>) =>
-			React.createElement(
+		}: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement(
 				'Pressable',
 				{ testID, onPress, onPressIn, onPressOut, ...props },
-				children as React.ReactNode
-			),
+				children
+			);
+		},
 		ScrollView: ({
 			children,
 			refreshControl,
 			contentContainerStyle,
 			testID,
 			...props
-		}: Record<string, unknown>) =>
-			React.createElement(
+		}: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement(
 				'ScrollView',
 				{
 					testID: (testID as string) || 'scroll-view',
 					contentContainerStyle,
 					...props,
 				},
-				[refreshControl, children] as unknown as React.ReactNode
-			),
+				[refreshControl, children]
+			);
+		},
 		RefreshControl: ({
 			refreshing,
 			onRefresh,
 			testID,
 			...props
-		}: Record<string, unknown>) =>
-			React.createElement('RefreshControl', {
+		}: Record<string, unknown>) => {
+			const ReactLib = require('react');
+			return ReactLib.createElement('RefreshControl', {
 				testID: (testID as string) || 'refresh-control',
 				refreshing,
 				onRefresh,
 				...props,
-			}),
+			});
+		},
 	};
 });
 

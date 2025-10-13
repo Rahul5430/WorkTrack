@@ -96,11 +96,9 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 				<View
 					style={[
 						styles.switchContainer,
-						{
-							borderColor: isAdvisory
-								? colors.forecast
-								: '#D1C4E9', // Purple border
-						},
+						isAdvisory
+							? styles.advisoryBorder
+							: styles.normalBorder,
 					]}
 				>
 					<Switch
@@ -190,7 +188,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			)}
 
 			{/* Spacer to push the button to the bottom */}
-			<View style={{ flex: 1 }} />
+			<View style={styles.spacer} />
 
 			<View
 				style={[
@@ -305,6 +303,15 @@ const styles = StyleSheet.create({
 		color: colors.text.secondary,
 		fontFamily: fonts.PoppinsSemiBold,
 		fontSize: 16,
+	},
+	spacer: {
+		flex: 1,
+	},
+	advisoryBorder: {
+		borderColor: colors.forecast,
+	},
+	normalBorder: {
+		borderColor: '#D1C4E9',
 	},
 });
 

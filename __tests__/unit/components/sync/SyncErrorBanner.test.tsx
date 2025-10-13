@@ -145,10 +145,20 @@ describe('SyncErrorBanner', () => {
 		);
 
 		const { root } = render(<SyncErrorBanner />);
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
+
 		expect(root).toBeFalsy();
 	});
 
-	it('renders banner when errors exist', () => {
+	it('renders banner when errors exist', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -156,9 +166,18 @@ describe('SyncErrorBanner', () => {
 
 		// Just check that the component renders without errors
 		expect(() => render(<SyncErrorBanner />)).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 	});
 
-	it('shows correct message when retrying', () => {
+	it('shows correct message when retrying', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -168,9 +187,18 @@ describe('SyncErrorBanner', () => {
 
 		// Just check that the component renders without errors
 		expect(() => render(<SyncErrorBanner />)).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 	});
 
-	it('shows exceeded retry limit message', () => {
+	it('shows exceeded retry limit message', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -180,9 +208,18 @@ describe('SyncErrorBanner', () => {
 
 		// Just check that the component renders without errors
 		expect(() => render(<SyncErrorBanner />)).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 	});
 
-	it('handles retry successfully with no remaining errors', () => {
+	it('handles retry successfully with no remaining errors', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -195,10 +232,19 @@ describe('SyncErrorBanner', () => {
 		expect(() =>
 			render(<SyncErrorBanner onSyncComplete={onSyncComplete} />)
 		).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 		expect(onSyncComplete).toBeDefined();
 	});
 
-	it('handles retry with remaining errors', () => {
+	it('handles retry with remaining errors', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -210,9 +256,18 @@ describe('SyncErrorBanner', () => {
 
 		// Just check that the component renders without errors
 		expect(() => render(<SyncErrorBanner />)).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 	});
 
-	it('handles retry failure', () => {
+	it('handles retry failure', async () => {
 		mockManager.entry.getFailedSyncRecords.mockResolvedValue([
 			{ id: '1', date: '2025-01-01', status: 'office' },
 		]);
@@ -221,9 +276,18 @@ describe('SyncErrorBanner', () => {
 
 		// Just check that the component renders without errors
 		expect(() => render(<SyncErrorBanner />)).not.toThrow();
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 	});
 
-	it('handles error checking failure', () => {
+	it('handles error checking failure', async () => {
 		mockManager.entry.getFailedSyncRecords.mockRejectedValue(
 			new Error('Check failed')
 		);
@@ -232,6 +296,15 @@ describe('SyncErrorBanner', () => {
 		);
 
 		const { root } = render(<SyncErrorBanner />);
+
+		// Wait for async operations to complete
+		await act(async () => {
+			await waitFor(() => {
+				expect(
+					mockManager.entry.getFailedSyncRecords
+				).toHaveBeenCalled();
+			});
+		});
 		expect(root).toBeFalsy();
 	});
 

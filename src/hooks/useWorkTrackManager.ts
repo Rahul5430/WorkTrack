@@ -138,13 +138,13 @@ export function useWorkTrackManager(): WorkTrackManager {
 	}, [container.sync]);
 
 	const syncFromRemote = useCallback(async () => {
-		const currentUser = getAuth().currentUser;
-		if (!currentUser) {
+		const authUser = getAuth().currentUser;
+		if (!authUser) {
 			throw new SyncError('User not authenticated', {
 				code: 'auth.unauthenticated',
 			});
 		}
-		await container.syncFromRemote.execute(currentUser.uid);
+		await container.syncFromRemote.execute(authUser.uid);
 	}, [container.syncFromRemote]);
 
 	const getMyTrackers = useCallback(async () => {

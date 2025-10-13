@@ -70,81 +70,61 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	const workTrackSwitcherRef = useRef<CommonBottomSheetRef>(null);
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const [selectedMonth, setSelectedMonth] = useState(new Date());
+	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 	const rotateAnim = useRef(new Animated.Value(0)).current;
 	const manager = useWorkTrackManager();
 
 	useEffect(() => {
-		const loadData = async () => {
-			logger.debug('loadData - user ID:', { userId: user?.id });
-			logger.debug('loadData - tracker:', { workTrackData });
+		const initializeUser = async () => {
 			if (!user?.id) return;
 
+			logger.info('Initializing user', { userId: user.id });
 			dispatch(setLoading(true));
+
 			try {
 				// Check and fix any records without trackerId (from old schema)
-				try {
-					await manager.userManagement.checkAndFixRecordsWithoutTrackerId();
-				} catch (error) {
-					logger.warn('Error checking records, continuing anyway:', {
-						error,
-					});
-				}
+				await manager.userManagement.checkAndFixRecordsWithoutTrackerId();
 
-				// FIRST: Sync from Firebase to get any existing trackers
-				logger.info('HomeScreen: Syncing from Firebase first...');
-				try {
-					await manager.syncFromRemote();
-					logger.info('HomeScreen: Firebase sync completed');
-				} catch (syncError) {
-					logger.warn(
-						'Firebase sync failed, continuing with local data:',
-						{ syncError }
-					);
-				}
+				// Initialize user data - this handles new vs returning users properly
+				const tracker = await manager.userManagement.initializeUserData(
+					user.id
+				);
 
-				// SECOND: Now check for existing tracker after sync
-				const tracker =
-					await manager.userManagement.ensureUserHasTracker(user.id);
+				logger.info('User initialized successfully', {
+					trackerId: tracker.id,
+				});
 
-				if (tracker) {
-					logger.info(
-						'HomeScreen: Found existing tracker after sync:',
-						{ trackerId: tracker.id }
-					);
-					// Update currentWorkTrack with the correct tracker ID and name
-					setCurrentWorkTrack({
-						id: tracker.id,
-						name: tracker.name,
-					});
+				// Update currentWorkTrack with the tracker info
+				setCurrentWorkTrack({
+					id: tracker.id,
+					name: tracker.name,
+				});
 
-					// Get all entries for this tracker using the service
-					const entries = await manager.entry.getEntriesForTracker(
-						tracker.id
-					);
+				// Load entries for this tracker
+				const entries = await manager.entry.getEntriesForTracker(
+					tracker.id
+				);
+				const mappedEntries = entries.map((entry) => ({
+					date: entry.date,
+					status: entry.status as MarkedDayStatus,
+					isAdvisory: entry.isAdvisory,
+				}));
 
-					const workTrackData = entries.map((entry) => ({
-						date: entry.date,
-						status: entry.status as MarkedDayStatus,
-						isAdvisory: entry.isAdvisory,
-					}));
+				dispatch(setWorkTrackData(mappedEntries));
 
-					dispatch(setWorkTrackData(workTrackData));
-				} else {
-					logger.warn(
-						'HomeScreen: Failed to ensure user has tracker'
-					);
-					dispatch(setError('Failed to load or create tracker'));
-				}
-
-				// Note: No need to call triggerSync() here since we already synced from Firebase
-				// and any new tracker creation will be synced to Firebase on the next periodic sync
-			} catch (error) {
-				logger.error('Error loading data:', { error });
+				logger.info('User data loaded successfully', {
+					trackerId: tracker.id,
+					entryCount: entries.length,
+				});
+			} catch (initError) {
+				logger.error('Failed to initialize user:', {
+					error: initError,
+				});
 				dispatch(
 					setError(
-						error instanceof Error
-							? error.message
-							: 'Failed to load data'
+						initError instanceof Error
+							? initError.message
+							: 'Failed to initialize user'
 					)
 				);
 			} finally {
@@ -152,10 +132,11 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			}
 		};
 
-		loadData();
-	}, [user?.id, dispatch]);
+		initializeUser();
+	}, [user?.id, dispatch, manager]);
 
 	const handleDayMarkingSheetChanges = useCallback((index: number) => {
+		setIsBottomSheetOpen(index !== -1);
 		if (index === -1) {
 			setSelectedDate(null);
 		}
@@ -201,8 +182,8 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				});
 				workTrackSwitcherRef.current?.close();
 			}
-		} catch (error) {
-			logger.error('Error switching worktrack:', { error });
+		} catch (switchError) {
+			logger.error('Error switching worktrack:', { error: switchError });
 		}
 	};
 
@@ -237,30 +218,30 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 						tracker.id
 					);
 
-					const workTrackData = entries.map((entry) => ({
+					const refreshEntries = entries.map((entry) => ({
 						date: entry.date,
 						status: entry.status as MarkedDayStatus,
 						isAdvisory: entry.isAdvisory,
 					}));
 
-					dispatch(setWorkTrackData(workTrackData));
+					dispatch(setWorkTrackData(refreshEntries));
 				} else {
 					dispatch(setError('Failed to load tracker'));
 				}
 			}
-		} catch (error) {
-			logger.error('Error syncing data:', { error });
+		} catch (refreshError) {
+			logger.error('Error syncing data:', { error: refreshError });
 			dispatch(
 				setError(
-					error instanceof Error
-						? error.message
+					refreshError instanceof Error
+						? refreshError.message
 						: 'Failed to sync data'
 				)
 			);
 		} finally {
 			dispatch(setLoading(false));
 		}
-	}, [dispatch, currentWorkTrack?.id, user?.id]);
+	}, [dispatch, currentWorkTrack?.id, user?.id, manager]);
 
 	const resolveTrackerId = async (): Promise<string> => {
 		// If no tracker is loaded yet, ensure we have one
@@ -333,12 +314,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				logger.error('Background sync failed:', { syncError });
 				// Optionally show a non-blocking error indicator
 			});
-		} catch (error) {
-			logger.error('Error saving work status:', { error });
+		} catch (saveError) {
+			logger.error('Error saving work status:', { error: saveError });
 			dispatch(
 				setError(
-					error instanceof Error
-						? error.message
+					saveError instanceof Error
+						? saveError.message
 						: 'Failed to save work status'
 				)
 			);
@@ -361,7 +342,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			<ScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
-				scrollEnabled={!selectedDate}
+				scrollEnabled={!isBottomSheetOpen}
 				refreshControl={
 					<RefreshControl
 						refreshing={loading}
@@ -425,13 +406,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					</Pressable>
 
 					<View style={styles.headerActions}>
-						<View
-							style={{
-								position: 'relative',
-								width: 40,
-								height: 40,
-							}}
-						>
+						<View style={styles.profileButtonContainer}>
 							<Pressable
 								onPress={() =>
 									navigation.navigate('ProfileScreen', {})
@@ -613,6 +588,11 @@ const styles = StyleSheet.create({
 		borderWidth: 2,
 		borderColor: 'white',
 		padding: 0,
+	},
+	profileButtonContainer: {
+		position: 'relative',
+		width: 40,
+		height: 40,
 	},
 });
 

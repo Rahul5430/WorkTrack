@@ -208,7 +208,7 @@ const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 							progress={value / stats.monthly.workingDays}
 							color={color}
 							style={styles.progressBar}
-							fillStyle={{ borderRadius: 9999 }}
+							fillStyle={styles.progressBarFill}
 						/>
 					</View>
 				))}
@@ -242,6 +242,9 @@ const styles = StyleSheet.create({
 	progressBar: {
 		backgroundColor: colors.ui.gray[100],
 		height: 8,
+		borderRadius: 9999,
+	},
+	progressBarFill: {
 		borderRadius: 9999,
 	},
 });

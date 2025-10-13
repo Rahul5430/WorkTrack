@@ -79,6 +79,7 @@ describe('FirebaseTrackerRepository - exists branch', () => {
 			// Mock tracker snapshot that exists
 			const mockTrackerSnapshot = {
 				exists: jest.fn().mockReturnValue(true),
+				data: jest.fn().mockReturnValue({ ownerId: 'user1' }),
 			};
 
 			(getDoc as jest.Mock).mockResolvedValue(mockTrackerSnapshot);

@@ -1,0 +1,41 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHandle/BottomSheetHandleContainer.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHandle/BottomSheetHandleContainer.tsx
+index 0223843..48139b1 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHandle/BottomSheetHandleContainer.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHandle/BottomSheetHandleContainer.tsx
+@@ -135,10 +135,12 @@ function BottomSheetHandleContainerComponent({
+     [animatedLayoutState]
+   );
+   const handleBoundingClientRect = useCallback(
+-    ({ height }: BoundingClientRect) => {
++    (params: BoundingClientRect) => {
++      if (!params?.height) return;
++
+       animatedLayoutState.modify(state => {
+         'worklet';
+-        state.handleHeight = height;
++        state.handleHeight = params.height;
+         return state;
+       });
+ 
+@@ -148,7 +150,7 @@ function BottomSheetHandleContainerComponent({
+           method: 'handleBoundingClientRect',
+           category: 'layout',
+           params: {
+-            height,
++            height: params.height,
+           },
+         });
+       }
+diff --git a/node_modules/@gorhom/bottom-sheet/src/hooks/useBoundingClientRect.ts b/node_modules/@gorhom/bottom-sheet/src/hooks/useBoundingClientRect.ts
+index cc85c8c..dd0742d 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/hooks/useBoundingClientRect.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/hooks/useBoundingClientRect.ts
+@@ -58,7 +58,7 @@ export function useBoundingClientRect(
+     // @ts-ignore 👉 https://github.com/facebook/react/commit/53b1f69ba
+     if (ref.current.unstable_getBoundingClientRect !== null) {
+       // @ts-ignore https://github.com/facebook/react/commit/53b1f69ba
+-      const layout = ref.current.unstable_getBoundingClientRect();
++      const layout = ref.current?.unstable_getBoundingClientRect?.();
+       handler(layout);
+       return;
+     }

@@ -210,19 +210,21 @@ describe('Toast', () => {
 	});
 
 	it('handles when onHide is not provided', () => {
-		render(
+		const { getByText } = render(
 			<Toast visible={true} message='No onHide test' duration={1000} />
 		);
 
 		// Should not throw error when onHide is not provided
+		expect(getByText('No onHide test')).toBeTruthy();
 		jest.advanceTimersByTime(1000);
 	});
 
 	it('returns early when visible changes to false', () => {
-		const { rerender } = render(
+		const { rerender, getByText } = render(
 			<Toast visible={true} message='Visibility test' duration={2000} />
 		);
 
+		expect(getByText('Visibility test')).toBeTruthy();
 		// Change visible to false
 		rerender(
 			<Toast visible={false} message='Visibility test' duration={2000} />

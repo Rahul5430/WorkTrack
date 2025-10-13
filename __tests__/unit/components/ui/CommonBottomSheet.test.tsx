@@ -20,15 +20,15 @@ jest.mock('react-native', () => ({
 }));
 
 jest.mock('@gorhom/bottom-sheet', () => {
-	const React = require('react');
+	const _ReactLib = require('react');
 	let lastProps: Record<string, unknown> | null = null;
 	let lastBackdropProps: Record<string, unknown> | null = null;
 
-	const BottomSheet = React.forwardRef(function BottomSheetMock(
+	const BottomSheet = _ReactLib.forwardRef(function BottomSheetMock(
 		props: Record<string, unknown>,
 		ref: unknown
 	) {
-		void ref; // mark as used for linter
+		ref; // mark as used for linter
 		lastProps = props;
 
 		// Call backdropComponent if provided to ensure coverage
@@ -43,11 +43,8 @@ jest.mock('@gorhom/bottom-sheet', () => {
 			});
 		}
 
-		return React.createElement(
-			'BottomSheet',
-			props,
-			props.children as React.ReactNode
-		);
+		const ReactLib = require('react');
+		return ReactLib.createElement('BottomSheet', props, props.children);
 	});
 
 	function BottomSheetViewMock({
@@ -55,14 +52,15 @@ jest.mock('@gorhom/bottom-sheet', () => {
 		style,
 		...props
 	}: {
-		children?: React.ReactNode;
-		style?: React.CSSProperties;
+		children?: unknown;
+		style?: unknown;
 		[key: string]: unknown;
 	}) {
-		return React.createElement(
+		const ReactLib = require('react');
+		return ReactLib.createElement(
 			'BottomSheetView',
 			{ style, ...props },
-			children as React.ReactNode
+			children
 		);
 	}
 
@@ -71,7 +69,8 @@ jest.mock('@gorhom/bottom-sheet', () => {
 		[key: string]: unknown;
 	}) {
 		lastBackdropProps = props;
-		return React.createElement('BottomSheetBackdrop', props);
+		const ReactLib = require('react');
+		return ReactLib.createElement('BottomSheetBackdrop', props);
 	}
 
 	return {

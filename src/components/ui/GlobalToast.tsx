@@ -24,7 +24,7 @@ export const GlobalToast: React.FC = () => {
 		});
 
 		return unsubscribe;
-	}, []); // Subscribe only once
+	}, [currentToast?.id]); // Subscribe only once
 
 	if (!currentToast) return null;
 

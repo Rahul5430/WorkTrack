@@ -80,7 +80,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 			rotation.value = withTiming(nextFull, { duration });
 			isRefreshing.value = false;
 		}
-	}, []);
+	}, [isRefreshing, manager, rotation]);
 
 	if (loading) {
 		return (
@@ -298,7 +298,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 							{renderOtherWorkTracks()}
 						</>
 					) : (
-						<View style={{ paddingVertical: 20 }}>
+						<View style={styles.emptyContainer}>
 							<View style={styles.emptyState}>
 								<MaterialCommunityIcons
 									name='account-group-outline'
@@ -542,6 +542,9 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.1,
 		shadowRadius: 2,
 		elevation: 2,
+	},
+	emptyContainer: {
+		paddingVertical: 20,
 	},
 });
 

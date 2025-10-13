@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 
@@ -20,7 +20,7 @@ const LoadingScreen: React.FC<
 	const dispatch = useDispatch();
 	const { RFValue } = useResponsiveLayout();
 
-	const restoreAppData = async () => {
+	const restoreAppData = useCallback(async () => {
 		try {
 			const rawUser = await AsyncStorage.getItem('user');
 
@@ -44,11 +44,11 @@ const LoadingScreen: React.FC<
 				)
 			);
 		}
-	};
+	}, [dispatch]);
 
 	useEffect(() => {
 		restoreAppData();
-	}, []);
+	}, [restoreAppData]);
 
 	return (
 		<View style={styles.screen}>

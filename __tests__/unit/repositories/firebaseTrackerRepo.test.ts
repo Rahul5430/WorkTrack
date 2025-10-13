@@ -66,7 +66,10 @@ describe('FirebaseTrackerRepository', () => {
 		});
 
 		it('does not create tracker when it already exists', async () => {
-			mockGetDoc.mockResolvedValue({ exists: () => true });
+			mockGetDoc.mockResolvedValue({
+				exists: () => true,
+				data: () => ({ ownerId: 'user1' }),
+			});
 
 			await repo.ensureExists('tracker1', 'user1');
 
@@ -78,7 +81,7 @@ describe('FirebaseTrackerRepository', () => {
 
 			await expect(
 				repo.ensureExists('tracker1', 'user1')
-			).rejects.toThrow();
+			).rejects.toThrow('Firestore error');
 		});
 
 		it('handles Firestore errors during setDoc', async () => {
@@ -87,7 +90,7 @@ describe('FirebaseTrackerRepository', () => {
 
 			await expect(
 				repo.ensureExists('tracker1', 'user1')
-			).rejects.toThrow();
+			).rejects.toThrow('Set error');
 		});
 	});
 

@@ -47,7 +47,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 		} else {
 			rotation.value = 0;
 		}
-	}, [syncStatus.isSyncing]);
+	}, [rotation, syncStatus.isSyncing]);
 
 	const animatedStyle = useAnimatedStyle(() => ({
 		transform: [{ rotate: `${-rotation.value}deg` }],

@@ -70,6 +70,19 @@ const ProfileScreen: React.FC<
 	const manager = useWorkTrackManager();
 	const sharedWithMeSectionRef = useRef<View>(null);
 
+	const loadShares = useCallback(async () => {
+		try {
+			const [mySharesData, sharedWithMeData] = await Promise.all([
+				manager.shareRead.getMyShares(),
+				manager.shareRead.getSharedWithMe(),
+			]);
+			setMyShares(mySharesData);
+			setSharedWithMe(sharedWithMeData);
+		} catch (error) {
+			logger.error('Failed to load shares', { error });
+		}
+	}, [manager.shareRead]);
+
 	useEffect(() => {
 		loadShares();
 		const keyboardDidShowListener = Keyboard.addListener(
@@ -89,7 +102,7 @@ const ProfileScreen: React.FC<
 			keyboardDidShowListener.remove();
 			keyboardDidHideListener.remove();
 		};
-	}, []);
+	}, [loadShares]);
 
 	useEffect(() => {
 		const loadDefaultView = async () => {
@@ -129,19 +142,6 @@ const ProfileScreen: React.FC<
 			setTimeout(() => setHighlightedWorkTrackId(null), 2000);
 		}
 	}, [route.params]);
-
-	const loadShares = async () => {
-		try {
-			const [mySharesData, sharedWithMeData] = await Promise.all([
-				manager.shareRead.getMyShares(),
-				manager.shareRead.getSharedWithMe(),
-			]);
-			setMyShares(mySharesData);
-			setSharedWithMe(sharedWithMeData);
-		} catch (error) {
-			logger.error('Failed to load shares', { error });
-		}
-	};
 
 	const showAlert = (
 		title: string,
@@ -310,7 +310,7 @@ const ProfileScreen: React.FC<
 		} finally {
 			setIsRefreshing(false);
 		}
-	}, []);
+	}, [loadShares]);
 
 	const handleEditPermission = async (share: SharePermission) => {
 		setEditingShare(share);
@@ -515,7 +515,7 @@ const ProfileScreen: React.FC<
 					<RefreshControl
 						refreshing={isRefreshing}
 						onRefresh={() => {
-							void onRefresh();
+							onRefresh();
 						}}
 						tintColor={colors.office}
 						colors={[colors.office]}
@@ -558,7 +558,7 @@ const ProfileScreen: React.FC<
 					>
 						Shared With Others
 					</Text>
-					<View style={{ gap: 16 }}>
+					<View style={styles.gapContainer}>
 						{myShares.map((share) => (
 							<ShareListItem
 								key={share.sharedWithId}
@@ -590,7 +590,7 @@ const ProfileScreen: React.FC<
 							will be shown by default
 						</Text>
 					</View>
-					<View style={{ gap: 16 }}>
+					<View style={styles.gapContainer}>
 						{sharedWithMe.map((share) => (
 							<SharedWithMeListItem
 								key={share.ownerId}
@@ -622,7 +622,7 @@ const ProfileScreen: React.FC<
 										text: 'Clear',
 										style: 'destructive',
 										onPress: () => {
-											void clearAppData()
+											clearAppData()
 												.then(() => {
 													Alert.alert(
 														'Success',
@@ -666,7 +666,7 @@ const ProfileScreen: React.FC<
 										text: 'Logout',
 										style: 'destructive',
 										onPress: () => {
-											void handleLogout();
+											handleLogout();
 										},
 									},
 								]
@@ -805,6 +805,9 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		color: colors.text.secondary,
 		flex: 1,
+	},
+	gapContainer: {
+		gap: 16,
 	},
 });
 

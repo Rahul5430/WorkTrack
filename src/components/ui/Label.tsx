@@ -56,7 +56,8 @@ const Label = () => {
 						key={label}
 						style={[
 							styles.item,
-							{ flex: 1, backgroundColor: color },
+							styles.flexItem,
+							{ backgroundColor: color },
 						]}
 					>
 						<Icon width={16} height={16} />
@@ -80,7 +81,8 @@ const Label = () => {
 						key={label}
 						style={[
 							styles.item,
-							{ flex: 1, backgroundColor: color },
+							styles.flexItem,
+							{ backgroundColor: color },
 						]}
 					>
 						<Icon width={16} height={16} />
@@ -133,6 +135,9 @@ const styles = StyleSheet.create({
 	label: {
 		fontFamily: fonts.PoppinsMedium,
 		textTransform: 'capitalize',
+	},
+	flexItem: {
+		flex: 1,
 	},
 });
 

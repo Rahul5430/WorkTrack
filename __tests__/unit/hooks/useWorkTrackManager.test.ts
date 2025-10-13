@@ -312,9 +312,8 @@ describe('useWorkTrackManager', () => {
 	it('should cleanup on unmount', () => {
 		const { unmount } = renderHook(() => useWorkTrackManager());
 
-		unmount();
-
 		// This test mainly ensures the cleanup function doesn't throw
 		// The actual cleanup is tested implicitly through other tests
+		expect(() => unmount()).not.toThrow();
 	});
 });

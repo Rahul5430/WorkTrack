@@ -32,9 +32,9 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
 
 	const getDaysInMonth = (date: Date) => {
 		const year = date.getFullYear();
-		const month = date.getMonth();
-		const daysInMonth = new Date(year, month + 1, 0).getDate();
-		const firstDayOfMonth = new Date(year, month, 1).getDay();
+		const monthIndex = date.getMonth();
+		const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+		const firstDayOfMonth = new Date(year, monthIndex, 1).getDay();
 		return { daysInMonth, firstDayOfMonth };
 	};
 

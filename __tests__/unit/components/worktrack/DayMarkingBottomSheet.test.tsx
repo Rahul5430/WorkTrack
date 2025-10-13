@@ -655,11 +655,11 @@ describe('DayMarkingBottomSheet', () => {
 	});
 
 	it('covers onCancel callback logic', () => {
-		const mockOnCancel = jest.fn();
+		const mockOnCancelCallback = jest.fn();
 		const { root } = render(
 			<DayMarkingBottomSheet
 				onSave={mockOnSave}
-				onCancel={mockOnCancel}
+				onCancel={mockOnCancelCallback}
 				selectedDate='2025-01-15'
 			/>
 		);

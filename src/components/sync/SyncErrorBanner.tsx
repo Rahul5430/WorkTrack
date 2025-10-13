@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
 	FlatList,
 	Modal,
@@ -38,19 +38,19 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 	const { show } = useToast();
 	const manager = useWorkTrackManager();
 
-	const checkForErrors = async () => {
+	const checkForErrors = useCallback(async () => {
 		try {
-			const failedRecords = await manager.entry.getFailedSyncRecords();
+			const errorRecords = await manager.entry.getFailedSyncRecords();
 			const exceededLimitRecords =
 				await manager.entry.getRecordsExceedingRetryLimit(3);
 
-			setHasErrors(failedRecords.length > 0);
-			setFailedCount(failedRecords.length);
+			setHasErrors(errorRecords.length > 0);
+			setFailedCount(errorRecords.length);
 			setExceededRetryLimit(exceededLimitRecords.length > 0);
 		} catch (error) {
 			logger.error('Error checking for sync errors:', { error });
 		}
-	};
+	}, [manager.entry]);
 
 	const loadFailedRecords = async () => {
 		setLoading(true);
@@ -108,7 +108,7 @@ export const SyncErrorBanner: React.FC<SyncErrorBannerProps> = ({
 		// Check periodically for new errors
 		const interval = setInterval(checkForErrors, 30000); // Every 30 seconds
 		return () => clearInterval(interval);
-	}, []);
+	}, [checkForErrors]);
 
 	const getBannerMessage = () => {
 		if (isRetrying) return 'Syncing...';

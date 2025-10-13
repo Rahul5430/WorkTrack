@@ -12,29 +12,29 @@ describe('EntryUseCase (expanded)', () => {
 			// IBaseEntryRepository
 			upsertMany: jest.fn(
 				async (_trackerId: string, _entries: EntryDTO[]) => {
-					void _trackerId;
-					void _entries;
+					_trackerId;
+					_entries;
 				}
 			),
 			upsertOne: jest.fn(async (_entry: EntryDTO) => {
-				void _entry;
+				_entry;
 			}),
 			delete: jest.fn(async (_id: string) => {
-				void _id;
+				_id;
 			}),
 			getEntriesForTracker: jest.fn(async (_trackerId: string) => {
-				void _trackerId;
+				_trackerId;
 				return [];
 			}),
 			getAllEntries: jest.fn(async () => []),
 			// ILocalEntryRepository
 			listUnsynced: jest.fn(async () => []),
 			markSynced: jest.fn(async (_entries: EntryDTO[]) => {
-				void _entries;
+				_entries;
 			}),
 			getFailedSyncRecords: jest.fn(async () => []),
 			getRecordsExceedingRetryLimit: jest.fn(async (_limit: number) => {
-				void _limit;
+				_limit;
 				return [];
 			}),
 		};

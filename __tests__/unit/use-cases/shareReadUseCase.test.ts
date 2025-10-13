@@ -41,24 +41,24 @@ describe('ShareReadUseCase', () => {
 		};
 		mockTrackers = {
 			create: jest.fn(async (tracker, userId) => {
-				void tracker;
-				void userId;
+				tracker;
+				userId;
 			}),
 			update: jest.fn(async () => {}),
 			listOwned: jest.fn(async (userId: string) => {
-				void userId;
+				userId;
 				return [];
 			}),
 			listSharedWith: jest.fn(async (userId: string) => {
-				void userId;
+				userId;
 				return [];
 			}),
 			ensureExists: jest.fn(async (id: string, ownerId: string) => {
-				void id;
-				void ownerId;
+				id;
+				ownerId;
 			}),
 			upsertMany: jest.fn(async (trackers) => {
-				void trackers;
+				trackers;
 			}),
 		};
 		useCase = new ShareReadUseCaseImpl(mockShares, mockTrackers);

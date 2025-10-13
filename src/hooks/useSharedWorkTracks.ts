@@ -55,7 +55,7 @@ export const useSharedWorkTracks = () => {
 			setIsLoading(false);
 			dispatch(setLoading(false));
 		}
-	}, [user?.id, dispatch]);
+	}, [user?.id, dispatch, manager.shareRead]);
 
 	useEffect(() => {
 		loadSharedWorkTracks();

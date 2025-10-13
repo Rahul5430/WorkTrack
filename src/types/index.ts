@@ -137,6 +137,7 @@ export interface WorkTrackManager {
 	};
 	userManagement: {
 		ensureUserHasTracker(userId: string): Promise<TrackerDTO>;
+		initializeUserData(userId: string): Promise<TrackerDTO>;
 		getTrackerByOwnerId(ownerId: string): Promise<TrackerDTO | null>;
 		getDefaultViewUserId(): Promise<string | null>;
 		setDefaultViewUserId(userId: string | null): Promise<void>;

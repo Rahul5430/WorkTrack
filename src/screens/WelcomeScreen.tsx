@@ -93,7 +93,7 @@ const WelcomeScreen: React.FC<
 		});
 
 		return unsubscribe;
-	}, []);
+	}, [dispatch, manager]);
 
 	const signInWithGoogle = async () => {
 		try {

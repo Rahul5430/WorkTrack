@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import { fonts } from '../../themes';
@@ -29,6 +29,23 @@ export const Toast: React.FC<ToastProps> = ({
 		new Animated.Value(position === 'top' ? -50 : 50)
 	).current;
 
+	const hideToast = useCallback(() => {
+		Animated.parallel([
+			Animated.timing(fadeAnim, {
+				toValue: 0,
+				duration: 300,
+				useNativeDriver: true,
+			}),
+			Animated.timing(slideAnim, {
+				toValue: position === 'top' ? -50 : 50,
+				duration: 300,
+				useNativeDriver: true,
+			}),
+		]).start(() => {
+			onHide?.();
+		});
+	}, [fadeAnim, slideAnim, position, onHide]);
+
 	useEffect(() => {
 		if (visible) {
 			// Show animation
@@ -53,24 +70,7 @@ export const Toast: React.FC<ToastProps> = ({
 			return () => clearTimeout(timer);
 		}
 		return undefined;
-	}, [visible, duration]);
-
-	const hideToast = () => {
-		Animated.parallel([
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: 300,
-				useNativeDriver: true,
-			}),
-			Animated.timing(slideAnim, {
-				toValue: position === 'top' ? -50 : 50,
-				duration: 300,
-				useNativeDriver: true,
-			}),
-		]).start(() => {
-			onHide?.();
-		});
-	};
+	}, [visible, duration, fadeAnim, hideToast, slideAnim]);
 
 	const getToastStyle = () => {
 		switch (type) {

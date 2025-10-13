@@ -52,11 +52,11 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 		const months = [];
 		const today = new Date();
 		const currentYear = today.getFullYear();
-		const currentMonth = today.getMonth();
+		const todayMonth = today.getMonth();
 
 		// Generate 12 months before and 12 months after current month
 		for (let i = -12; i <= 12; i++) {
-			const date = new Date(currentYear, currentMonth + i, 1);
+			const date = new Date(currentYear, todayMonth + i, 1);
 			months.push(date);
 		}
 		return months;
@@ -105,11 +105,11 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
 			if (viewableItems.length > 0) {
 				const index = viewableItems[0].index ?? 0;
 				const months = generateMonths();
-				const currentMonth = months[index];
+				const visibleMonth = months[index];
 				setVisibleMonths(
 					months.slice(Math.max(0, index - 1), index + 2)
 				);
-				handleMonthChange(currentMonth);
+				handleMonthChange(visibleMonth);
 			}
 		},
 		[generateMonths, handleMonthChange]

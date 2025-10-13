@@ -7,6 +7,7 @@ import {
 	query,
 	setDoc,
 	Timestamp,
+	updateDoc,
 	where,
 } from '@react-native-firebase/firestore';
 
@@ -79,10 +80,10 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 			const querySnapshot = await getDocs(q);
 
 			const trackers: TrackerDTO[] = [];
-			querySnapshot.forEach((doc: FirestoreDoc) => {
+			querySnapshot.forEach((docSnapshot: FirestoreDoc) => {
 				const trackerData: FirestoreTrackerData = {
-					id: doc.id,
-					...doc.data(),
+					id: docSnapshot.id,
+					...docSnapshot.data(),
 				} as FirestoreTrackerData;
 				trackers.push(trackerFirestoreToDTO(trackerData));
 			});
@@ -221,10 +222,33 @@ export class FirebaseTrackerRepository implements ITrackerRepository {
 					ownerId,
 				});
 			} else {
-				logger.debug('Tracker already exists in Firestore', {
-					id,
-					ownerId,
-				});
+				// Check if the existing tracker has the correct ownerId
+				const existingData = trackerSnapshot.data();
+				if (existingData?.ownerId !== ownerId) {
+					logger.warn(
+						'Tracker exists but has incorrect ownerId, updating',
+						{
+							id,
+							expectedOwnerId: ownerId,
+							actualOwnerId: existingData?.ownerId,
+						}
+					);
+
+					// Update the tracker with the correct ownerId
+					await updateDoc(trackerRef, {
+						ownerId,
+					});
+
+					logger.info('Updated tracker ownerId in Firestore', {
+						id,
+						ownerId,
+					});
+				} else {
+					logger.debug('Tracker already exists in Firestore', {
+						id,
+						ownerId,
+					});
+				}
 			}
 		} catch (error) {
 			logger.error('Failed to ensure tracker exists in Firestore', {

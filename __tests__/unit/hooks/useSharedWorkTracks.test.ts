@@ -230,9 +230,11 @@ describe('useSharedWorkTracks', () => {
 
 		const { result } = renderHook(() => useSharedWorkTracks());
 
-		// Wait for useEffect to trigger
+		// Wait for useEffect to trigger and complete
 		await act(async () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
+			// Wait for the async operation to complete
+			await new Promise((resolve) => setTimeout(resolve, 10));
 		});
 
 		expect(mockManager.shareRead.getSharedWithMe).toHaveBeenCalled();

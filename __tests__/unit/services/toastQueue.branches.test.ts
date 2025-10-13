@@ -76,7 +76,8 @@ describe('ToastQueueService - branch coverage', () => {
 				duration: 3000,
 				position: 'top' as const,
 			};
-			toastQueue['queue'].push(toast);
+			// @ts-expect-error - accessing private property for testing
+			toastQueue.queue.push(toast);
 
 			// Check that toast was added to queue
 			expect(toastQueue.getStatus().queueLength).toBe(1);
