@@ -43,7 +43,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 
 	// Handle rotating animation for syncing state
 	useEffect(() => {
-		if (syncStatus.isSyncing) {
+		if (syncStatus?.isSyncing) {
 			rotation.value = withRepeat(
 				withTiming(360, { duration: 1000, easing: Easing.linear }),
 				-1,
@@ -52,7 +52,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 		} else {
 			rotation.value = 0;
 		}
-	}, [rotation, syncStatus.isSyncing]);
+	}, [rotation, syncStatus?.isSyncing]);
 
 	const animatedStyle = useAnimatedStyle(() => ({
 		transform: [{ rotate: `${-rotation.value}deg` }],
@@ -67,10 +67,10 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	}, [updateStatus]);
 
 	const getStatusIconProps = () => {
-		if (syncStatus.isSyncing) {
+		if (syncStatus?.isSyncing) {
 			return { name: 'sync', color: colors.wfh, rotate: true };
 		}
-		if (!syncStatus.isOnline) {
+		if (!syncStatus?.isOnline) {
 			return {
 				name: 'cloud-off-outline',
 				color: colors.error,
@@ -87,7 +87,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	return (
 		<View style={[styles.container, style]}>
 			<View>
-				{syncStatus.isSyncing ? (
+				{syncStatus?.isSyncing ? (
 					<Animated.View style={animatedStyle}>
 						<MaterialCommunityIcons
 							name={getStatusIconProps().name}

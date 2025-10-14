@@ -198,11 +198,11 @@ describe('SyncStatusIndicator', () => {
 
 		render(<SyncStatusIndicator />);
 
-		// Fast-forward time to trigger periodic update
-		jest.advanceTimersByTime(5000);
+		// Fast-forward time to trigger periodic update (500ms interval)
+		jest.advanceTimersByTime(1000); // 1 second = 3 calls (1 initial + 2 periodic)
 
 		await waitFor(() => {
-			expect(mockManager.getSyncStatus).toHaveBeenCalledTimes(2);
+			expect(mockManager.getSyncStatus).toHaveBeenCalledTimes(3);
 		});
 	});
 
@@ -282,9 +282,8 @@ describe('SyncStatusIndicator', () => {
 			expect(root.children.length).toBeGreaterThan(0);
 		});
 
-		// Fast-forward time to trigger updates
-		jest.advanceTimersByTime(5000);
-		jest.advanceTimersByTime(5000);
+		// Fast-forward time to trigger updates (500ms interval)
+		jest.advanceTimersByTime(1000); // 1 second = 3 calls (1 initial + 2 periodic)
 
 		await waitFor(() => {
 			expect(mockManager.getSyncStatus).toHaveBeenCalledTimes(3);
@@ -349,13 +348,12 @@ describe('SyncStatusIndicator', () => {
 			expect(root.children.length).toBeGreaterThan(0);
 		});
 
-		// Fast-forward time multiple times
-		jest.advanceTimersByTime(5000);
-		jest.advanceTimersByTime(5000);
-		jest.advanceTimersByTime(5000);
+		// Fast-forward time multiple times (500ms interval)
+		jest.advanceTimersByTime(1000); // 1 second = 3 calls (1 initial + 2 periodic)
+		jest.advanceTimersByTime(1000); // 2 seconds = 5 calls (1 initial + 4 periodic)
 
 		await waitFor(() => {
-			expect(mockManager.getSyncStatus).toHaveBeenCalledTimes(4);
+			expect(mockManager.getSyncStatus).toHaveBeenCalledTimes(5);
 		});
 	});
 

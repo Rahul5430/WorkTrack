@@ -17,6 +17,11 @@ jest.mock('react-native', () => ({
 			default?: unknown;
 		}) => obj.default || obj.ios,
 	},
+	AppState: {
+		addEventListener: jest.fn(() => ({
+			remove: jest.fn(),
+		})),
+	},
 }));
 
 jest.mock('@gorhom/bottom-sheet', () => {
@@ -389,5 +394,252 @@ describe('CommonBottomSheet', () => {
 			);
 			expect(root).toBeTruthy();
 		});
+	});
+
+	it('handles app state changes to inactive', () => {
+		const { AppState } = require('react-native');
+		const mockRemove = jest.fn();
+		AppState.addEventListener.mockReturnValue({ remove: mockRemove });
+
+		const { root } = render(
+			<CommonBottomSheet index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+		expect(root).toBeTruthy();
+
+		// Simulate app becoming inactive
+		const handleAppStateChange = AppState.addEventListener.mock.calls[0][1];
+		handleAppStateChange('inactive');
+
+		// Should still render (returns null when inactive)
+		expect(root).toBeTruthy();
+	});
+
+	it('handles app state changes to background', () => {
+		const { AppState } = require('react-native');
+		const mockRemove = jest.fn();
+		AppState.addEventListener.mockReturnValue({ remove: mockRemove });
+
+		const { root } = render(
+			<CommonBottomSheet index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+		expect(root).toBeTruthy();
+
+		// Simulate app going to background
+		const handleAppStateChange = AppState.addEventListener.mock.calls[0][1];
+		handleAppStateChange('background');
+
+		// Should still render (returns null when inactive)
+		expect(root).toBeTruthy();
+	});
+
+	it('handles app state changes to active', () => {
+		const { AppState } = require('react-native');
+		const mockRemove = jest.fn();
+		AppState.addEventListener.mockReturnValue({ remove: mockRemove });
+
+		const { root } = render(
+			<CommonBottomSheet index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+		expect(root).toBeTruthy();
+
+		// Simulate app becoming active
+		const handleAppStateChange = AppState.addEventListener.mock.calls[0][1];
+		handleAppStateChange('active');
+
+		// Should still render
+		expect(root).toBeTruthy();
+	});
+
+	it('handles error in sheet change handler', () => {
+		const onChange = jest.fn().mockImplementation(() => {
+			throw new Error('Change handler error');
+		});
+		const onClose = jest.fn();
+
+		render(
+			<CommonBottomSheet index={0} onChange={onChange} onClose={onClose}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		const mockModule = require('@gorhom/bottom-sheet');
+		const lastProps: Record<string, unknown> | null =
+			mockModule.__internal.getLastProps();
+		expect(lastProps).toBeTruthy();
+
+		// Should not throw even if onChange throws
+		expect(() =>
+			(lastProps?.onChange as (i: number) => void)(1)
+		).not.toThrow();
+	});
+
+	it('handles error in expand method', () => {
+		const ref = React.createRef<CommonBottomSheetRef>();
+		render(
+			<CommonBottomSheet ref={ref} index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		// Mock bottomSheetRef.current to throw error
+		const mockModule = require('@gorhom/bottom-sheet');
+		const lastProps: Record<string, unknown> | null =
+			mockModule.__internal.getLastProps();
+		if (lastProps?.ref) {
+			(
+				lastProps.ref as React.RefObject<{
+					expand: () => void;
+					close: () => void;
+					snapToIndex: (index: number) => void;
+				}>
+			).current = {
+				expand: jest.fn().mockImplementation(() => {
+					throw new Error('Expand error');
+				}),
+				close: jest.fn(),
+				snapToIndex: jest.fn(),
+			};
+		}
+
+		// Should not throw even if expand throws
+		expect(() => ref.current?.expand()).not.toThrow();
+	});
+
+	it('handles error in close method', () => {
+		const ref = React.createRef<CommonBottomSheetRef>();
+		render(
+			<CommonBottomSheet ref={ref} index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		// Mock bottomSheetRef.current to throw error
+		const mockModule = require('@gorhom/bottom-sheet');
+		const lastProps: Record<string, unknown> | null =
+			mockModule.__internal.getLastProps();
+		if (lastProps?.ref) {
+			(
+				lastProps.ref as React.RefObject<{
+					expand: () => void;
+					close: () => void;
+					snapToIndex: (index: number) => void;
+				}>
+			).current = {
+				expand: jest.fn(),
+				close: jest.fn().mockImplementation(() => {
+					throw new Error('Close error');
+				}),
+				snapToIndex: jest.fn(),
+			};
+		}
+
+		// Should not throw even if close throws
+		expect(() => ref.current?.close()).not.toThrow();
+	});
+
+	it('handles error in snapToIndex method', () => {
+		const ref = React.createRef<CommonBottomSheetRef>();
+		render(
+			<CommonBottomSheet ref={ref} index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		// Mock bottomSheetRef.current to throw error
+		const mockModule = require('@gorhom/bottom-sheet');
+		const lastProps: Record<string, unknown> | null =
+			mockModule.__internal.getLastProps();
+		if (lastProps?.ref) {
+			(
+				lastProps.ref as React.RefObject<{
+					expand: () => void;
+					close: () => void;
+					snapToIndex: (index: number) => void;
+				}>
+			).current = {
+				expand: jest.fn(),
+				close: jest.fn(),
+				snapToIndex: jest.fn().mockImplementation(() => {
+					throw new Error('SnapToIndex error');
+				}),
+			};
+		}
+
+		// Should not throw even if snapToIndex throws
+		expect(() => ref.current?.snapToIndex(1)).not.toThrow();
+	});
+
+	it('handles error in app state change handler', () => {
+		const { AppState } = require('react-native');
+		const mockRemove = jest.fn();
+		AppState.addEventListener.mockReturnValue({ remove: mockRemove });
+
+		render(
+			<CommonBottomSheet index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		// Mock bottomSheetRef.current to throw error
+		const mockModule = require('@gorhom/bottom-sheet');
+		const lastProps: Record<string, unknown> | null =
+			mockModule.__internal.getLastProps();
+		if (lastProps?.ref) {
+			(
+				lastProps.ref as React.RefObject<{
+					expand: () => void;
+					close: () => void;
+					snapToIndex: (index: number) => void;
+				}>
+			).current = {
+				expand: jest.fn(),
+				close: jest.fn().mockImplementation(() => {
+					throw new Error('Close error');
+				}),
+				snapToIndex: jest.fn(),
+			};
+		}
+
+		// Simulate app becoming inactive - should not throw
+		const handleAppStateChange = AppState.addEventListener.mock.calls[0][1];
+		expect(() => handleAppStateChange('inactive')).not.toThrow();
+	});
+
+	it('handles missing ref methods gracefully', () => {
+		const ref = React.createRef<CommonBottomSheetRef>();
+		render(
+			<CommonBottomSheet ref={ref} index={0}>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+
+		// Should not throw when ref methods are called
+		expect(() => ref.current?.expand()).not.toThrow();
+		expect(() => ref.current?.close()).not.toThrow();
+		expect(() => ref.current?.snapToIndex(1)).not.toThrow();
+	});
+
+	it('renders with all BottomSheet props', () => {
+		const { root } = render(
+			<CommonBottomSheet
+				index={0}
+				snapPoints={['25%', '50%']}
+				enablePanDownToClose={true}
+				keyboardBehavior='interactive'
+				keyboardBlurBehavior='restore'
+				android_keyboardInputMode='adjustResize'
+				enableOverDrag={false}
+				enableContentPanningGesture={true}
+			>
+				<div>Child</div>
+			</CommonBottomSheet>
+		);
+		expect(root).toBeTruthy();
 	});
 });

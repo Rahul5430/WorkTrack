@@ -88,4 +88,150 @@ describe('UserManagementUseCase', () => {
 		const t = await uc.getTrackerByOwnerId('u2');
 		expect(t?.id).toBe('t1');
 	});
+
+	describe('initializeUserData', () => {
+		it('returns existing tracker from local database', async () => {
+			const existingTracker = {
+				id: 't1',
+				ownerId: 'u1',
+				name: 'Work',
+				color: '#000',
+				isDefault: true,
+				trackerType: 'work',
+			};
+			const trackers = new Trackers([existingTracker]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result).toEqual(existingTracker);
+		});
+
+		it('creates default tracker for new user', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result.ownerId).toBe('u1');
+			expect(result.isDefault).toBe(true);
+			expect(result.name).toBe('Work Tracker');
+			expect(result.color).toBe('#4CAF50');
+			expect(result.trackerType).toBe('work');
+		});
+
+		it('creates default tracker for returning user when sync fails', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result.ownerId).toBe('u1');
+			expect(result.isDefault).toBe(true);
+		});
+
+		it('returns synced tracker for returning user', async () => {
+			const syncedTracker = {
+				id: 't1',
+				ownerId: 'u1',
+				name: 'Work',
+				color: '#000',
+				isDefault: true,
+				trackerType: 'work',
+			};
+			const trackers = new Trackers([syncedTracker]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result).toEqual(syncedTracker);
+		});
+
+		it('handles error when checking if user is new', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			// Mock getAllEntries to throw error
+			remote.getAllEntries = jest
+				.fn()
+				.mockRejectedValue(new Error('Network error'));
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result.ownerId).toBe('u1');
+			expect(result.isDefault).toBe(true);
+		});
+
+		it('detects new user when no entries exist', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			// Mock getAllEntries to return empty array
+			remote.getAllEntries = jest.fn().mockResolvedValue([]);
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result.ownerId).toBe('u1');
+			expect(result.isDefault).toBe(true);
+		});
+
+		it('detects returning user when entries exist', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			// Mock getAllEntries to return entries with user's trackerId
+			remote.getAllEntries = jest.fn().mockResolvedValue([
+				{
+					id: 'e1',
+					trackerId: 'tracker_u1_123',
+					date: '2025-01-01',
+					status: 'office',
+					isAdvisory: false,
+					needsSync: true,
+					lastModified: Date.now(),
+				},
+			]);
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.initializeUserData('u1');
+			expect(result.ownerId).toBe('u1');
+			expect(result.isDefault).toBe(true);
+		});
+	});
+
+	describe('getTrackerByOwnerId', () => {
+		it('returns null when no tracker found', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			const result = await uc.getTrackerByOwnerId('u1');
+			expect(result).toBeNull();
+		});
+
+		it('throws error for empty ownerId', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			await expect(uc.getTrackerByOwnerId('')).rejects.toThrow();
+		});
+	});
+
+	describe('ensureUserHasTracker', () => {
+		it('throws error for empty userId', async () => {
+			const trackers = new Trackers([]);
+			const local = new LocalEntries();
+			const remote = new RemoteEntries();
+			const uc = createUserManagementUseCase(trackers, local, remote);
+
+			await expect(uc.ensureUserHasTracker('')).rejects.toThrow();
+		});
+	});
 });

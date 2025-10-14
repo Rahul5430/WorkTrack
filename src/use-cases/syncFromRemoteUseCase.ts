@@ -29,17 +29,24 @@ export class SyncFromRemoteUseCaseImpl implements SyncFromRemoteUseCase {
 
 		// Add overall timeout for the entire sync from remote process
 		const syncPromise = this.executeSync(userId, lastSyncTime);
-		const timeoutPromise = new Promise<never>((_, reject) =>
-			setTimeout(
+		let timeoutId: NodeJS.Timeout | undefined;
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			timeoutId = setTimeout(
 				() =>
 					reject(
 						new Error('Sync from remote timeout after 45 seconds')
 					),
 				45000
-			)
-		);
+			);
+		});
 
-		await Promise.race([syncPromise, timeoutPromise]);
+		try {
+			await Promise.race([syncPromise, timeoutPromise]);
+		} finally {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		}
 	}
 
 	private async executeSync(
@@ -98,9 +105,10 @@ export class SyncFromRemoteUseCaseImpl implements SyncFromRemoteUseCase {
 						this.firebaseEntryRepository.getEntriesForTracker(
 							tracker.id
 						);
+					let trackerTimeoutId: NodeJS.Timeout | undefined;
 					const timeoutPromise = new Promise<EntryDTO[]>(
-						(_, reject) =>
-							setTimeout(
+						(_, reject) => {
+							trackerTimeoutId = setTimeout(
 								() =>
 									reject(
 										new Error(
@@ -108,18 +116,25 @@ export class SyncFromRemoteUseCaseImpl implements SyncFromRemoteUseCase {
 										)
 									),
 								15000
-							)
+							);
+						}
 					);
 
-					const entries = await Promise.race([
-						fetchPromise,
-						timeoutPromise,
-					]);
-					allEntries.push(...entries);
-					logger.debug('Fetched entries for tracker', {
-						trackerId: tracker.id,
-						count: entries.length,
-					});
+					try {
+						const entries = await Promise.race([
+							fetchPromise,
+							timeoutPromise,
+						]);
+						allEntries.push(...entries);
+						logger.debug('Fetched entries for tracker', {
+							trackerId: tracker.id,
+							count: entries.length,
+						});
+					} finally {
+						if (trackerTimeoutId) {
+							clearTimeout(trackerTimeoutId);
+						}
+					}
 				} catch (error) {
 					logger.warn('Failed to fetch entries for tracker', {
 						trackerId: tracker.id,
