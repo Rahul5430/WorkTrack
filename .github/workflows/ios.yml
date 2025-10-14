@@ -59,10 +59,10 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: ios/Pods
-                  key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('ios/Podfile') }}
+                  key: ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('ios/Podfile') }}
                   restore-keys: |
-                      ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}-
-                      ${{ runner.os }}-pods-
+                      ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-
+                      ${{ runner.os }}-pods-v2-
             - name: Cache DerivedData
               uses: actions/cache@v4
               with:
@@ -75,9 +75,9 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: ~/Library/Caches/CocoaPods
-                  key: ${{ runner.os }}-cocoapods-cache-${{ hashFiles('ios/Podfile.lock') }}
+                  key: ${{ runner.os }}-cocoapods-cache-v2-${{ hashFiles('ios/Podfile.lock') }}
                   restore-keys: |
-                      ${{ runner.os }}-cocoapods-cache-
+                      ${{ runner.os }}-cocoapods-cache-v2-
             - name: Cache Metro bundler
               uses: actions/cache@v4
               with:
@@ -110,7 +110,7 @@ jobs:
               run: |
                   xcodebuild -version
                   bundle exec pod --version
-                  bundle exec pod install --no-repo-update
+                  bundle exec pod install --repo-update
             - name: List available simulators
               run: |
                   xcrun simctl list devices available
@@ -302,20 +302,20 @@ jobs:
                               ['CocoaPods', '✅', 'Dependencies installed with caching']
                           ])
                           .addHeading('Download Links', 2)
-                          .addRaw(`📱 **Simulator App**: ${iosUrl}`)
+                          .addRaw(`📱 **Simulator App**: ${iosUrl}\n\n`)
                           .addHeading('Build Details', 2)
-                          .addRaw(`**Build Type**: Release (Simulator)`)
-                          .addRaw(`**Xcode Version**: 26.0`)
-                          .addRaw(`**Target**: iOS Simulator`)
-                          .addRaw(`**Architecture**: x86_64, arm64 (Apple Silicon)`)
-                          .addRaw(`**CocoaPods Cache**: Enabled`)
-                          .addRaw(`**DerivedData Cache**: Enabled`)
-                          .addRaw(`**Parallel Build**: Enabled (4 jobs)`)
+                          .addRaw(`**Build Type**: Release (Simulator)\n`)
+                          .addRaw(`**Xcode Version**: 26.0\n`)
+                          .addRaw(`**Target**: iOS Simulator\n`)
+                          .addRaw(`**Architecture**: x86_64, arm64 (Apple Silicon)\n`)
+                          .addRaw(`**CocoaPods Cache**: Enabled\n`)
+                          .addRaw(`**DerivedData Cache**: Enabled\n`)
+                          .addRaw(`**Parallel Build**: Enabled (4 jobs)\n`)
                           .addHeading('Caching Status', 2)
-                          .addRaw(`✅ **CocoaPods**: Cached based on Podfile.lock`)
-                          .addRaw(`✅ **DerivedData**: Cached based on source changes`)
-                          .addRaw(`✅ **Metro Bundler**: Cached for JS bundling`)
-                          .addRaw(`✅ **Node Modules**: Cached based on package-lock.json`)
+                          .addRaw(`✅ **CocoaPods**: Cached based on Podfile.lock\n`)
+                          .addRaw(`✅ **DerivedData**: Cached based on source changes\n`)
+                          .addRaw(`✅ **Metro Bundler**: Cached for JS bundling\n`)
+                          .addRaw(`✅ **Node Modules**: Cached based on package-lock.json\n`)
                           .write();
 
                       // Optional: Slack/Discord notification (commented out)
