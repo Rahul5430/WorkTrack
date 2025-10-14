@@ -1,7 +1,7 @@
 import { getAuth } from '@react-native-firebase/auth';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { createDefaultContainer } from '../di/container';
+import { Container, createDefaultContainer } from '../di/container';
 import { SyncError } from '../errors';
 import { logger } from '../logging';
 import { GoogleUser } from '../store/reducers/userSlice';
@@ -13,8 +13,16 @@ import {
 } from '../types';
 import { useAppSelector } from './redux';
 
+// Singleton container to ensure all components use the same sync instance
+let globalContainer: Container | null = null;
+
 export function useWorkTrackManager(): WorkTrackManager {
-	const container = useMemo(() => createDefaultContainer(), []);
+	const container = useMemo(() => {
+		if (!globalContainer) {
+			globalContainer = createDefaultContainer();
+		}
+		return globalContainer;
+	}, []);
 	const currentUser = useAppSelector(
 		(state) => state.user.user
 	) as GoogleUser | null;

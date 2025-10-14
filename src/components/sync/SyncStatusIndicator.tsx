@@ -32,8 +32,13 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	const rotation = useSharedValue(0);
 
 	const updateStatus = useCallback(async () => {
-		const status = await manager.getSyncStatus();
-		setSyncStatus(status);
+		try {
+			const status = await manager.getSyncStatus();
+			setSyncStatus(status);
+		} catch (error) {
+			// If sync status check fails, assume we're not syncing
+			setSyncStatus((prev) => ({ ...prev, isSyncing: false }));
+		}
 	}, [manager]);
 
 	// Handle rotating animation for syncing state
@@ -54,8 +59,10 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 	}));
 
 	useEffect(() => {
+		// Update immediately on mount
 		updateStatus();
-		const interval = setInterval(updateStatus, 5000); // Update every 5 seconds
+		// Then update every 500ms for very responsive UI
+		const interval = setInterval(updateStatus, 500);
 		return () => clearInterval(interval);
 	}, [updateStatus]);
 

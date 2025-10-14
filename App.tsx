@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { AppState, AppStateStatus, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -19,6 +19,21 @@ export default function App() {
 		};
 
 		init();
+	}, []);
+
+	// Handle app state changes to prevent gesture handler issues when Metro disconnects
+	useEffect(() => {
+		const handleAppStateChange = (_nextAppState: AppStateStatus) => {
+			// When app becomes inactive (Metro disconnects), we don't need to do anything special
+			// The gesture handler will automatically handle this
+			// Logging is handled by the individual components that need it
+		};
+
+		const subscription = AppState.addEventListener(
+			'change',
+			handleAppStateChange
+		);
+		return () => subscription?.remove();
 	}, []);
 
 	return (

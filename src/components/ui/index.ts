@@ -1,3 +1,4 @@
+export { BottomSheetErrorBoundary } from './BottomSheetErrorBoundary';
 export type { CommonBottomSheetRef } from './CommonBottomSheet';
 export { default as CommonBottomSheet } from './CommonBottomSheet';
 export { default as FocusAwareStatusBar } from './FocusAwareStatusBar';

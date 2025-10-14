@@ -38,15 +38,31 @@ export class SyncUseCaseImpl implements SyncUseCase {
 
 		try {
 			// First sync to remote (upload local changes)
+			logger.info('Starting sync to remote (upload local changes)...');
 			await this.syncToRemote.execute();
+			logger.info('Sync to remote completed');
+
+			// Small delay to ensure remote changes are propagated
+			logger.debug('Waiting 1 second before sync from remote...');
+			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			// Then sync from remote (download remote changes)
+			logger.info(
+				'Starting sync from remote (download remote changes)...'
+			);
+			logger.debug('Calling syncFromRemote.execute with params', {
+				userId: currentUser.uid,
+				lastSyncTime: this.lastSyncTime ?? undefined,
+			});
+
 			await this.syncFromRemote.execute(
 				currentUser.uid,
 				this.lastSyncTime ?? undefined
 			);
+			logger.info('Sync from remote completed');
 
 			// Update last sync time
+			logger.debug('Updating last sync time...');
 			this.lastSyncTime = Date.now();
 
 			logger.info('Sync process completed successfully');
@@ -54,6 +70,7 @@ export class SyncUseCaseImpl implements SyncUseCase {
 			logger.error('Sync process failed', { error });
 			throw error;
 		} finally {
+			logger.debug('Setting isSyncing to false...');
 			this.isSyncing = false;
 		}
 	}

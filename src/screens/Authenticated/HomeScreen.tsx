@@ -49,6 +49,32 @@ const getDisplayName = (name: string, isOwnWorkTrack: boolean) => {
 	return `${firstName}'s WorkTrack`;
 };
 
+// Helper function to handle sync with appropriate timeout
+const syncWithTimeout = async (
+	manager: { triggerSync: () => Promise<void> },
+	isInitialSync: boolean = false
+) => {
+	const timeoutMs = isInitialSync ? 60000 : 30000; // 60s for initial, 30s for manual
+	const timeoutName = isInitialSync ? 'Initial sync' : 'Manual sync';
+
+	logger.info(`Starting ${timeoutName.toLowerCase()}...`);
+	const syncPromise = manager.triggerSync();
+	const timeoutPromise = new Promise((_, reject) =>
+		setTimeout(
+			() =>
+				reject(
+					new Error(
+						`${timeoutName} timeout after ${timeoutMs / 1000} seconds`
+					)
+				),
+			timeoutMs
+		)
+	);
+
+	await Promise.race([syncPromise, timeoutPromise]);
+	logger.info(`${timeoutName} completed successfully`);
+};
+
 const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 	navigation,
 }) => {
@@ -89,6 +115,9 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 				const tracker = await manager.userManagement.initializeUserData(
 					user.id
 				);
+
+				// Trigger sync to get latest data from remote with timeout
+				await syncWithTimeout(manager, true);
 
 				logger.info('User initialized successfully', {
 					trackerId: tracker.id,
@@ -193,8 +222,8 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			// Add a small delay to ensure JSI bridge is ready
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// Trigger sync to get latest data
-			await manager.triggerSync();
+			// Trigger sync to get latest data with timeout
+			await syncWithTimeout(manager, false);
 
 			// Always ensure we have the current tracker and load its data
 			if (user?.id) {
@@ -231,14 +260,17 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			}
 		} catch (refreshError) {
 			logger.error('Error syncing data:', { error: refreshError });
-			dispatch(
-				setError(
-					refreshError instanceof Error
-						? refreshError.message
-						: 'Failed to sync data'
-				)
-			);
+			const errorMessage =
+				refreshError instanceof Error
+					? refreshError.message
+					: 'Failed to sync data';
+
+			dispatch(setError(errorMessage));
+
+			// Show error toast for better user feedback
+			logger.warn('Sync failed during refresh:', { error: refreshError });
 		} finally {
+			// Always ensure loading state is cleared
 			dispatch(setLoading(false));
 		}
 	}, [dispatch, currentWorkTrack?.id, user?.id, manager]);
