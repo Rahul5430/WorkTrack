@@ -1,0 +1,1 @@
+// Status value object

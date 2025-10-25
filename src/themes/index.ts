@@ -1,22 +1,31 @@
-import { Platform } from 'react-native';
-
-// Font exports
-export const fonts = {
-	...Platform.select({
-		ios: {
-			PoppinsBold: 'Poppins-Bold',
-			PoppinsMedium: 'Poppins-Medium',
-			PoppinsRegular: 'Poppins-Regular',
-			PoppinsSemiBold: 'Poppins-SemiBold',
+// Temporary stub for migration - will be replaced with actual implementation
+export const colors = {
+	office: '#007AFF',
+	text: {
+		primary: '#000000',
+		secondary: '#666666',
+		light: '#FFFFFF',
+	},
+	background: {
+		primary: '#FFFFFF',
+		secondary: '#F5F5F5',
+	},
+	button: {
+		primary: '#007AFF',
+		disabled: '#CCCCCC',
+	},
+	error: '#FF3B30',
+	success: '#34C759',
+	ui: {
+		gray: {
+			200: '#E5E5E7',
 		},
-		android: {
-			PoppinsBold: 'Poppins-Bold',
-			PoppinsMedium: 'Poppins-Medium',
-			PoppinsRegular: 'Poppins-Regular',
-			PoppinsSemiBold: 'Poppins-SemiBold',
-		},
-	}),
+	},
 };
 
-// Color exports
-export * from './colors';
+export const fonts = {
+	PoppinsRegular: 'Poppins-Regular',
+	PoppinsMedium: 'Poppins-Medium',
+	PoppinsSemiBold: 'Poppins-SemiBold',
+	PoppinsBold: 'Poppins-Bold',
+};

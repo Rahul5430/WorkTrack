@@ -1,0 +1,1 @@
+// Sync queue repository interface

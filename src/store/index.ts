@@ -1,7 +1,3 @@
-// Store exports
-export type { AppDispatch, RootState } from './store';
-export { default as store } from './store';
-
-// Reducer exports
-export * from './reducers/userSlice';
-export * from './reducers/workTrackSlice';
+// Temporary stub for migration - will be replaced with actual implementation
+export type RootState = Record<string, unknown>;
+export type AppDispatch = (action: unknown) => void;

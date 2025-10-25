@@ -1,42 +1,21 @@
-import { colors } from '../themes';
-import { MarkedDayStatus } from '../types/calendar';
-
+// Temporary stub for migration - will be replaced with actual implementation
 export const WORK_STATUS = {
 	OFFICE: 'office',
-	WFH: 'wfh',
 	HOLIDAY: 'holiday',
-	LEAVE: 'leave',
+	WFH: 'wfh',
 	ADVISORY: 'advisory',
 } as const;
 
 export const WORK_STATUS_COLORS = {
-	[WORK_STATUS.OFFICE]: colors.office,
-	[WORK_STATUS.WFH]: colors.wfh,
-	[WORK_STATUS.HOLIDAY]: colors.holiday,
-	[WORK_STATUS.LEAVE]: colors.error,
-	[WORK_STATUS.ADVISORY]: colors.forecast,
+	office: '#007AFF',
+	holiday: '#FF3B30',
+	wfh: '#34C759',
+	advisory: '#FF9500',
 } as const;
-
-export const WORK_STATUS_BACKGROUND_COLORS: Record<MarkedDayStatus, string> = {
-	[WORK_STATUS.OFFICE]: colors.background.office,
-	[WORK_STATUS.WFH]: colors.background.wfh,
-	[WORK_STATUS.LEAVE]: colors.background.error,
-	[WORK_STATUS.HOLIDAY]: colors.background.holiday,
-	[WORK_STATUS.ADVISORY]: colors.background.forecast,
-};
 
 export const WORK_STATUS_PRESSED_COLORS = {
-	[WORK_STATUS.OFFICE]: colors.button.primaryPressed,
-	[WORK_STATUS.WFH]: colors.button.primaryPressed,
-	[WORK_STATUS.HOLIDAY]: colors.holiday,
-	[WORK_STATUS.LEAVE]: colors.error,
-	[WORK_STATUS.ADVISORY]: colors.forecast,
-} as const;
-
-export const WORK_STATUS_LABELS = {
-	[WORK_STATUS.OFFICE]: 'Office',
-	[WORK_STATUS.WFH]: 'WFH',
-	[WORK_STATUS.HOLIDAY]: 'Holiday',
-	[WORK_STATUS.LEAVE]: 'Leave',
-	[WORK_STATUS.ADVISORY]: 'Advisory',
+	office: '#0056CC',
+	holiday: '#CC2E24',
+	wfh: '#2A9D47',
+	advisory: '#CC7700',
 } as const;

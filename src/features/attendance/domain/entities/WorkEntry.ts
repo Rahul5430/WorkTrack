@@ -1,0 +1,1 @@
+// Core work entry entity

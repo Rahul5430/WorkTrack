@@ -1,12 +1,2 @@
-export type MarkedDayStatus =
-	| 'office'
-	| 'wfh'
-	| 'holiday'
-	| 'leave'
-	| 'advisory';
-
-export type MarkedDay = {
-	date: string;
-	status: MarkedDayStatus;
-	isAdvisory?: boolean;
-};
+// Temporary stub for migration - will be replaced with actual implementation
+export type MarkedDayStatus = 'office' | 'holiday' | 'wfh' | 'advisory';

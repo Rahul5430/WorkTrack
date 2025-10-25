@@ -1,9 +1,8 @@
-// Utility services
-export { type ToastMessage, default as ToastQueueService } from './toastQueue';
-
-// Firebase configuration
-export { getFirebaseApp, getFirestoreInstance } from './firebase';
-
-// Re-exports for new infra
-export * as Errors from '../errors';
-export * as Logging from '../logging';
+// Temporary stub for migration - will be replaced with actual implementation
+export type ToastMessage = unknown;
+export const ToastQueueService = {
+	getInstance: () => ({
+		show: (_message: unknown) => {},
+		hide: () => {},
+	}),
+};

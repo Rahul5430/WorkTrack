@@ -27,6 +27,12 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"target": "esnext",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": [
+				"src/*"
+			]
+		},
 		"typeRoots": [
 			"node_modules/@types",
 			"./src/types"

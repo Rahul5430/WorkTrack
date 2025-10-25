@@ -9,6 +9,7 @@ module.exports = {
 	moduleNameMapper: {
 		'^react-native$': 'react-native',
 		'^@env$': './__mocks__/@env.js',
+		'^@/(.*)$': '<rootDir>/src/$1',
 	},
 	clearMocks: true,
 	resetMocks: true,
