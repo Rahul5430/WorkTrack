@@ -1,5 +1,4 @@
 export * from './EnqueueSyncOperationUseCase';
-export * from './GetSyncStatusUseCase';
 export * from './ProcessSyncQueueUseCase';
 export * from './ResolveConflictUseCase';
 export * from './SyncFromRemoteUseCase';

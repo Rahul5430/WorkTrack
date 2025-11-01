@@ -14,37 +14,35 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import type { CommonBottomSheetRef } from '../../../../components';
-import {
-	Calendar,
-	CommonBottomSheet,
-	DayMarkingBottomSheet,
-	FocusAwareStatusBar,
-	Label,
-	Summary,
-	SyncErrorBanner,
-	SyncStatusIndicator,
-	WorkTrackSwitcher,
-} from '../../../../components';
-import {
-	useResponsiveLayout,
-	useSharedWorkTracks,
-	useWorkTrackManager,
-} from '../../../../hooks';
-import { logger } from '../../../../logging';
-import { AppDispatch, RootState } from '../../../../store';
+import { MainStackScreenProps } from '@/app/navigation/types';
+import { AppDispatch, RootState } from '@/app/store';
 import {
 	addOrUpdateEntry,
 	rollbackEntry,
 	setError,
 	setLoading,
 	setWorkTrackData,
-} from '../../../../store/reducers/workTrackSlice';
-import { colors, fonts } from '../../../../themes';
+} from '@/app/store/reducers/workTrackSlice';
+import type { CommonBottomSheetRef } from '@/features/attendance/ui/components';
 import {
-	AuthenticatedStackScreenProps,
-	MarkedDayStatus,
-} from '../../../../types';
+	Calendar,
+	CommonBottomSheet,
+	DayMarkingBottomSheet,
+	Label,
+	Summary,
+	SyncErrorBanner,
+	SyncStatusIndicator,
+	WorkTrackSwitcher,
+} from '@/features/attendance/ui/components';
+import {
+	useResponsiveLayout,
+	useSharedWorkTracks,
+	useWorkTrackManager,
+} from '@/features/attendance/ui/hooks';
+import FocusAwareStatusBar from '@/shared/ui/components/FocusAwareStatusBar';
+import { colors, fonts } from '@/shared/ui/theme';
+import { logger } from '@/shared/utils/logging';
+import { MarkedDayStatus } from '@/types';
 
 const getDisplayName = (name: string, isOwnWorkTrack: boolean) => {
 	if (isOwnWorkTrack) return 'My WorkTrack';
@@ -78,7 +76,7 @@ const syncWithTimeout = async (
 	logger.info(`${timeoutName} completed successfully`);
 };
 
-const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
+const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	navigation,
 }) => {
 	const { RFValue } = useResponsiveLayout();
@@ -111,9 +109,6 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			dispatch(setLoading(true));
 
 			try {
-				// Check and fix any records without trackerId (from old schema)
-				await manager.userManagement.checkAndFixRecordsWithoutTrackerId();
-
 				// Initialize user data - this handles new vs returning users properly
 				const tracker = await manager.userManagement.initializeUserData(
 					user.id
@@ -368,7 +363,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 
 	return (
 		<SafeAreaView style={styles.screen}>
-			<SyncErrorBanner />
+			<SyncErrorBanner error={error ?? ''} onRetry={onRefresh} />
 			<FocusAwareStatusBar
 				barStyle='dark-content'
 				translucent
@@ -473,7 +468,9 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 								style={styles.syncBadgeContainer}
 								pointerEvents='none'
 							>
-								<SyncStatusIndicator style={styles.syncBadge} />
+								<View style={styles.syncBadge}>
+									<SyncStatusIndicator isSyncing={loading} />
+								</View>
 							</View>
 						</View>
 					</View>
@@ -483,7 +480,7 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 					onDatePress={onDatePress}
 					onMonthChange={handleMonthChange}
 				/>
-				<Label />
+				<Label>{''}</Label>
 				<Summary selectedMonth={selectedMonth} />
 			</ScrollView>
 
@@ -494,7 +491,12 @@ const HomeScreen: React.FC<AuthenticatedStackScreenProps<'HomeScreen'>> = ({
 			>
 				{selectedDate &&
 					(() => {
-						const entry = workTrackData.find(
+						const items = workTrackData as Array<{
+							date: string;
+							status: MarkedDayStatus;
+							isAdvisory?: boolean;
+						}>;
+						const entry = items.find(
 							(e) => e.date === selectedDate
 						);
 						return (

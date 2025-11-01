@@ -23,8 +23,4 @@ export type {
 	ServiceRegistration,
 	ServiceScope,
 } from './types';
-export {
-	ServiceRegistrationError,
-	ServiceResolutionError,
-	ServiceScope,
-} from './types';
+export { ServiceRegistrationError, ServiceResolutionError } from './types';

@@ -1,3 +1,3 @@
-// Temporary stub for migration - will be replaced with actual implementation
-export { useToast } from './useToast';
-export { useWorkTrackManager } from './useWorkTrackManager';
+// Hooks exports - aggregate from different locations
+export { useWorkTrackManager } from '@/features/attendance/ui/hooks/useWorkTrackManager';
+export { useToast } from '@/shared/ui/hooks/useToast';

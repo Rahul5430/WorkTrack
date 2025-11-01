@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { WORK_STATUS } from '@/constants/workStatus';
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { fonts } from '@/themes';
-import { colors } from '@/themes/colors';
-import { MarkedDayStatus } from '@/types/calendar';
+import { WORK_STATUS } from '@/shared/constants/workStatus';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
+import { MarkedDayStatus } from '@/types';
 
 import CalendarDay from './CalendarDay';
 

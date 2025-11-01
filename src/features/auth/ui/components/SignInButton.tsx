@@ -2,7 +2,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 
-import { useResponsiveLayout } from '@/hooks/useResponsive';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { colors, fonts } from '@/themes';
 
 interface SignInButtonProps {

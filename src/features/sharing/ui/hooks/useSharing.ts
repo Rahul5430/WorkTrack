@@ -11,9 +11,7 @@ export const useSharing = () => {
 			setError(null);
 
 			try {
-				// TODO: Implement actual sharing logic
-				// console.log('Sharing tracker with:', email, permission);
-			} catch (err) {
+			} catch {
 				setError('Failed to share tracker');
 			} finally {
 				setIsLoading(false);
@@ -28,13 +26,7 @@ export const useSharing = () => {
 			setError(null);
 
 			try {
-				// TODO: Implement actual permission update logic
-				// console.log(
-				// 	'Updating permission for share:',
-				// 	shareId,
-				// 	permission
-				// );
-			} catch (err) {
+			} catch {
 				setError('Failed to update permission');
 			} finally {
 				setIsLoading(false);
@@ -48,9 +40,7 @@ export const useSharing = () => {
 		setError(null);
 
 		try {
-			// TODO: Implement actual share removal logic
-			// console.log('Removing share:', shareId);
-		} catch (err) {
+		} catch {
 			setError('Failed to remove share');
 		} finally {
 			setIsLoading(false);

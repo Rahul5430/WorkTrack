@@ -3,8 +3,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { colors, fonts } from '@/themes';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { colors, fonts } from '@/shared/ui/theme';
 
 interface ShareListItemProps {
 	share: {

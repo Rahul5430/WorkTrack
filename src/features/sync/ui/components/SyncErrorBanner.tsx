@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 
 import { useToast, useWorkTrackManager } from '@/hooks';
-import { logger } from '@/logging';
-import { colors } from '@/themes';
+import { colors } from '@/shared/ui/theme';
+import { logger } from '@/shared/utils/logging';
 
 interface SyncErrorBannerProps {
 	onSyncComplete?: () => void;

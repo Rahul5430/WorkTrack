@@ -11,11 +11,11 @@ import {
 	WORK_STATUS,
 	WORK_STATUS_COLORS,
 	WORK_STATUS_PRESSED_COLORS,
-} from '@/constants/workStatus';
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { fonts } from '@/themes';
-import { colors } from '@/themes/colors';
-import { MarkedDayStatus } from '@/types/calendar';
+} from '@/shared/constants/workStatus';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
+import { MarkedDayStatus } from '@/types';
 
 type CalendarDayProps = {
 	day: number;

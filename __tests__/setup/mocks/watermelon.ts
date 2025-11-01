@@ -121,33 +121,40 @@ export const mockCollection = {
 };
 
 // Mock database collections
-mockDatabase.collections.get.mockImplementation((tableName: string) => {
-	switch (tableName) {
-		case 'work_entries':
-			return mockCollection;
-		case 'trackers':
-			return mockCollection;
-		case 'users':
-			return mockCollection;
-		case 'shares':
-			return mockCollection;
-		case 'sync_queue':
-			return mockCollection;
-		default:
-			return mockCollection;
+(mockDatabase.collections.get as jest.Mock).mockImplementation(
+	(tableName: string) => {
+		switch (tableName) {
+			case 'work_entries':
+				return mockCollection;
+			case 'trackers':
+				return mockCollection;
+			case 'users':
+				return mockCollection;
+			case 'shares':
+				return mockCollection;
+			case 'sync_queue':
+				return mockCollection;
+			default:
+				return mockCollection;
+		}
 	}
-});
+);
 
 // Mock database operations
-mockDatabase.write.mockImplementation(async (callback) => {
-	return await callback();
-});
 
-mockDatabase.read.mockImplementation(async (callback) => {
-	return await callback();
-});
+(mockDatabase.write as jest.Mock).mockImplementation(
+	async (callback: () => unknown | Promise<unknown>) => {
+		return await callback();
+	}
+);
 
-mockDatabase.batch.mockImplementation(() => ({
+(mockDatabase.read as jest.Mock).mockImplementation(
+	async (callback: () => unknown | Promise<unknown>) => {
+		return await callback();
+	}
+);
+
+(mockDatabase.batch as jest.Mock).mockImplementation(() => ({
 	create: jest.fn(),
 	update: jest.fn(),
 	markAsDeleted: jest.fn(),

@@ -2,12 +2,12 @@
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
-import { Tracker } from '@/features/attendance/data/models/TrackerModel';
 // Import models
-import { WorkEntry } from '@/features/attendance/data/models/WorkEntryModel';
-import { User } from '@/features/auth/data/models/UserModel';
-import { Share } from '@/features/sharing/data/models/ShareModel';
-import { SyncQueue } from '@/features/sync/data/models/SyncQueueModel';
+import TrackerModel from '@/features/attendance/data/models/TrackerModel';
+import WorkEntryModel from '@/features/attendance/data/models/WorkEntryModel';
+import User from '@/features/auth/data/models/UserModel';
+import ShareModel from '@/features/sharing/data/models/ShareModel';
+import SyncOperationModel from '@/features/sync/data/models/SyncOperationModel';
 
 import { migrations } from './migrations';
 import { schema } from './schema';
@@ -27,7 +27,13 @@ const adapter = new SQLiteAdapter({
 // Create database instance
 export const database = new Database({
 	adapter,
-	modelClasses: [WorkEntry, Tracker, User, Share, SyncQueue],
+	modelClasses: [
+		WorkEntryModel,
+		TrackerModel,
+		User,
+		ShareModel,
+		SyncOperationModel,
+	],
 });
 
 // Export database instance as default

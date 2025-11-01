@@ -1,5 +1,5 @@
 // migrated to V2 structure
-import { logger } from '@/logging';
+import { logger } from '@/shared/utils/logging';
 
 import { Container } from './Container';
 import {

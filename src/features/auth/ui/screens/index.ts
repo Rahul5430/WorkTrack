@@ -1,3 +1,2 @@
-export * from './LoadingScreen';
-export * from './SignInScreen';
-export * from './WelcomeScreen';
+export { default as LoadingScreen } from './LoadingScreen';
+export { default as WelcomeScreen } from './WelcomeScreen';

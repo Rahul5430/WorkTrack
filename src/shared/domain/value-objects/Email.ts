@@ -8,9 +8,14 @@ export class Email {
 
 	constructor(value: string) {
 		this._value = this.validate(value);
-		const [localPart, domain] = this._value.split('@');
-		this._localPart = localPart;
-		this._domain = domain;
+		if (this._value === '') {
+			this._localPart = '';
+			this._domain = '';
+		} else {
+			const [localPart, domain] = this._value.split('@');
+			this._localPart = localPart;
+			this._domain = domain;
+		}
 	}
 
 	/**
@@ -38,12 +43,19 @@ export class Email {
 	 * Validate the email format
 	 */
 	private validate(value: string): string {
-		if (!value || typeof value !== 'string') {
+		if (
+			value === null ||
+			value === undefined ||
+			typeof value !== 'string'
+		) {
 			throw new Error('Email must be a non-empty string');
 		}
 
 		const trimmed = value.trim();
-
+		// Allow exactly empty string, but disallow whitespace-only strings
+		if (value === '') {
+			return '';
+		}
 		if (trimmed.length === 0) {
 			throw new Error('Email must be a non-empty string');
 		}

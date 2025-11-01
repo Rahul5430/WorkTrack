@@ -1,5 +1,5 @@
 // migrated to V2 structure
-import { logger } from '@/logging';
+import { logger } from '@/shared/utils/logging';
 
 import {
 	Container as IContainer,
@@ -120,7 +120,10 @@ export class Container implements IContainer {
 		// Check if service is registered in this container
 		const registration = this.services.get(identifier);
 		if (registration) {
-			return this.createInstance(identifier, registration);
+			return this.createInstance(
+				identifier,
+				registration as ServiceInstance<T>
+			);
 		}
 
 		// Check parent container

@@ -2,14 +2,14 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AppDispatch, RootState } from '@/store';
+import { AppDispatch, RootState } from '@/app/store';
 import {
 	addOrUpdateEntry,
 	rollbackEntry,
 	setError,
 	setLoading,
 	setWorkTrackData,
-} from '@/store/reducers/workTrackSlice';
+} from '@/app/store/reducers/workTrackSlice';
 
 export const useAttendance = () => {
 	const dispatch = useDispatch<AppDispatch>();

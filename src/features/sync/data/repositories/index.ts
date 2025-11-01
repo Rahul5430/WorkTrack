@@ -1,2 +1,3 @@
-export * from './SyncMetadataRepository';
+export * from './FirebaseSyncRepository';
+export * from './InMemorySyncQueueRepository';
 export * from './WatermelonSyncQueueRepository';

@@ -19,11 +19,12 @@ import {
 	Unsubscribe,
 	updateDoc,
 	where,
+	WhereFilterOp,
 	WriteBatch,
 	writeBatch,
 } from 'firebase/firestore';
 
-import { logger } from '@/logging';
+import { logger } from '@/shared/utils/logging';
 
 import { firestore } from './Firebase';
 
@@ -209,7 +210,7 @@ export class FirestoreClient {
 	/**
 	 * Query helper methods
 	 */
-	static where(field: string, operator: unknown, value: unknown) {
+	static where(field: string, operator: WhereFilterOp, value: unknown) {
 		return where(field, operator, value);
 	}
 

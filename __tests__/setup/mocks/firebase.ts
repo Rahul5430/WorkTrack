@@ -67,6 +67,20 @@ export const mockQuerySnapshot = {
 	forEach: jest.fn(),
 };
 
+// Mock Firestore Document Reference
+export const mockDocumentReference = {
+	id: 'test-doc-id',
+	path: 'test-collection/test-doc-id',
+	parent: null,
+	collection: jest.fn().mockReturnValue(null),
+	get: jest.fn().mockResolvedValue(mockDocumentSnapshot),
+	set: jest.fn().mockResolvedValue(undefined),
+	update: jest.fn().mockResolvedValue(undefined),
+	delete: jest.fn().mockResolvedValue(undefined),
+	onSnapshot: jest.fn(),
+	withConverter: jest.fn(),
+};
+
 // Mock Firestore Collection Reference
 export const mockCollectionReference = {
 	id: 'test-collection',
@@ -74,20 +88,6 @@ export const mockCollectionReference = {
 	parent: null,
 	doc: jest.fn().mockReturnValue(mockDocumentReference),
 	add: jest.fn(),
-	withConverter: jest.fn(),
-};
-
-// Mock Firestore Document Reference
-export const mockDocumentReference = {
-	id: 'test-doc-id',
-	path: 'test-collection/test-doc-id',
-	parent: mockCollectionReference,
-	collection: jest.fn().mockReturnValue(mockCollectionReference),
-	get: jest.fn().mockResolvedValue(mockDocumentSnapshot),
-	set: jest.fn().mockResolvedValue(undefined),
-	update: jest.fn().mockResolvedValue(undefined),
-	delete: jest.fn().mockResolvedValue(undefined),
-	onSnapshot: jest.fn(),
 	withConverter: jest.fn(),
 };
 

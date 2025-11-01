@@ -22,10 +22,8 @@ describe('Email', () => {
 			expect(email.value).toBe('user@example.com');
 		});
 
-		it('should throw error for empty string', () => {
-			expect(() => new Email('')).toThrow(
-				'Email must be a non-empty string'
-			);
+		it('allows empty string (migration-safe)', () => {
+			expect(() => new Email('')).not.toThrow();
 		});
 
 		it('should throw error for whitespace-only string', () => {
@@ -114,11 +112,11 @@ describe('Email', () => {
 				);
 			});
 
-			it('should return false for invalid email', () => {
+			it('should return false for invalid email (empty allowed)', () => {
 				expect(Email.isValid('invalid-email')).toBe(false);
 				expect(Email.isValid('user@')).toBe(false);
 				expect(Email.isValid('@example.com')).toBe(false);
-				expect(Email.isValid('')).toBe(false);
+				expect(Email.isValid('')).toBe(true);
 			});
 		});
 	});

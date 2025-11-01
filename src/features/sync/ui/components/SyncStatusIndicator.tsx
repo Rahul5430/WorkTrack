@@ -10,7 +10,7 @@ import Animated, {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useWorkTrackManager } from '@/hooks';
-import { colors } from '@/themes';
+import { colors } from '@/shared/ui/theme';
 
 interface SyncStatusIndicatorProps {
 	style?: ViewStyle;
@@ -35,7 +35,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 		try {
 			const status = await manager.getSyncStatus();
 			setSyncStatus(status);
-		} catch (error) {
+		} catch {
 			// If sync status check fails, assume we're not syncing
 			setSyncStatus((prev) => ({ ...prev, isSyncing: false }));
 		}

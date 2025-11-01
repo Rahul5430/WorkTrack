@@ -1,1 +1,2 @@
-export * from './SyncOperationModel';
+export { default as SyncOperationModel } from './SyncOperationModel';
+export * from './SyncQueueModel';

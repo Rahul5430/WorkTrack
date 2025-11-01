@@ -7,9 +7,9 @@ import {
 	ViewToken,
 } from 'react-native';
 
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { colors } from '@/themes';
-import { MarkedDayStatus } from '@/types/calendar';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { colors } from '@/shared/ui/theme';
+import { MarkedDayStatus } from '@/types';
 
 import CalendarHeader from './CalendarHeader';
 import MonthCalendar from './MonthCalendar';

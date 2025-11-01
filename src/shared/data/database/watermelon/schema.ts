@@ -2,7 +2,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-	version: 1,
+	version: 2,
 	tables: [
 		// WorkEntry table for tracking work status
 		tableSchema({
@@ -82,6 +82,7 @@ export const schema = appSchema({
 				{ name: 'created_at', type: 'number' },
 				{ name: 'updated_at', type: 'number' },
 				{ name: 'next_retry_at', type: 'number', isOptional: true },
+				{ name: 'attempt_count', type: 'number', isOptional: true },
 			],
 		}),
 	],

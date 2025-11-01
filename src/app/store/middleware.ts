@@ -1,1 +1,2 @@
-// Custom middleware
+// migrated to V2 structure
+export const middleware = [];

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
-import { ToastType } from '@/components/ui/Toast';
-import { type ToastMessage, ToastQueueService } from '@/services';
+import { ToastType } from '@/shared/ui/components/feedback/Toast';
+import { type ToastMessage, ToastQueueService } from '@/shared/utils/toast';
 
 export const useToast = () => {
 	const toastService = ToastQueueService.getInstance();

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View, ViewProps } from 'react-native';
 
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { fonts } from '@/themes';
-import { colors } from '@/themes/colors';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
 
 export interface CalendarHeaderProps {
 	/** The current month presented in the calendar */

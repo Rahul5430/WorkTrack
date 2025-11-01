@@ -1,2 +1,2 @@
-export * from './BackgroundSyncService';
 export * from './NetworkMonitorService';
+export * from './SyncManager';

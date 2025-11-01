@@ -3,16 +3,16 @@ import { StyleSheet, Text, View } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 
+import { RootState } from '@/app/store';
 import {
 	WORK_STATUS,
 	WORK_STATUS_COLORS,
 	WORK_STATUS_LABELS,
-} from '../../../../../constants/workStatus';
-import { useResponsiveLayout } from '../../../../../hooks/useResponsive';
-import { RootState } from '../../../../../store/store';
-import { fonts } from '../../../../../themes';
-import { colors } from '../../../../../themes/colors';
-import { MarkedDay } from '../../../../../types/calendar';
+} from '@/shared/constants/workStatus';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
+import { MarkedDay } from '@/types';
 
 type SummaryDataProps = {
 	selectedMonth?: Date;
@@ -28,7 +28,7 @@ const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 	const { RFValue } = useResponsiveLayout();
 	const workTrackData = useSelector(
 		(state: RootState) => state.workTrack.data
-	);
+	) as unknown as MarkedDay[];
 
 	const stats = useMemo(() => {
 		const today = selectedMonth || new Date();
@@ -98,12 +98,16 @@ const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 		);
 
 		const getCounts = (data: MarkedDay[]) => {
-			const counts = {
+			const counts: Record<
+				(typeof WORK_STATUS)[keyof typeof WORK_STATUS],
+				number
+			> = {
 				[WORK_STATUS.OFFICE]: 0,
 				[WORK_STATUS.WFH]: 0,
 				[WORK_STATUS.HOLIDAY]: 0,
 				[WORK_STATUS.LEAVE]: 0,
-				[WORK_STATUS.ADVISORY]: 0,
+				[WORK_STATUS.WEEKEND]: 0,
+				[WORK_STATUS.FORECAST]: 0,
 			};
 
 			data.forEach((entry: MarkedDay) => {
@@ -116,7 +120,8 @@ const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 				) {
 					return;
 				}
-				counts[entry.status]++;
+				// Only count statuses we track visually
+				counts[entry.status] = (counts[entry.status] ?? 0) + 1;
 			});
 
 			return counts;

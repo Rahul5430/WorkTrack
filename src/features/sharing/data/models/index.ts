@@ -1,1 +1,1 @@
-export * from './SharedTrackerModel';
+export * from './ShareModel';

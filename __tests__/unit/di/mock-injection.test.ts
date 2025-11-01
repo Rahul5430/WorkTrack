@@ -61,7 +61,7 @@ describe('Mock Injection', () => {
 			container.registerSingleton(identifier, originalFactory);
 
 			// Resolve original
-			const original = container.resolve(identifier);
+			const original = container.resolve(identifier) as { value: string };
 			expect(original.value).toBe('original');
 			expect(originalFactory).toHaveBeenCalledTimes(2);
 
@@ -70,7 +70,9 @@ describe('Mock Injection', () => {
 			childContainer.registerSingleton(identifier, mockFactory);
 
 			// Resolve mock
-			const mock = childContainer.resolve(identifier);
+			const mock = childContainer.resolve(identifier) as {
+				value: string;
+			};
 			expect(mock.value).toBe('mock');
 			expect(mockFactory).toHaveBeenCalledTimes(2);
 
@@ -143,7 +145,10 @@ describe('Mock Injection', () => {
 				client: c.resolve(ServiceIdentifiers.FIRESTORE_CLIENT),
 			}));
 
-			const dependent = container.resolve('dependent-service');
+			const dependent = container.resolve('dependent-service') as {
+				db: unknown;
+				client: unknown;
+			};
 
 			expect(dependent.db).toBe(mockDB);
 			expect(dependent.client).toBe(mockClient);
@@ -169,7 +174,10 @@ describe('Mock Injection', () => {
 				client: c.resolve(ServiceIdentifiers.FIRESTORE_CLIENT),
 			}));
 
-			const level2 = container.resolve('level2-service');
+			const level2 = container.resolve('level2-service') as {
+				level1: { db: unknown };
+				client: unknown;
+			};
 
 			expect(level2.level1.db).toBe(mockDB);
 			expect(level2.client).toBe(mockClient);

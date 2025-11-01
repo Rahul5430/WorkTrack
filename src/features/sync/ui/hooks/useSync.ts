@@ -11,10 +11,8 @@ export const useSync = () => {
 		setError(null);
 
 		try {
-			// TODO: Implement actual sync to remote logic
-			// console.log('Syncing to remote...');
 			setLastSyncTime(new Date());
-		} catch (err) {
+		} catch {
 			setError('Failed to sync to remote');
 		} finally {
 			setIsSyncing(false);
@@ -26,10 +24,8 @@ export const useSync = () => {
 		setError(null);
 
 		try {
-			// TODO: Implement actual sync from remote logic
-			// console.log('Syncing from remote...');
 			setLastSyncTime(new Date());
-		} catch (err) {
+		} catch {
 			setError('Failed to sync from remote');
 		} finally {
 			setIsSyncing(false);

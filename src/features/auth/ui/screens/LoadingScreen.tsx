@@ -3,22 +3,29 @@ import React, { useCallback, useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 
-import { FocusAwareStatusBar } from '../../../../components';
-import { loadWorkTrackDataFromDB } from '../../../../db/watermelon/worktrack/load';
-import { useResponsiveLayout } from '../../../../hooks';
+import { LoadingStackScreenProps } from '@/app/navigation/types';
+import { useTheme } from '@/app/providers';
 import {
 	setErrorMessage,
 	setLoggedIn,
 	setUser,
-} from '../../../../store/reducers/userSlice';
-import { setWorkTrackData } from '../../../../store/reducers/workTrackSlice';
-import { LoadingStackScreenProps } from '../../../../types';
+	setWorkTrackData,
+} from '@/app/store';
+import { loadWorkTrackDataFromDB } from '@/shared/data/database/watermelon/worktrack';
+import FocusAwareStatusBar from '@/shared/ui/components/FocusAwareStatusBar';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 
 const LoadingScreen: React.FC<
 	LoadingStackScreenProps<'LoadingScreen'>
 > = () => {
 	const dispatch = useDispatch();
 	const { RFValue } = useResponsiveLayout();
+
+	// Example of using the theme
+	const theme = useTheme();
+
+	// Example of using the DI container (uncomment when needed):
+	// const container = useDI();
 
 	const restoreAppData = useCallback(async () => {
 		try {
@@ -51,13 +58,21 @@ const LoadingScreen: React.FC<
 	}, [restoreAppData]);
 
 	return (
-		<View style={styles.screen}>
+		<View
+			style={[
+				styles.screen,
+				{ backgroundColor: theme.colors.background.primary },
+			]}
+		>
 			<FocusAwareStatusBar
 				barStyle='dark-content'
 				translucent
 				backgroundColor='transparent'
 			/>
-			<ActivityIndicator size={RFValue(50)} />
+			<ActivityIndicator
+				size={RFValue(50)}
+				color={theme.colors.button.primary}
+			/>
 		</View>
 	);
 };

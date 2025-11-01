@@ -7,7 +7,7 @@ import {
 	Firestore,
 	getFirestore,
 } from 'firebase/firestore';
-import { getPerformance, Performance } from 'firebase/performance';
+import { getPerformance } from 'firebase/performance';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -28,17 +28,16 @@ const app: FirebaseApp =
 const auth: Auth = getAuth(app);
 const firestore: Firestore = getFirestore(app);
 let analytics: Analytics | null = null;
-let performance: Performance | null = null;
+let performance: unknown | null = null;
 
 // Initialize analytics only in production and on web
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
 	try {
 		analytics = getAnalytics(app);
 		performance = getPerformance(app);
-	} catch (error) {
+	} catch {
 		// console.warn(
-		// 	'Failed to initialize Firebase analytics/performance:',
-		// 	error
+		// 	'Failed to initialize Firebase analytics/performance:'
 		// );
 	}
 }
@@ -57,8 +56,8 @@ if (process.env.FIRESTORE_EMULATOR_HOST) {
 		// console.log(
 		// 	`Connected to Firestore emulator at ${emulatorHost}:${emulatorPort}`
 		// );
-	} catch (error) {
-		// console.warn('Failed to connect to Firestore emulator:', error);
+	} catch {
+		// console.warn('Failed to connect to Firestore emulator');
 	}
 }
 
@@ -69,4 +68,4 @@ export { analytics, app, auth, firestore, performance };
 export default app;
 
 // Export types
-export type { Analytics, Auth, FirebaseApp, Firestore, Performance };
+export type { Analytics, Auth, FirebaseApp, Firestore };

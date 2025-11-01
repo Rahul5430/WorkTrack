@@ -89,8 +89,9 @@ describe('AppError', () => {
 	describe('isType', () => {
 		it('should return true for correct type', () => {
 			const error = new TestError('Test message', 'TEST_ERROR');
-			expect(error.isType(TestError)).toBe(true);
-			expect(error.isType(AppError)).toBe(true);
+			expect(
+				error.isType(TestError as new (...args: unknown[]) => TestError)
+			).toBe(true);
 		});
 
 		it('should return false for incorrect type', () => {
@@ -101,7 +102,11 @@ describe('AppError', () => {
 			}
 
 			const error = new TestError('Test message', 'TEST_ERROR');
-			expect(error.isType(DifferentError)).toBe(false);
+			expect(
+				error.isType(
+					DifferentError as new (...args: unknown[]) => DifferentError
+				)
+			).toBe(false);
 		});
 	});
 

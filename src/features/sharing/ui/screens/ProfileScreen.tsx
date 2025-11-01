@@ -18,41 +18,117 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { MainStackScreenProps } from '@/app/navigation/types';
+import { useDI } from '@/app/providers';
 import {
-	Dialog,
-	FocusAwareStatusBar,
-	ProfileInfo,
-	ScreenHeader,
-	SharedWithMeListItem,
-	ShareListItem,
-} from '../../../../components';
-import { database } from '../../../../db/watermelon';
-import { useResponsiveLayout, useWorkTrackManager } from '../../../../hooks';
-import { logger } from '../../../../logging';
-import { AppDispatch, RootState } from '../../../../store';
-import { logout } from '../../../../store/reducers/userSlice';
-import { setLoading } from '../../../../store/reducers/workTrackSlice';
-import { colors, fonts } from '../../../../themes';
-import { AuthenticatedStackScreenProps } from '../../../../types';
-import { type SharePermission } from '../../../../use-cases/shareReadUseCase';
-import { clearAppData } from '../../../../utils/appDataManager';
-import { ShareValidationUtils } from '../../../../utils/shareValidation';
+	AppDispatch,
+	clearUser,
+	RootState,
+	setWorkTrackLoading,
+} from '@/app/store';
+import { SharingServiceIdentifiers } from '@/features/sharing/di';
+import { Permission } from '@/features/sharing/domain/entities/Permission';
+import { Share } from '@/features/sharing/domain/entities/Share';
+import {
+	GetMySharesUseCase,
+	GetSharedWithMeUseCase,
+	ShareTrackerUseCase,
+	UnshareTrackerUseCase,
+	UpdatePermissionUseCase,
+} from '@/features/sharing/domain/use-cases';
+import ProfileInfo from '@/features/sharing/ui/components/ProfileInfo';
+import ScreenHeader from '@/features/sharing/ui/components/ScreenHeader';
+import SharedWithMeListItem from '@/features/sharing/ui/components/SharedWithMeListItem';
+import ShareListItem from '@/features/sharing/ui/components/ShareListItem';
+import { database } from '@/shared/data/database';
+import ConfirmDialog from '@/shared/ui/components/dialogs/ConfirmDialog';
+import Dialog from '@/shared/ui/components/dialogs/Dialog';
+import FocusAwareStatusBar from '@/shared/ui/components/FocusAwareStatusBar';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { colors, fonts } from '@/shared/ui/theme';
+import { logger } from '@/shared/utils/logging';
 
-const ProfileScreen: React.FC<
-	AuthenticatedStackScreenProps<'ProfileScreen'>
-> = ({ navigation, route }) => {
+// Type for component-compatible share format
+type ShareListItemData = {
+	sharedWithId: string;
+	sharedWithEmail: string;
+	ownerName?: string;
+	permission: 'read' | 'write';
+};
+
+type SharedWithMeListItemData = {
+	ownerId: string;
+	ownerName: string;
+	ownerEmail: string;
+	permission: 'read' | 'write';
+};
+
+// Share validation utility
+class ShareValidationUtils {
+	static validateShareRequest(
+		email: string,
+		currentUserEmail?: string,
+		existingShares: ShareListItemData[] = []
+	): void {
+		if (!email || email.trim().length === 0) {
+			throw new Error('Email address is required');
+		}
+
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			throw new Error('Please enter a valid email address');
+		}
+
+		if (email.toLowerCase() === currentUserEmail?.toLowerCase()) {
+			throw new Error('You cannot share with yourself');
+		}
+
+		const normalizedEmail = email.toLowerCase().trim();
+		const alreadyShared = existingShares.some(
+			(share) => share.sharedWithEmail.toLowerCase() === normalizedEmail
+		);
+
+		if (alreadyShared) {
+			throw new Error('You have already shared with this user');
+		}
+	}
+}
+
+// Clear app data utility
+const clearAppData = async (): Promise<void> => {
+	try {
+		await AsyncStorage.clear();
+		await database.write(async () => {
+			await database.unsafeResetDatabase();
+		});
+	} catch (error) {
+		logger.error('Error clearing app data:', { error });
+		throw error;
+	}
+};
+
+const DEFAULT_VIEW_USER_ID_KEY = 'defaultViewUserId';
+
+const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
+	navigation,
+	route,
+}) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
+	const container = useDI();
 	const user = useSelector((state: RootState) => state.user.user);
 	const { loading } = useSelector((state: RootState) => state.workTrack);
-	const [myShares, setMyShares] = useState<SharePermission[]>([]);
-	const [sharedWithMe, setSharedWithMe] = useState<SharePermission[]>([]);
+
+	const [mySharesData, setMySharesData] = useState<ShareListItemData[]>([]);
+	const [sharedWithMeData, setSharedWithMeData] = useState<
+		SharedWithMeListItemData[]
+	>([]);
 	const [defaultViewUserId, setDefaultViewUserId] = useState<string | null>(
 		null
 	);
 	const [isShareDialogVisible, setIsShareDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-	const [editingShare, setEditingShare] = useState<SharePermission | null>(
+	const [editingShare, setEditingShare] = useState<ShareListItemData | null>(
 		null
 	);
 	const [shareEmail, setShareEmail] = useState('');
@@ -67,24 +143,95 @@ const ProfileScreen: React.FC<
 	const [highlightedWorkTrackId, setHighlightedWorkTrackId] = useState<
 		string | null
 	>(null);
-	const manager = useWorkTrackManager();
 	const sharedWithMeSectionRef = useRef<View>(null);
 
+	// Confirmation dialog state
+	const [confirmDialog, setConfirmDialog] = useState<{
+		visible: boolean;
+		title: string;
+		message: string;
+		confirmText: string;
+		cancelText?: string;
+		confirmStyle?: 'default' | 'destructive';
+		onConfirm: () => void | Promise<void>;
+	} | null>(null);
+
+	// Get use cases from DI container
+	const getMySharesUseCase = container.resolve<GetMySharesUseCase>(
+		SharingServiceIdentifiers.GET_MY_SHARES
+	);
+	const getSharedWithMeUseCase = container.resolve<GetSharedWithMeUseCase>(
+		SharingServiceIdentifiers.GET_SHARED_WITH_ME
+	);
+	const shareTrackerUseCase = container.resolve<ShareTrackerUseCase>(
+		SharingServiceIdentifiers.SHARE_TRACKER
+	);
+	const updatePermissionUseCase = container.resolve<UpdatePermissionUseCase>(
+		SharingServiceIdentifiers.UPDATE_PERMISSION
+	);
+	const unshareTrackerUseCase = container.resolve<UnshareTrackerUseCase>(
+		SharingServiceIdentifiers.UNSHARE_TRACKER
+	);
+
+	// Convert Share entities to component-compatible format
+	const convertShareToListItemData = (
+		share: Share,
+		userEmail?: string
+	): ShareListItemData => {
+		return {
+			sharedWithId: share.sharedWithUserId,
+			sharedWithEmail: userEmail || share.sharedWithUserId,
+			permission: share.permission.value,
+		};
+	};
+
+	const convertShareToSharedWithMeData = (
+		share: Share,
+		ownerName: string,
+		ownerEmail: string
+	): SharedWithMeListItemData => {
+		return {
+			ownerId: share.trackerId, // Tracker ID represents the owner's tracker
+			ownerName,
+			ownerEmail,
+			permission: share.permission.value,
+		};
+	};
+
 	const loadShares = useCallback(async () => {
+		if (!user?.id) return;
+
 		try {
-			const [mySharesData, sharedWithMeData] = await Promise.all([
-				manager.shareRead.getMyShares(),
-				manager.shareRead.getSharedWithMe(),
+			const [myShares, sharedWithMe] = await Promise.all([
+				getMySharesUseCase.execute(user.id),
+				getSharedWithMeUseCase.execute(user.id),
 			]);
-			setMyShares(mySharesData);
-			setSharedWithMe(sharedWithMeData);
+
+			// Convert to component format
+			const mySharesList = myShares.map((share) =>
+				convertShareToListItemData(share)
+			);
+
+			// For shared with me, we need owner info - for now using IDs
+			// This would ideally come from user repository or share repository
+			const sharedWithMeList = sharedWithMe.map((share, index) =>
+				convertShareToSharedWithMeData(
+					share,
+					`User ${index + 1}`, // Placeholder - would need owner lookup
+					share.sharedWithUserId // Placeholder
+				)
+			);
+
+			setMySharesData(mySharesList);
+			setSharedWithMeData(sharedWithMeList);
 		} catch (error) {
 			logger.error('Failed to load shares', { error });
 		}
-	}, [manager.shareRead]);
+	}, [user?.id, getMySharesUseCase, getSharedWithMeUseCase]);
 
 	useEffect(() => {
 		loadShares();
+
 		const keyboardDidShowListener = Keyboard.addListener(
 			'keyboardDidShow',
 			() => {
@@ -107,15 +254,16 @@ const ProfileScreen: React.FC<
 	useEffect(() => {
 		const loadDefaultView = async () => {
 			try {
-				const userId =
-					await manager.userManagement.getDefaultViewUserId();
+				const userId = await AsyncStorage.getItem(
+					DEFAULT_VIEW_USER_ID_KEY
+				);
 				setDefaultViewUserId(userId);
 			} catch (error) {
 				logger.error('Failed to load default view user ID', { error });
 			}
 		};
 		loadDefaultView();
-	}, [manager.userManagement]);
+	}, []);
 
 	useEffect(() => {
 		const params = route.params as
@@ -125,7 +273,6 @@ const ProfileScreen: React.FC<
 			params?.scrollToSection === 'sharedWithMe' &&
 			sharedWithMeSectionRef.current
 		) {
-			// Wait for layout to complete
 			setTimeout(() => {
 				sharedWithMeSectionRef.current?.measureLayout(
 					scrollViewRef.current?.getInnerViewNode() as number,
@@ -138,7 +285,6 @@ const ProfileScreen: React.FC<
 		}
 		if (params?.highlightWorkTrackId) {
 			setHighlightedWorkTrackId(params.highlightWorkTrackId);
-			// Remove highlight after 2 seconds
 			setTimeout(() => setHighlightedWorkTrackId(null), 2000);
 		}
 	}, [route.params]);
@@ -173,17 +319,16 @@ const ProfileScreen: React.FC<
 	}, [isShareDialogVisible]);
 
 	const handleShare = async () => {
-		if (!shareEmail) {
+		if (!shareEmail || !user?.id) {
 			showAlert('Error', 'Please enter an email address');
 			return;
 		}
 
 		try {
-			// Comprehensive validation
 			ShareValidationUtils.validateShareRequest(
 				shareEmail,
-				user?.email,
-				myShares
+				user.email,
+				mySharesData
 			);
 		} catch (error) {
 			const errorMessage =
@@ -195,8 +340,21 @@ const ProfileScreen: React.FC<
 		}
 
 		try {
-			dispatch(setLoading(true));
-			await manager.share(shareEmail.toLowerCase(), sharePermission);
+			dispatch(setWorkTrackLoading(true));
+
+			// Create a Share entity
+			// Note: We need the tracker ID - for now using user's tracker
+			// This should come from useWorkTrackManager once it's implemented
+			const trackerId = user.id; // Placeholder - should get actual tracker ID
+
+			const share = new Share(
+				'', // ID will be generated by repository
+				trackerId,
+				shareEmail.toLowerCase(),
+				new Permission(sharePermission)
+			);
+
+			await shareTrackerUseCase.execute(share);
 			showAlert('Success', 'Tracker shared successfully');
 			setShareEmail('');
 			setIsShareDialogVisible(false);
@@ -221,49 +379,54 @@ const ProfileScreen: React.FC<
 				showAlert('Error', errorMessage);
 			}
 		} finally {
-			dispatch(setLoading(false));
+			dispatch(setWorkTrackLoading(false));
 		}
 	};
 
-	const handleRemoveShare = async (sharedWithId: string) => {
-		const share = myShares.find((s) => s.sharedWithId === sharedWithId);
+	const handleRemoveShare = (sharedWithId: string) => {
+		const share = mySharesData.find((s) => s.sharedWithId === sharedWithId);
 		if (!share) return;
 
-		Alert.alert(
-			'Remove Share',
-			`Are you sure you want to remove sharing with ${share.ownerName ?? share.sharedWithEmail}?`,
-			[
-				{
-					text: 'Cancel',
-					style: 'cancel',
-				},
-				{
-					text: 'Remove',
-					style: 'destructive',
-					onPress: async () => {
-						try {
-							await manager.shareRead.removeShare(sharedWithId);
-							loadShares();
-						} catch (error) {
-							logger.error('Error removing share:', { error });
-							showAlert(
-								'Error',
-								'Failed to remove share. Please try again.'
-							);
-						}
-					},
-				},
-			]
-		);
+		setConfirmDialog({
+			visible: true,
+			title: 'Remove Share',
+			message: `Are you sure you want to remove sharing with ${share.ownerName ?? share.sharedWithEmail}?`,
+			confirmText: 'Remove',
+			confirmStyle: 'destructive',
+			onConfirm: async () => {
+				try {
+					await unshareTrackerUseCase.execute(sharedWithId);
+					loadShares();
+					setConfirmDialog(null);
+				} catch (error) {
+					logger.error('Error removing share:', { error });
+					setConfirmDialog(null);
+					showAlert(
+						'Error',
+						'Failed to remove share. Please try again.'
+					);
+				}
+			},
+		});
 	};
 
 	const handleSetDefaultView = async (userId: string) => {
 		try {
-			const currentDefaultView =
-				await manager.userManagement.getDefaultViewUserId();
+			const currentDefaultView = await AsyncStorage.getItem(
+				DEFAULT_VIEW_USER_ID_KEY
+			);
 			const newDefaultView =
 				currentDefaultView === userId ? null : userId;
-			await manager.userManagement.setDefaultViewUserId(newDefaultView);
+
+			if (newDefaultView) {
+				await AsyncStorage.setItem(
+					DEFAULT_VIEW_USER_ID_KEY,
+					newDefaultView
+				);
+			} else {
+				await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
+			}
+
 			setDefaultViewUserId(newDefaultView);
 		} catch (error) {
 			logger.error('Error setting default view:', { error });
@@ -285,19 +448,19 @@ const ProfileScreen: React.FC<
 				await auth.signOut();
 			}
 			await AsyncStorage.removeItem('user');
-			await manager.userManagement.setDefaultViewUserId(null);
+			await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
-			dispatch(logout());
+			dispatch(clearUser());
 		} catch (error) {
 			logger.error('Logout error:', { error });
 			await AsyncStorage.removeItem('user');
-			await manager.userManagement.setDefaultViewUserId(null);
+			await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
-			dispatch(logout());
+			dispatch(clearUser());
 		}
 	};
 
@@ -312,9 +475,10 @@ const ProfileScreen: React.FC<
 		}
 	}, [loadShares]);
 
-	const handleEditPermission = async (share: SharePermission) => {
-		setEditingShare(share);
-		setSharePermission(share.permission);
+	const handleEditPermission = (share: unknown) => {
+		const shareData = share as ShareListItemData;
+		setEditingShare(shareData);
+		setSharePermission(shareData.permission);
 		setIsEditDialogVisible(true);
 	};
 
@@ -322,10 +486,10 @@ const ProfileScreen: React.FC<
 		if (!editingShare) return;
 
 		try {
-			dispatch(setLoading(true));
-			await manager.updateSharePermission(
+			dispatch(setWorkTrackLoading(true));
+			await updatePermissionUseCase.execute(
 				editingShare.sharedWithId,
-				sharePermission
+				new Permission(sharePermission)
 			);
 			showAlert('Success', 'Permission updated successfully');
 			setIsEditDialogVisible(false);
@@ -337,7 +501,7 @@ const ProfileScreen: React.FC<
 					: 'Failed to update permission';
 			showAlert('Error', errorMessage);
 		} finally {
-			dispatch(setLoading(false));
+			dispatch(setWorkTrackLoading(false));
 		}
 	};
 
@@ -514,9 +678,7 @@ const ProfileScreen: React.FC<
 				refreshControl={
 					<RefreshControl
 						refreshing={isRefreshing}
-						onRefresh={() => {
-							onRefresh();
-						}}
+						onRefresh={onRefresh}
 						tintColor={colors.office}
 						colors={[colors.office]}
 					/>
@@ -559,7 +721,7 @@ const ProfileScreen: React.FC<
 						Shared With Others
 					</Text>
 					<View style={styles.gapContainer}>
-						{myShares.map((share) => (
+						{mySharesData.map((share) => (
 							<ShareListItem
 								key={share.sharedWithId}
 								share={share}
@@ -591,7 +753,7 @@ const ProfileScreen: React.FC<
 						</Text>
 					</View>
 					<View style={styles.gapContainer}>
-						{sharedWithMe.map((share) => (
+						{sharedWithMeData.map((share) => (
 							<SharedWithMeListItem
 								key={share.ownerId}
 								share={share}
@@ -610,35 +772,30 @@ const ProfileScreen: React.FC<
 				<View style={styles.contentSection}>
 					<Pressable
 						onPress={() => {
-							Alert.alert(
-								'Clear App Data',
-								'Are you sure you want to clear all app data? This action cannot be undone.',
-								[
-									{
-										text: 'Cancel',
-										style: 'cancel',
-									},
-									{
-										text: 'Clear',
-										style: 'destructive',
-										onPress: () => {
-											clearAppData()
-												.then(() => {
-													Alert.alert(
-														'Success',
-														'App data cleared successfully'
-													);
-												})
-												.catch(() => {
-													Alert.alert(
-														'Error',
-														'Failed to clear app data'
-													);
-												});
-										},
-									},
-								]
-							);
+							setConfirmDialog({
+								visible: true,
+								title: 'Clear App Data',
+								message:
+									'Are you sure you want to clear all app data? This action cannot be undone.',
+								confirmText: 'Clear',
+								confirmStyle: 'destructive',
+								onConfirm: async () => {
+									try {
+										await clearAppData();
+										setConfirmDialog(null);
+										Alert.alert(
+											'Success',
+											'App data cleared successfully'
+										);
+									} catch {
+										setConfirmDialog(null);
+										Alert.alert(
+											'Error',
+											'Failed to clear app data'
+										);
+									}
+								},
+							});
 						}}
 						style={({ pressed }) => [
 							styles.clearDataButton,
@@ -654,23 +811,17 @@ const ProfileScreen: React.FC<
 				<View style={styles.contentSection}>
 					<Pressable
 						onPress={() => {
-							Alert.alert(
-								'Logout',
-								'Are you sure you want to logout?',
-								[
-									{
-										text: 'Cancel',
-										style: 'cancel',
-									},
-									{
-										text: 'Logout',
-										style: 'destructive',
-										onPress: () => {
-											handleLogout();
-										},
-									},
-								]
-							);
+							setConfirmDialog({
+								visible: true,
+								title: 'Logout',
+								message: 'Are you sure you want to logout?',
+								confirmText: 'Logout',
+								confirmStyle: 'destructive',
+								onConfirm: async () => {
+									setConfirmDialog(null);
+									await handleLogout();
+								},
+							});
 						}}
 						style={({ pressed }) => [
 							styles.logoutButton,
@@ -684,6 +835,18 @@ const ProfileScreen: React.FC<
 
 			{renderShareDialog()}
 			{editingShare && renderEditDialog()}
+			{confirmDialog && (
+				<ConfirmDialog
+					visible={confirmDialog.visible}
+					title={confirmDialog.title}
+					message={confirmDialog.message}
+					confirmText={confirmDialog.confirmText}
+					cancelText={confirmDialog.cancelText}
+					confirmStyle={confirmDialog.confirmStyle}
+					onCancel={() => setConfirmDialog(null)}
+					onConfirm={confirmDialog.onConfirm}
+				/>
+			)}
 		</SafeAreaView>
 	);
 };

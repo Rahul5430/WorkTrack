@@ -1,1 +1,4 @@
-// Network monitor interface
+export interface INetworkMonitor {
+	isOnline(): Promise<boolean>;
+	listen(callback: (online: boolean) => void): () => void;
+}

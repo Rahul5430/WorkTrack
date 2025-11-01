@@ -87,15 +87,15 @@ export abstract class BaseEntity<T> {
 	 * Create a copy of this entity with updated timestamps
 	 * Useful for creating updated versions of entities
 	 */
-	protected createUpdatedCopy(_updates: Partial<T>): this {
-		const updatedAt = new Date();
-		// Note: This is a simplified implementation
-		// In a real implementation, you would need to merge the updates
-		// with the current entity properties
-		const constructor = this.constructor as new (
-			...args: unknown[]
-		) => this;
-		return new constructor(this._id, this._createdAt, updatedAt);
+	public createUpdatedCopy(_updates: Partial<T>): this {
+		const clone: this = Object.create(this);
+		Object.defineProperty(clone, '_updatedAt', {
+			value: new Date(),
+			writable: false,
+			configurable: true,
+			enumerable: false,
+		});
+		return clone;
 	}
 
 	/**

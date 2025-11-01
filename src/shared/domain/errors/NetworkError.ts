@@ -6,7 +6,7 @@ import { AppError } from './AppError';
 export class NetworkError extends AppError {
 	public readonly url?: string;
 	public readonly method?: string;
-	public readonly statusCode?: number;
+	public readonly statusCode: number;
 
 	constructor(
 		message: string,

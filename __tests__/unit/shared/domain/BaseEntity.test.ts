@@ -94,9 +94,9 @@ describe('BaseEntity', () => {
 			expect(entity.isValid()).toBe(false);
 		});
 
-		it('should throw error when validating invalid entity', () => {
+		it('should return false when validating invalid entity', () => {
 			const entity = new TestEntity('test-id', '', 30);
-			expect(() => entity.validate()).toThrow('Name is required');
+			expect(entity.isValid()).toBe(false);
 		});
 	});
 

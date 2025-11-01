@@ -3,11 +3,12 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import { WORK_STATUS } from '@/constants/workStatus';
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { RootState } from '@/store/store';
-import { fonts } from '@/themes';
-import { colors } from '@/themes/colors';
+import { RootState } from '@/app/store';
+import { WORK_STATUS } from '@/shared/constants/workStatus';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
+import { type MarkedDay } from '@/types';
 
 import SummaryData from './SummaryData';
 
@@ -19,7 +20,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 	const { getResponsiveSize, RFValue } = useResponsiveLayout();
 	const workTrackData = useSelector(
 		(state: RootState) => state.workTrack.data
-	);
+	) as unknown as MarkedDay[];
 	const isLoading = useSelector(
 		(state: RootState) => state.workTrack.loading
 	);
@@ -71,7 +72,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 		};
 
 		const calculateAttendance = (
-			data: typeof workTrackData,
+			data: MarkedDay[],
 			period: 'month' | 'quarter'
 		) => {
 			// Get start and end dates for the period
@@ -134,7 +135,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 		};
 
 		// Get data for the current month
-		const monthData = workTrackData.filter((entry) => {
+		const monthData = workTrackData.filter((entry: MarkedDay) => {
 			const entryDate = new Date(entry.date);
 			return (
 				entryDate.getMonth() === currentMonth &&
@@ -143,7 +144,7 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 		});
 
 		// Get data for the current quarter
-		const quarterData = workTrackData.filter((entry) => {
+		const quarterData = workTrackData.filter((entry: MarkedDay) => {
 			const entryDate = new Date(entry.date);
 			const entryQuarter = Math.floor(entryDate.getMonth() / 3);
 			return (
@@ -166,8 +167,8 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 			style={[
 				styles.container,
 				{
-					paddingHorizontal: getResponsiveSize(5).width,
-					marginBottom: getResponsiveSize(5).width,
+					paddingHorizontal: getResponsiveSize(5),
+					marginBottom: getResponsiveSize(5),
 				},
 			]}
 		>

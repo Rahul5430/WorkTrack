@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { HelperText, Switch } from 'react-native-paper';
 
-import { WORK_STATUS_COLORS } from '../../../../../constants/workStatus';
-import { useResponsiveLayout } from '../../../../../hooks';
-import { colors, fonts } from '../../../../../themes';
-import { MarkedDayStatus } from '../../../../../types/calendar';
+import { WORK_STATUS_COLORS } from '@/shared/constants/workStatus';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { colors, fonts } from '@/shared/ui/theme';
+import { MarkedDayStatus } from '@/types';
 
 type Props = {
 	onSave: (status: MarkedDayStatus, isAdvisory: boolean) => void;
@@ -82,9 +82,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 	];
 
 	return (
-		<View
-			style={[styles.container, { padding: getResponsiveSize(5).width }]}
-		>
+		<View style={[styles.container, { padding: getResponsiveSize(5) }]}>
 			<Text style={[styles.title, { fontSize: RFValue(16) }]}>
 				Mark your status for {formatDate(selectedDate)}
 			</Text>
@@ -122,7 +120,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			<View
 				style={[
 					styles.statusOptions,
-					{ paddingHorizontal: getResponsiveSize(2).width },
+					{ paddingHorizontal: getResponsiveSize(2) },
 				]}
 			>
 				<View style={styles.statusRow}>
@@ -193,7 +191,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			<View
 				style={[
 					styles.buttonContainer,
-					{ paddingHorizontal: getResponsiveSize(2).width },
+					{ paddingHorizontal: getResponsiveSize(2) },
 				]}
 			>
 				<TouchableOpacity

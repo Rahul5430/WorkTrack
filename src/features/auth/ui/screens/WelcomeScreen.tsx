@@ -6,37 +6,45 @@ import {
 	GoogleAuthProvider,
 	signInWithCredential,
 } from '@react-native-firebase/auth';
-import { doc, getDoc, setDoc } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { FocusAwareStatusBar } from '../../../../components';
-import { useWorkTrackManager } from '../../../../hooks';
-import { logger } from '../../../../logging';
-import { getFirestoreInstance } from '../../../../services';
-import { AppDispatch, RootState } from '../../../../store';
+import { AuthStackScreenProps } from '@/app/navigation/types';
 import {
-	GoogleUser,
+	AppDispatch,
+	RootState,
 	setErrorMessage,
-	setIsFetching,
 	setLoggedIn,
 	setUser,
-} from '../../../../store/reducers/userSlice';
-import { WelcomeStackScreenProps } from '../../../../types';
+	setUserLoading as setIsFetching,
+} from '@/app/store';
+import FocusAwareStatusBar from '@/shared/ui/components/FocusAwareStatusBar';
+import { logger } from '@/shared/utils/logging';
+
+// Define GoogleUser type locally - matches User interface
+interface GoogleUser {
+	id: string;
+	name: string;
+	email: string;
+	photo?: string;
+	workTrackId?: string;
+	createdAt: string;
+	updatedAt: string;
+}
 
 GoogleSignin.configure({
 	webClientId: GOOGLE_SIGN_IN_CLIENT_ID,
 });
 
-const WelcomeScreen: React.FC<
-	WelcomeStackScreenProps<'WelcomeScreen'>
-> = () => {
-	const { isFetching } = useSelector((state: RootState) => state.user);
+const WelcomeScreen: React.FC<AuthStackScreenProps<'WelcomeScreen'>> = () => {
+	const { loading: isFetching } = useSelector(
+		(state: RootState) => state.user
+	);
 	const dispatch = useDispatch<AppDispatch>();
-	const manager = useWorkTrackManager();
+	// Manager wiring handled by SyncManager and DI
 
 	useEffect(() => {
 		const auth = getAuth(getApp());
@@ -49,28 +57,12 @@ const WelcomeScreen: React.FC<
 						name: firebaseUser.displayName ?? 'Unknown',
 						email: firebaseUser.email ?? 'Unknown',
 						photo: firebaseUser.photoURL ?? '',
+						workTrackId: undefined,
+						createdAt: new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
 					};
 
-					// Create or update user in Firestore
-					const db = getFirestoreInstance();
-					const userRef = doc(db, 'users', firebaseUser.uid);
-					const userSnapshot = await getDoc(userRef);
-
-					const userData: GoogleUser = {
-						...userInfo,
-						email: userInfo.email.toLowerCase(),
-						updatedAt: new Date(),
-					};
-
-					if (!userSnapshot.exists()) {
-						userData.createdAt = new Date();
-					}
-
-					await setDoc(userRef, userData, { merge: true });
-
-					// Trigger initial sync before updating UI state
-					await manager.syncFromRemote();
-					await manager.startPeriodicSync();
+					// Firestore/user persistence is handled via repositories elsewhere
 
 					// Only update UI state after sync is complete
 					await AsyncStorage.setItem(
@@ -93,7 +85,7 @@ const WelcomeScreen: React.FC<
 		});
 
 		return unsubscribe;
-	}, [dispatch, manager]);
+	}, [dispatch]);
 
 	const signInWithGoogle = async () => {
 		try {

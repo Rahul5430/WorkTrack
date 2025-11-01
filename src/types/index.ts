@@ -1,164 +1,231 @@
-import { SharePermission } from '../use-cases/shareReadUseCase';
-import { MarkedDayStatus } from './calendar';
+export type {
+	AuthStackParamList,
+	AuthStackScreenProps,
+	LoadingStackParamList,
+	LoadingStackScreenProps,
+	MainStackParamList,
+	MainStackScreenProps,
+	RootStackParamList,
+	RootStackScreenProps,
+} from '@/app/navigation/types';
 
-export type Permission = 'read' | 'write';
+// Re-export shared domain types
+export type {
+	AppError,
+	AuthenticationError,
+	BaseEntity,
+	Email,
+	NetworkError,
+	SyncError,
+	Timestamp,
+	UUID,
+	ValidationError,
+} from '@/shared/domain';
 
-// Core DTOs for data transfer between layers
-export interface TrackerDTO {
-	id: string;
-	name: string;
-	color: string;
-	ownerId: string;
-	isDefault: boolean;
-	trackerType: string;
-}
+// Re-export DI types
+export type {
+	Disposable,
+	Container as IContainer,
+	ContainerBuilder as IContainerBuilder,
+	ServiceFactory,
+	ServiceIdentifier,
+	ServiceRegistration,
+	ServiceRegistrationError,
+	ServiceResolutionError,
+	ServiceScope,
+} from '@/di';
 
-export interface EntryDTO {
-	id: string;
-	trackerId: string;
-	date: string;
-	status: string;
-	isAdvisory: boolean;
-	needsSync: boolean;
-	lastModified: number;
-	syncError?: string;
-	retryCount?: number;
-}
+// Re-export shared UI types
+// Note: Theme types are defined locally in this file below
 
-export interface ShareDTO {
-	trackerId: string;
-	sharedWithId: string;
-	permission: Permission;
-	sharedWithEmail?: string;
-}
+// Global utility types
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type DeepPartial<T> = {
+	[P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
-// Extended DTOs for UI display
-export interface TrackerWithSharesDTO extends TrackerDTO {
-	shares: ShareDTO[];
-}
-
-export interface EntryWithTrackerDTO extends EntryDTO {
-	trackerName: string;
-	trackerColor: string;
-}
-
-// Sync status types
-export interface SyncStatusDTO {
-	isSyncing: boolean;
-	isOnline: boolean;
-	lastSyncTime?: number;
+// Common API response types
+export interface ApiResponse<T = unknown> {
+	data: T;
+	success: boolean;
+	message?: string;
 	error?: string;
-	errorType?: 'network' | 'auth' | 'server' | 'unknown';
 }
 
-// User permission types for advanced sharing (future-ready)
-export interface UserPermissionDTO {
-	userId: string;
-	email: string;
-	permission: Permission;
-	role?: 'viewer' | 'editor' | 'admin';
-	department?: string;
-}
-
-export interface ITrackerRepository {
-	create(tracker: TrackerDTO, userId: string): Promise<void>;
-	update(
-		tracker: Partial<TrackerDTO> & { id: string },
-		userId: string
-	): Promise<void>;
-	listOwned(userId: string): Promise<TrackerDTO[]>;
-	listSharedWith(userId: string): Promise<TrackerDTO[]>;
-	ensureExists(id: string, ownerId: string): Promise<void>;
-	upsertMany(trackers: TrackerDTO[]): Promise<void>;
-}
-
-// Base interface for all entry repositories
-export interface IBaseEntryRepository {
-	upsertMany(trackerId: string, entries: EntryDTO[]): Promise<void>;
-	upsertOne(entry: EntryDTO): Promise<void>;
-	delete(entryId: string): Promise<void>;
-	getEntriesForTracker(trackerId: string): Promise<EntryDTO[]>;
-	getAllEntries(): Promise<EntryDTO[]>;
-}
-
-// Interface for local entry repositories (with sync capabilities)
-export interface ILocalEntryRepository extends IBaseEntryRepository {
-	listUnsynced(): Promise<EntryDTO[]>;
-	markSynced(entries: EntryDTO[]): Promise<void>;
-	getFailedSyncRecords(): Promise<EntryDTO[]>;
-	getRecordsExceedingRetryLimit(limit: number): Promise<EntryDTO[]>;
-}
-
-// Interface for remote entry repositories (Firebase)
-export interface IRemoteEntryRepository extends IBaseEntryRepository {
-	// Remote repositories don't need sync methods as they're already synced
-}
-
-export interface IShareRepository {
-	share(data: ShareDTO): Promise<void>;
-	unshare(trackerId: string, sharedWithId: string): Promise<void>;
-	updatePermission(
-		trackerId: string,
-		sharedWithId: string,
-		permission: Permission
-	): Promise<void>;
-}
-
-export interface WorkTrackManager {
-	sync(): Promise<void>;
-	share(
-		email: string,
-		permission: Permission,
-		trackerId?: string
-	): Promise<void>;
-	// Sync utilities
-	startPeriodicSync(intervalMs?: number): Promise<void>;
-	stopPeriodicSync(): void;
-	triggerSync(): Promise<void>;
-	syncFromRemote(): Promise<void>;
-	updateSharePermission(
-		sharedWithId: string,
-		permission: Permission,
-		trackerId?: string
-	): Promise<void>;
-	getSyncStatus(): Promise<SyncStatusDTO>;
-	// Trackers
-	getMyTrackers(): Promise<TrackerDTO[]>;
-	getSharedTrackers(): Promise<TrackerDTO[]>;
-	createTracker(tracker: Omit<TrackerDTO, 'ownerId'>): Promise<void>;
-	updateTracker(
-		tracker: Partial<Omit<TrackerDTO, 'ownerId'>> & { id: string }
-	): Promise<void>;
-	// Use cases
-	shareRead: {
-		getMyShares(): Promise<SharePermission[]>;
-		getSharedWithMe(): Promise<SharePermission[]>;
-		removeShare(sharedWithId: string, trackerId?: string): Promise<void>;
-	};
-	userManagement: {
-		ensureUserHasTracker(userId: string): Promise<TrackerDTO>;
-		initializeUserData(userId: string): Promise<TrackerDTO>;
-		getTrackerByOwnerId(ownerId: string): Promise<TrackerDTO | null>;
-		getDefaultViewUserId(): Promise<string | null>;
-		setDefaultViewUserId(userId: string | null): Promise<void>;
-		checkAndFixRecordsWithoutTrackerId(): Promise<void>;
-		ensureDatabaseReady(): Promise<void>;
-	};
-	entry: {
-		createOrUpdateEntry(data: {
-			trackerId: string;
-			date: string;
-			status: MarkedDayStatus;
-			isAdvisory: boolean;
-		}): Promise<void>;
-		getFailedSyncRecords(): Promise<EntryDTO[]>;
-		getRecordsExceedingRetryLimit(limit: number): Promise<EntryDTO[]>;
-		getEntriesForTracker(trackerId: string): Promise<EntryDTO[]>;
+export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
+	pagination: {
+		page: number;
+		limit: number;
+		total: number;
+		totalPages: number;
 	};
 }
 
-// Navigation types
-export * from './navigation';
+// Common form types
+export interface FormField<T = unknown> {
+	value: T;
+	error?: string;
+	touched: boolean;
+	required: boolean;
+}
 
-// Calendar types
-export * from './calendar';
+export interface FormState<T = Record<string, unknown>> {
+	fields: { [K in keyof T]: FormField<T[K]> };
+	isValid: boolean;
+	isSubmitting: boolean;
+	isDirty: boolean;
+}
+
+// Common state types
+export interface LoadingState {
+	isLoading: boolean;
+	error?: string;
+}
+
+export interface AsyncState<T = unknown> extends LoadingState {
+	data?: T;
+}
+
+// Common component props
+export interface BaseComponentProps {
+	children?: React.ReactNode;
+	className?: string;
+	testID?: string;
+}
+
+export interface StyledComponentProps extends BaseComponentProps {
+	style?: React.CSSProperties;
+}
+
+// Common hook return types
+export interface UseAsyncReturn<T = unknown> extends AsyncState<T> {
+	execute: (...args: unknown[]) => Promise<void>;
+	reset: () => void;
+}
+
+export interface UseFormReturn<T = Record<string, unknown>>
+	extends FormState<T> {
+	setValue: <K extends keyof T>(field: K, value: T[K]) => void;
+	setError: <K extends keyof T>(field: K, error: string) => void;
+	clearError: <K extends keyof T>(field: K) => void;
+	handleSubmit: (
+		onSubmit: (values: T) => void
+	) => (e?: React.FormEvent) => void;
+	reset: () => void;
+}
+
+// Common event types
+export interface CustomEvent<T = unknown> {
+	type: string;
+	payload: T;
+	timestamp: number;
+}
+
+// Common configuration types
+export interface AppConfig {
+	api: {
+		baseUrl: string;
+		timeout: number;
+		retries: number;
+	};
+	features: {
+		[feature: string]: boolean;
+	};
+	environment: 'development' | 'staging' | 'production';
+}
+
+// Common error types
+export interface AppErrorInfo {
+	code: string;
+	message: string;
+	statusCode?: number;
+	context?: Record<string, unknown>;
+	timestamp: number;
+	stack?: string;
+}
+
+// Common validation types
+export interface ValidationRule<T = unknown> {
+	required?: boolean;
+	min?: number;
+	max?: number;
+	minLength?: number;
+	maxLength?: number;
+	pattern?: RegExp;
+	custom?: (value: T) => string | undefined;
+}
+
+export type ValidationSchema<T = Record<string, unknown>> = {
+	[K in keyof T]?: ValidationRule<T[K]>;
+};
+
+// Common storage types
+export interface StorageItem<T = unknown> {
+	key: string;
+	value: T;
+	expiresAt?: number;
+}
+
+// Common navigation types
+export interface NavigationState {
+	index: number;
+	routes: Array<{
+		key: string;
+		name: string;
+		params?: Record<string, unknown>;
+	}>;
+}
+
+// WorkTrack specific types
+export type MarkedDayStatus =
+	| 'office'
+	| 'wfh'
+	| 'holiday'
+	| 'leave'
+	| 'weekend'
+	| 'forecast';
+
+export interface MarkedDay {
+	date: string;
+	status: MarkedDayStatus;
+	isAdvisory: boolean;
+}
+
+// Common theme types
+export interface ColorPalette {
+	primary: string;
+	secondary: string;
+	accent: string;
+	background: string;
+	surface: string;
+	text: string;
+	textSecondary: string;
+	border: string;
+	error: string;
+	warning: string;
+	success: string;
+	info: string;
+}
+
+export interface SpacingScale {
+	xs: number;
+	sm: number;
+	md: number;
+	lg: number;
+	xl: number;
+	xxl: number;
+}
+
+export interface TypographyScale {
+	h1: React.CSSProperties;
+	h2: React.CSSProperties;
+	h3: React.CSSProperties;
+	h4: React.CSSProperties;
+	h5: React.CSSProperties;
+	h6: React.CSSProperties;
+	body1: React.CSSProperties;
+	body2: React.CSSProperties;
+	caption: React.CSSProperties;
+	overline: React.CSSProperties;
+}

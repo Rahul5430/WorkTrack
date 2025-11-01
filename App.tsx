@@ -1,4 +1,3 @@
-import { NavigationContainer } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { AppState, AppStateStatus, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
@@ -7,9 +6,10 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as ReduxProvider } from 'react-redux';
 
-import { GlobalToast } from './src/components';
-import MainNavigator from './src/navigation/MainNavigator';
-import { store } from './src/store';
+import { RootNavigator } from '@/app/navigation';
+import { AppProviders } from '@/app/providers';
+import { store } from '@/app/store';
+import { GlobalToast } from '@/shared/ui/components/feedback';
 
 export default function App() {
 	useEffect(() => {
@@ -41,10 +41,10 @@ export default function App() {
 			<SafeAreaProvider>
 				<ReduxProvider store={store}>
 					<PaperProvider>
-						<NavigationContainer>
-							<MainNavigator />
+						<AppProviders>
+							<RootNavigator />
 							<GlobalToast />
-						</NavigationContainer>
+						</AppProviders>
 					</PaperProvider>
 				</ReduxProvider>
 			</SafeAreaProvider>

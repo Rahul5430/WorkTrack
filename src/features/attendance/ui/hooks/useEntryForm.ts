@@ -1,7 +1,7 @@
 // migrated to V2 structure
 import { useCallback, useState } from 'react';
 
-import { MarkedDayStatus } from '@/types/calendar';
+import { MarkedDayStatus } from '@/types';
 
 export const useEntryForm = () => {
 	const [status, setStatus] = useState<MarkedDayStatus | null>(null);
@@ -35,7 +35,7 @@ export const useEntryForm = () => {
 
 			try {
 				await onSave(status, isAdvisory);
-			} catch (err) {
+			} catch {
 				setError('Failed to save status');
 			} finally {
 				setIsSaving(false);

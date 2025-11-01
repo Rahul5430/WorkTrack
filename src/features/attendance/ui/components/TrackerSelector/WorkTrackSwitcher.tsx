@@ -18,15 +18,20 @@ import Animated, {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 
-import {
-	type SharedWorkTrack,
-	useResponsiveLayout,
-	useWorkTrackManager,
-} from '../../../../../hooks';
-import { logger } from '../../../../../logging';
-import { RootState } from '../../../../../store/store';
-import { fonts } from '../../../../../themes';
-import { colors } from '../../../../../themes/colors';
+import { RootState } from '@/app/store';
+import { useWorkTrackManager } from '@/features/attendance/ui/hooks/useWorkTrackManager';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { fonts } from '@/shared/ui/theme';
+import { colors } from '@/shared/ui/theme/colors';
+import { logger } from '@/shared/utils/logging';
+
+type SharedWorkTrack = {
+	id: string;
+	ownerName: string;
+	ownerPhoto?: string;
+	ownerEmail?: string;
+	permission?: 'read' | 'write';
+};
 
 type Props = {
 	sharedWorkTracks: SharedWorkTrack[];
@@ -269,7 +274,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 
 	return (
 		<BottomSheetView
-			style={[styles.container, { padding: getResponsiveSize(5).width }]}
+			style={[styles.container, { padding: getResponsiveSize(5) }]}
 		>
 			<View style={styles.header}>
 				<Text style={[styles.title, { fontSize: RFValue(18) }]}>

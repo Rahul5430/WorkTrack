@@ -67,8 +67,12 @@ describe('Container', () => {
 
 			container.registerSingleton(identifier, factory);
 
-			const instance1 = container.resolve(identifier);
-			const instance2 = container.resolve(identifier);
+			const instance1 = container.resolve(identifier) as {
+				value: string;
+			};
+			const instance2 = container.resolve(identifier) as {
+				value: string;
+			};
 
 			expect(instance1).toBe(instance2);
 			expect(instance1.value).toBe('test');
@@ -80,8 +84,12 @@ describe('Container', () => {
 
 			container.registerTransient(identifier, factory);
 
-			const instance1 = container.resolve(identifier);
-			const instance2 = container.resolve(identifier);
+			const instance1 = container.resolve(identifier) as {
+				value: string;
+			};
+			const instance2 = container.resolve(identifier) as {
+				value: string;
+			};
 
 			expect(instance1).not.toBe(instance2);
 			expect(instance1.value).toBe('test');
@@ -94,8 +102,12 @@ describe('Container', () => {
 
 			container.registerScoped(identifier, factory);
 
-			const instance1 = container.resolve(identifier);
-			const instance2 = container.resolve(identifier);
+			const instance1 = container.resolve(identifier) as {
+				value: string;
+			};
+			const instance2 = container.resolve(identifier) as {
+				value: string;
+			};
 
 			expect(instance1).toBe(instance2);
 			expect(instance1.value).toBe('test');
@@ -132,7 +144,7 @@ describe('Container', () => {
 			container.registerSingleton(identifier, factory);
 			const child = container.createChild();
 
-			const instance = child.resolve(identifier);
+			const instance = child.resolve(identifier) as { value: string };
 
 			expect(instance.value).toBe('parent');
 		});
@@ -229,7 +241,10 @@ describe('Container', () => {
 				dependency: c.resolve(serviceA),
 			}));
 
-			const instanceB = container.resolve(serviceB);
+			const instanceB = container.resolve(serviceB) as {
+				value: string;
+				dependency: { value: string };
+			};
 
 			expect(instanceB.value).toBe('B');
 			expect(instanceB.dependency.value).toBe('A');

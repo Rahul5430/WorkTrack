@@ -2,8 +2,9 @@ import React, { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import { useResponsiveLayout } from '@/hooks/useResponsive';
-import { RootState } from '@/store';
+import { RootState } from '@/app/store';
+import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
+import { type MarkedDay } from '@/types';
 
 import CustomCalendar from './CustomCalendar';
 
@@ -17,7 +18,7 @@ const CalendarComponent = React.memo(
 		const { getResponsiveSize } = useResponsiveLayout();
 		const { data: markedDays } = useSelector(
 			(state: RootState) => state.workTrack
-		);
+		) as { data: MarkedDay[] };
 		const [currentMonth, setCurrentMonth] = useState(new Date());
 
 		const handlePressDate = useCallback(
@@ -40,19 +41,18 @@ const CalendarComponent = React.memo(
 		);
 
 		// Transform markedDays to match the expected format
-		const transformedMarkedDays = markedDays.reduce(
-			(acc, day) => ({
-				...acc,
-				[day.date]: {
-					status: day.status,
-					isAdvisory: day.isAdvisory ?? false,
-				},
-			}),
-			{}
-		);
+		const transformedMarkedDays = markedDays.reduce<
+			Record<string, { status: MarkedDay['status']; isAdvisory: boolean }>
+		>((accumulator, day) => {
+			accumulator[day.date] = {
+				status: day.status,
+				isAdvisory: Boolean(day.isAdvisory),
+			};
+			return accumulator;
+		}, {});
 
 		return (
-			<View style={{ paddingHorizontal: getResponsiveSize(5).width }}>
+			<View style={{ paddingHorizontal: getResponsiveSize(5) }}>
 				<CustomCalendar
 					currentMonth={currentMonth}
 					markedDays={transformedMarkedDays}
