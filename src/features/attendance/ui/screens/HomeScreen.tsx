@@ -39,6 +39,7 @@ import {
 	useSharedWorkTracks,
 	useWorkTrackManager,
 } from '@/features/attendance/ui/hooks';
+import { useDefaultView } from '@/features/sharing/ui/hooks';
 import FocusAwareStatusBar from '@/shared/ui/components/FocusAwareStatusBar';
 import { colors, fonts } from '@/shared/ui/theme';
 import { logger } from '@/shared/utils/logging';
@@ -89,6 +90,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	const user = useSelector((state: RootState) => state.user.user);
 	const { sharedWorkTracks, loading: sharedWorkTracksLoading } =
 		useSharedWorkTracks();
+	const { defaultViewUserId } = useDefaultView();
 	const [currentWorkTrack, setCurrentWorkTrack] = useState<{
 		id: string;
 		name: string;
@@ -100,6 +102,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 	const rotateAnim = useRef(new Animated.Value(0)).current;
 	const manager = useWorkTrackManager();
+	const isInitialMount = useRef(true);
 
 	useEffect(() => {
 		const initializeUser = async () => {
@@ -156,11 +159,68 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 				);
 			} finally {
 				dispatch(setLoading(false));
+				isInitialMount.current = false;
 			}
 		};
 
 		initializeUser();
 	}, [user?.id, dispatch, manager]);
+
+	// Handle default view switching after initial load
+	useEffect(() => {
+		const loadDefaultView = async () => {
+			if (!defaultViewUserId || !currentWorkTrack?.id) return;
+
+			// Only switch if different from current and defaultViewUserId is a valid tracker
+			if (currentWorkTrack.id !== defaultViewUserId) {
+				// Check if defaultViewUserId corresponds to a shared tracker
+				const defaultTrack = sharedWorkTracks.find(
+					(track) => track.id === defaultViewUserId
+				);
+				if (defaultTrack) {
+					setCurrentWorkTrack({
+						id: defaultTrack.id,
+						name: defaultTrack.ownerName,
+					});
+					logger.info('Switched to default view', {
+						trackerId: defaultTrack.id,
+					});
+				}
+			}
+		};
+
+		loadDefaultView();
+	}, [defaultViewUserId, currentWorkTrack?.id, sharedWorkTracks]);
+
+	// Load entries when currentWorkTrack changes (after initial mount)
+	useEffect(() => {
+		const loadCurrentTrackerEntries = async () => {
+			if (isInitialMount.current || !currentWorkTrack?.id) return;
+
+			try {
+				const entries = await manager.entry.getEntriesForTracker(
+					currentWorkTrack.id
+				);
+				const mappedEntries = entries.map((entry) => ({
+					date: entry.date,
+					status: entry.status as MarkedDayStatus,
+					isAdvisory: entry.isAdvisory,
+				}));
+
+				dispatch(setWorkTrackData(mappedEntries));
+				logger.info('Loaded entries for tracker', {
+					trackerId: currentWorkTrack.id,
+					entryCount: entries.length,
+				});
+			} catch (entriesError) {
+				logger.error('Failed to load tracker entries:', {
+					error: entriesError,
+				});
+			}
+		};
+
+		loadCurrentTrackerEntries();
+	}, [currentWorkTrack?.id, manager, dispatch]);
 
 	const handleDayMarkingSheetChanges = useCallback((index: number) => {
 		setIsBottomSheetOpen(index !== -1);
@@ -363,7 +423,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 
 	return (
 		<SafeAreaView style={styles.screen}>
-			<SyncErrorBanner error={error ?? ''} onRetry={onRefresh} />
+			<SyncErrorBanner onSyncComplete={onRefresh} />
 			<FocusAwareStatusBar
 				barStyle='dark-content'
 				translucent
@@ -480,7 +540,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 					onDatePress={onDatePress}
 					onMonthChange={handleMonthChange}
 				/>
-				<Label>{''}</Label>
+				<Label />
 				<Summary selectedMonth={selectedMonth} />
 			</ScrollView>
 

@@ -1,10 +1,10 @@
 // Firebase sync repository
 import firestore from '@react-native-firebase/firestore';
 
-import type { ISyncOpOutcome } from '@/shared/api/sync/types';
 import { logger } from '@/shared/utils/logging';
 
 import { ISyncRepository } from '../../domain/ports/ISyncRepository';
+import type { ISyncOpOutcome } from '../../domain/types';
 
 export class FirebaseSyncRepository implements ISyncRepository {
 	async syncToRemote(

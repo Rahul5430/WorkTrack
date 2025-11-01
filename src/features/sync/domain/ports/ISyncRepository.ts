@@ -1,4 +1,4 @@
-import type { ISyncOpOutcome } from '@/shared/api/sync/types';
+import type { ISyncOpOutcome } from '../types';
 
 export interface ISyncRepository {
 	syncToRemote(

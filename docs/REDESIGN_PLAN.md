@@ -4,16 +4,17 @@ This document is the master plan for the new app architecture, used by both huma
 
 ---
 
-## 🧩 Why V2?
+## 🧩 Architecture Design
 
-V1 worked — but was fragile:
+Previous architecture had limitations:
+
 - Multiple unsynchronized sync triggers
 - Data collisions (date used as ID)
 - No offline queue → lost data
 - Random UI/data coupling
 - Architecture not scalable
 
-✅ V2 = Reliability, Offline-first, Maintainability, Testability
+Current architecture provides: Reliability, Offline-first, Maintainability, Testability
 
 ---
 
@@ -25,7 +26,7 @@ V1 worked — but was fragile:
 ✅ Domain-driven  
 ✅ Optimistic UI  
 ✅ Smart Sync System  
-✅ Unit-tested from Day 1  
+✅ Unit-tested from Day 1
 
 📌 Detailed folder and module structure is in:
 `docs/ARCHITECTURE_STRUCTURE.md`
@@ -34,40 +35,39 @@ V1 worked — but was fragile:
 
 ## 🔌 Core Technologies
 
-| Layer | Tech |
-|------|------|
-| Local DB | WatermelonDB |
-| Remote | Firebase Firestore |
-| Sync | Event-driven queue w/ backoff |
-| Navigation | React Navigation |
-| State | Redux Toolkit |
-| Testing | Jest + unit + integration |
-| Dev Tools | Cursor + CI |
+| Layer      | Tech                          |
+| ---------- | ----------------------------- |
+| Local DB   | WatermelonDB                  |
+| Remote     | Firebase Firestore            |
+| Sync       | Event-driven queue w/ backoff |
+| Navigation | React Navigation              |
+| State      | Redux Toolkit                 |
+| Testing    | Jest + unit + integration     |
+| Dev Tools  | Cursor + CI                   |
 
 ---
 
 ## 🏁 Scope of V2
 
-| Category | Status | Notes |
-|---------|------|------|
-| Attendance | ✅ | Calendar UX preserved |
-| Sync | ✅ | Fully redesigned |
-| Sharing | ✅ | Same UI, new logic |
-| Auth | ✅ | Cached login + offline fallback |
-| Insights | ⏳ Later | Future feature |
-| Notifications | ⏳ Later | Future feature |
+| Category      | Status   | Notes                           |
+| ------------- | -------- | ------------------------------- |
+| Attendance    | ✅       | Calendar UX preserved           |
+| Sync          | ✅       | Fully redesigned                |
+| Sharing       | ✅       | Same UI, new logic              |
+| Auth          | ✅       | Cached login + offline fallback |
+| Insights      | ⏳ Later | Future feature                  |
+| Notifications | ⏳ Later | Future feature                  |
 
 ---
 
-## 🔄 Migration Strategy
+## 🔄 Development Principles
 
-| Rule | Meaning |
-|-----|--------|
-| Keep UI visuals identical | No Figma-changes yet |
-| Move → Refactor → Replace | Not editing legacy code |
-| Separate V1 under `/legacy` | Track migration progress |
-| Disable V1 sync system | New sync only |
-| Tests enforce correctness | No regressions allowed |
+| Principle                  | Meaning                       |
+| -------------------------- | ----------------------------- |
+| Keep UI visuals consistent | Maintain user experience      |
+| Feature-first architecture | Clear separation of concerns  |
+| Test-driven development    | Tests enforce correctness     |
+| Offline-first sync         | Reliable data synchronization |
 
 ---
 
@@ -83,27 +83,27 @@ V1 worked — but was fragile:
 
 ## ✅ First-Wave Milestones
 
-| Order | Module | Status Target |
-|------|--------|---------------|
-| 1 | Shared foundation | ✅ Value objects, errors, DB, logging |
-| 2 | DI Container | ✅ Feature registration |
-| 3 | Auth | ✅ Sign-in + caching + DI |
-| 4 | Attendance | ✅ CRUD + calendar integration |
-| 5 | Sync | ✅ Offline queue + conflict strategy |
-| 6 | Sharing | ✅ Permissions + shared trackers |
-| 7 | App bootstrap | ✅ Navigation & providers |
+| Order | Module            | Status Target                         |
+| ----- | ----------------- | ------------------------------------- |
+| 1     | Shared foundation | ✅ Value objects, errors, DB, logging |
+| 2     | DI Container      | ✅ Feature registration               |
+| 3     | Auth              | ✅ Sign-in + caching + DI             |
+| 4     | Attendance        | ✅ CRUD + calendar integration        |
+| 5     | Sync              | ✅ Offline queue + conflict strategy  |
+| 6     | Sharing           | ✅ Permissions + shared trackers      |
+| 7     | App bootstrap     | ✅ Navigation & providers             |
 
 ---
 
 ## 🧪 Testing Targets by Milestone
 
-| Area | Coverage Req |
-|-----|--------------|
-| Shared domain | 100% |
-| Feature domain | ≥95% |
-| Sync subsystem | 100% queue logic |
-| UI | Snapshot stability |
-| Integration | Main workflows e2e |
+| Area           | Coverage Req       |
+| -------------- | ------------------ |
+| Shared domain  | 100%               |
+| Feature domain | ≥95%               |
+| Sync subsystem | 100% queue logic   |
+| UI             | Snapshot stability |
+| Integration    | Main workflows e2e |
 
 ---
 

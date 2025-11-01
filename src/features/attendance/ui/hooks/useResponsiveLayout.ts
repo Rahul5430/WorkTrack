@@ -34,11 +34,11 @@ export const useResponsiveLayout = () => {
 		percentOrSize: number,
 		percentHeight?: number
 	) => {
-		// If only one argument provided, return scaled size (for backward compatibility with current usage)
+		// If only one argument provided, return scaled size
 		if (percentHeight === undefined) {
 			return RFValue(percentOrSize);
 		}
-		// If two arguments provided, return object with width/height percentages (V1 behavior)
+		// If two arguments provided, return object with width/height percentages
 		return {
 			width: (width * percentOrSize) / 100,
 			height: (height * percentHeight) / 100,

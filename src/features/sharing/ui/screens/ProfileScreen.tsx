@@ -1,7 +1,14 @@
+import { Database, Q } from '@nozbe/watermelondb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import {
 	Alert,
 	Animated,
@@ -19,27 +26,25 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useDispatch, useSelector } from 'react-redux';
 
 import { MainStackScreenProps } from '@/app/navigation/types';
-import { useDI } from '@/app/providers';
-import {
-	AppDispatch,
-	clearUser,
-	RootState,
-	setWorkTrackLoading,
-} from '@/app/store';
-import { SharingServiceIdentifiers } from '@/features/sharing/di';
-import { Permission } from '@/features/sharing/domain/entities/Permission';
+import { useDI as useContainer } from '@/app/providers/DIProvider';
+import { AppDispatch, clearUser, RootState } from '@/app/store';
+import { ServiceIdentifiers } from '@/di/registry';
+import TrackerModel from '@/features/attendance/data/models/TrackerModel';
+import { AttendanceServiceIdentifiers } from '@/features/attendance/di';
+import { ITrackerRepository } from '@/features/attendance/domain/ports/ITrackerRepository';
+import { useWorkTrackManager } from '@/features/attendance/ui/hooks';
+import { AuthServiceIdentifiers } from '@/features/auth/di';
+import { IAuthRepository } from '@/features/auth/domain/ports/IAuthRepository';
 import { Share } from '@/features/sharing/domain/entities/Share';
-import {
-	GetMySharesUseCase,
-	GetSharedWithMeUseCase,
-	ShareTrackerUseCase,
-	UnshareTrackerUseCase,
-	UpdatePermissionUseCase,
-} from '@/features/sharing/domain/use-cases';
 import ProfileInfo from '@/features/sharing/ui/components/ProfileInfo';
 import ScreenHeader from '@/features/sharing/ui/components/ScreenHeader';
 import SharedWithMeListItem from '@/features/sharing/ui/components/SharedWithMeListItem';
 import ShareListItem from '@/features/sharing/ui/components/ShareListItem';
+import {
+	useDefaultView,
+	useShares,
+	useSharing,
+} from '@/features/sharing/ui/hooks';
 import { database } from '@/shared/data/database';
 import ConfirmDialog from '@/shared/ui/components/dialogs/ConfirmDialog';
 import Dialog from '@/shared/ui/components/dialogs/Dialog';
@@ -63,37 +68,6 @@ type SharedWithMeListItemData = {
 	permission: 'read' | 'write';
 };
 
-// Share validation utility
-class ShareValidationUtils {
-	static validateShareRequest(
-		email: string,
-		currentUserEmail?: string,
-		existingShares: ShareListItemData[] = []
-	): void {
-		if (!email || email.trim().length === 0) {
-			throw new Error('Email address is required');
-		}
-
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if (!emailRegex.test(email)) {
-			throw new Error('Please enter a valid email address');
-		}
-
-		if (email.toLowerCase() === currentUserEmail?.toLowerCase()) {
-			throw new Error('You cannot share with yourself');
-		}
-
-		const normalizedEmail = email.toLowerCase().trim();
-		const alreadyShared = existingShares.some(
-			(share) => share.sharedWithEmail.toLowerCase() === normalizedEmail
-		);
-
-		if (alreadyShared) {
-			throw new Error('You have already shared with this user');
-		}
-	}
-}
-
 // Clear app data utility
 const clearAppData = async (): Promise<void> => {
 	try {
@@ -107,25 +81,54 @@ const clearAppData = async (): Promise<void> => {
 	}
 };
 
-const DEFAULT_VIEW_USER_ID_KEY = 'defaultViewUserId';
-
 const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 	navigation,
 	route,
 }) => {
 	const { RFValue } = useResponsiveLayout();
 	const dispatch = useDispatch<AppDispatch>();
-	const container = useDI();
 	const user = useSelector((state: RootState) => state.user.user);
-	const { loading } = useSelector((state: RootState) => state.workTrack);
 
+	// Use V2 hooks
+	const { defaultViewUserId, setDefaultView, clearDefaultView } =
+		useDefaultView();
+	const { myShares, sharedWithMe, loadShares } = useShares();
+	const {
+		isLoading: isSharingLoading,
+		shareTracker,
+		updatePermission,
+		removeShare,
+	} = useSharing();
+	const manager = useWorkTrackManager();
+	const container = useContainer();
+
+	// Resolve dependencies for user lookups
+	const trackerRepository = useMemo(
+		() =>
+			container.resolve<ITrackerRepository>(
+				AttendanceServiceIdentifiers.TRACKER_REPOSITORY
+			),
+		[container]
+	);
+
+	const authRepository = useMemo(
+		() =>
+			container.resolve<IAuthRepository>(
+				AuthServiceIdentifiers.AUTH_REPOSITORY
+			),
+		[container]
+	);
+
+	const watermelonDb = useMemo(
+		() => container.resolve<Database>(ServiceIdentifiers.WATERMELON_DB),
+		[container]
+	);
+
+	// UI state
 	const [mySharesData, setMySharesData] = useState<ShareListItemData[]>([]);
 	const [sharedWithMeData, setSharedWithMeData] = useState<
 		SharedWithMeListItemData[]
 	>([]);
-	const [defaultViewUserId, setDefaultViewUserId] = useState<string | null>(
-		null
-	);
 	const [isShareDialogVisible, setIsShareDialogVisible] = useState(false);
 	const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
 	const [editingShare, setEditingShare] = useState<ShareListItemData | null>(
@@ -156,82 +159,111 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 		onConfirm: () => void | Promise<void>;
 	} | null>(null);
 
-	// Get use cases from DI container
-	const getMySharesUseCase = container.resolve<GetMySharesUseCase>(
-		SharingServiceIdentifiers.GET_MY_SHARES
-	);
-	const getSharedWithMeUseCase = container.resolve<GetSharedWithMeUseCase>(
-		SharingServiceIdentifiers.GET_SHARED_WITH_ME
-	);
-	const shareTrackerUseCase = container.resolve<ShareTrackerUseCase>(
-		SharingServiceIdentifiers.SHARE_TRACKER
-	);
-	const updatePermissionUseCase = container.resolve<UpdatePermissionUseCase>(
-		SharingServiceIdentifiers.UPDATE_PERMISSION
-	);
-	const unshareTrackerUseCase = container.resolve<UnshareTrackerUseCase>(
-		SharingServiceIdentifiers.UNSHARE_TRACKER
-	);
-
 	// Convert Share entities to component-compatible format
-	const convertShareToListItemData = (
-		share: Share,
-		userEmail?: string
-	): ShareListItemData => {
+	const convertShareToListItemData = (share: Share): ShareListItemData => {
 		return {
 			sharedWithId: share.sharedWithUserId,
-			sharedWithEmail: userEmail || share.sharedWithUserId,
+			sharedWithEmail: share.sharedWithUserId,
 			permission: share.permission.value,
 		};
 	};
 
-	const convertShareToSharedWithMeData = (
-		share: Share,
-		ownerName: string,
-		ownerEmail: string
-	): SharedWithMeListItemData => {
-		return {
-			ownerId: share.trackerId, // Tracker ID represents the owner's tracker
-			ownerName,
-			ownerEmail,
-			permission: share.permission.value,
-		};
-	};
+	// Load shares data
+	useEffect(() => {
+		if (user?.id) {
+			loadShares(user.id);
+		}
+	}, [user?.id, loadShares]);
 
-	const loadShares = useCallback(async () => {
-		if (!user?.id) return;
+	// Convert domain shares to UI data with proper user lookups
+	useEffect(() => {
+		const convertShares = async () => {
+			const mySharesList = myShares.map(convertShareToListItemData);
 
-		try {
-			const [myShares, sharedWithMe] = await Promise.all([
-				getMySharesUseCase.execute(user.id),
-				getSharedWithMeUseCase.execute(user.id),
-			]);
+			const sharedWithMeList = await Promise.all(
+				sharedWithMe.map(async (share) => {
+					try {
+						const tracker = await trackerRepository.getById(
+							share.trackerId
+						);
+						if (!tracker) {
+							return {
+								ownerId: share.trackerId,
+								ownerName: 'Unknown User',
+								ownerEmail: share.sharedWithUserId,
+								permission: share.permission.value,
+							};
+						}
 
-			// Convert to component format
-			const mySharesList = myShares.map((share) =>
-				convertShareToListItemData(share)
-			);
+						const trackerCollection =
+							watermelonDb.get<TrackerModel>('trackers');
+						const trackerModels = await trackerCollection
+							.query(Q.where('id', tracker.id))
+							.fetch();
+						const trackerModel = trackerModels[0];
+						const ownerUserId = trackerModel?.userId || null;
 
-			// For shared with me, we need owner info - for now using IDs
-			// This would ideally come from user repository or share repository
-			const sharedWithMeList = sharedWithMe.map((share, index) =>
-				convertShareToSharedWithMeData(
-					share,
-					`User ${index + 1}`, // Placeholder - would need owner lookup
-					share.sharedWithUserId // Placeholder
-				)
+						if (!ownerUserId) {
+							logger.warn('Tracker owner userId not found', {
+								trackerId: tracker.id,
+							});
+							return {
+								ownerId: share.trackerId,
+								ownerName: 'Unknown User',
+								ownerEmail: share.sharedWithUserId,
+								permission: share.permission.value,
+							};
+						}
+
+						const ownerUser =
+							await authRepository.getUserById(ownerUserId);
+						if (!ownerUser) {
+							logger.warn('Owner user not found', {
+								ownerUserId,
+							});
+							return {
+								ownerId: share.trackerId,
+								ownerName: 'Unknown User',
+								ownerEmail: share.sharedWithUserId,
+								permission: share.permission.value,
+							};
+						}
+
+						return {
+							ownerId: share.trackerId,
+							ownerName: ownerUser.name,
+							ownerEmail: ownerUser.email.value,
+							permission: share.permission.value,
+						};
+					} catch (error) {
+						logger.error('Error loading shared with me data:', {
+							error,
+							shareId: share.id,
+						});
+						return {
+							ownerId: share.trackerId,
+							ownerName: 'Unknown User',
+							ownerEmail: share.sharedWithUserId,
+							permission: share.permission.value,
+						};
+					}
+				})
 			);
 
 			setMySharesData(mySharesList);
 			setSharedWithMeData(sharedWithMeList);
-		} catch (error) {
-			logger.error('Failed to load shares', { error });
-		}
-	}, [user?.id, getMySharesUseCase, getSharedWithMeUseCase]);
+		};
+
+		convertShares();
+	}, [
+		myShares,
+		sharedWithMe,
+		trackerRepository,
+		authRepository,
+		watermelonDb,
+	]);
 
 	useEffect(() => {
-		loadShares();
-
 		const keyboardDidShowListener = Keyboard.addListener(
 			'keyboardDidShow',
 			() => {
@@ -249,20 +281,6 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 			keyboardDidShowListener.remove();
 			keyboardDidHideListener.remove();
 		};
-	}, [loadShares]);
-
-	useEffect(() => {
-		const loadDefaultView = async () => {
-			try {
-				const userId = await AsyncStorage.getItem(
-					DEFAULT_VIEW_USER_ID_KEY
-				);
-				setDefaultViewUserId(userId);
-			} catch (error) {
-				logger.error('Failed to load default view user ID', { error });
-			}
-		};
-		loadDefaultView();
 	}, []);
 
 	useEffect(() => {
@@ -325,40 +343,31 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 		}
 
 		try {
-			ShareValidationUtils.validateShareRequest(
-				shareEmail,
-				user.email,
-				mySharesData
+			const tracker = await manager.userManagement.getTrackerByOwnerId(
+				user.id
 			);
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Validation failed';
-			showAlert('Validation Error', errorMessage, () =>
-				setShareEmail('')
-			);
-			return;
-		}
+			if (!tracker) {
+				showAlert(
+					'Error',
+					'No tracker found. Please ensure you have a valid tracker.'
+				);
+				return;
+			}
 
-		try {
-			dispatch(setWorkTrackLoading(true));
+			await shareTracker({
+				trackerId: tracker.id,
+				email: shareEmail,
+				permission: sharePermission,
+				userEmail: user.email,
+				existingShareEmails: mySharesData.map((s) => s.sharedWithEmail),
+			});
 
-			// Create a Share entity
-			// Note: We need the tracker ID - for now using user's tracker
-			// This should come from useWorkTrackManager once it's implemented
-			const trackerId = user.id; // Placeholder - should get actual tracker ID
-
-			const share = new Share(
-				'', // ID will be generated by repository
-				trackerId,
-				shareEmail.toLowerCase(),
-				new Permission(sharePermission)
-			);
-
-			await shareTrackerUseCase.execute(share);
 			showAlert('Success', 'Tracker shared successfully');
 			setShareEmail('');
 			setIsShareDialogVisible(false);
-			await loadShares();
+			if (user.id) {
+				await loadShares(user.id);
+			}
 		} catch (error: unknown) {
 			if (
 				error &&
@@ -378,8 +387,6 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 						: 'Failed to share tracker';
 				showAlert('Error', errorMessage);
 			}
-		} finally {
-			dispatch(setWorkTrackLoading(false));
 		}
 	};
 
@@ -395,8 +402,10 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 			confirmStyle: 'destructive',
 			onConfirm: async () => {
 				try {
-					await unshareTrackerUseCase.execute(sharedWithId);
-					loadShares();
+					await removeShare(sharedWithId);
+					if (user?.id) {
+						await loadShares(user.id);
+					}
 					setConfirmDialog(null);
 				} catch (error) {
 					logger.error('Error removing share:', { error });
@@ -412,22 +421,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 
 	const handleSetDefaultView = async (userId: string) => {
 		try {
-			const currentDefaultView = await AsyncStorage.getItem(
-				DEFAULT_VIEW_USER_ID_KEY
-			);
-			const newDefaultView =
-				currentDefaultView === userId ? null : userId;
-
-			if (newDefaultView) {
-				await AsyncStorage.setItem(
-					DEFAULT_VIEW_USER_ID_KEY,
-					newDefaultView
-				);
-			} else {
-				await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
-			}
-
-			setDefaultViewUserId(newDefaultView);
+			await setDefaultView(userId);
 		} catch (error) {
 			logger.error('Error setting default view:', { error });
 		}
@@ -448,7 +442,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 				await auth.signOut();
 			}
 			await AsyncStorage.removeItem('user');
-			await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
+			await clearDefaultView();
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
@@ -456,7 +450,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 		} catch (error) {
 			logger.error('Logout error:', { error });
 			await AsyncStorage.removeItem('user');
-			await AsyncStorage.removeItem(DEFAULT_VIEW_USER_ID_KEY);
+			await clearDefaultView();
 			await database.write(async () => {
 				await database.unsafeResetDatabase();
 			});
@@ -467,13 +461,15 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 	const onRefresh = useCallback(async () => {
 		setIsRefreshing(true);
 		try {
-			await loadShares();
+			if (user?.id) {
+				await loadShares(user.id);
+			}
 		} catch (error) {
 			logger.error('Error refreshing:', { error });
 		} finally {
 			setIsRefreshing(false);
 		}
-	}, [loadShares]);
+	}, [loadShares, user?.id]);
 
 	const handleEditPermission = (share: unknown) => {
 		const shareData = share as ShareListItemData;
@@ -486,22 +482,18 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 		if (!editingShare) return;
 
 		try {
-			dispatch(setWorkTrackLoading(true));
-			await updatePermissionUseCase.execute(
-				editingShare.sharedWithId,
-				new Permission(sharePermission)
-			);
+			await updatePermission(editingShare.sharedWithId, sharePermission);
 			showAlert('Success', 'Permission updated successfully');
 			setIsEditDialogVisible(false);
-			await loadShares();
+			if (user?.id) {
+				await loadShares(user.id);
+			}
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error
 					? error.message
 					: 'Failed to update permission';
 			showAlert('Error', errorMessage);
-		} finally {
-			dispatch(setWorkTrackLoading(false));
 		}
 	};
 
@@ -516,7 +508,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 				}
 			}}
 			title='Share Trackers'
-			loading={loading}
+			loading={isSharingLoading}
 			onDismiss={() => setIsShareDialogVisible(false)}
 			onConfirm={handleShare}
 			confirmText='Share'
@@ -603,7 +595,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 			}}
 			title='Edit Permission'
 			subtitle={editingShare?.sharedWithEmail}
-			loading={loading}
+			loading={isSharingLoading}
 			onDismiss={() => setIsEditDialogVisible(false)}
 			onConfirm={handleUpdatePermission}
 			confirmText='Update'
