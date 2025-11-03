@@ -4,7 +4,8 @@ jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
 
 // Provide env vars globally for tests
-jest.mock('@env', () => ({ FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080' }));
+// @env is mocked via jest.config.js moduleNameMapper to __mocks__/@env.js
+// That mock exports a mutable object that tests can modify directly
 
 // AsyncStorage mock
 jest.mock('@react-native-async-storage/async-storage', () =>

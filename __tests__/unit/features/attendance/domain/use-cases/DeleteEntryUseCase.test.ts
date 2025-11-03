@@ -2,8 +2,11 @@ import { IEntryRepository } from '@/features/attendance/domain/ports/IEntryRepos
 import { DeleteEntryUseCase } from '@/features/attendance/domain/use-cases/DeleteEntryUseCase';
 
 describe('DeleteEntryUseCase', () => {
-	it('deletes entry by id', async () => {
-		const repo: jest.Mocked<IEntryRepository> = {
+	let entryRepository: jest.Mocked<IEntryRepository>;
+	let useCase: DeleteEntryUseCase;
+
+	beforeEach(() => {
+		entryRepository = {
 			create: jest.fn(),
 			update: jest.fn(),
 			delete: jest.fn(),
@@ -11,10 +14,24 @@ describe('DeleteEntryUseCase', () => {
 			getForTracker: jest.fn(),
 			getForPeriod: jest.fn(),
 		};
-		repo.delete.mockResolvedValue();
+		useCase = new DeleteEntryUseCase(entryRepository);
+	});
 
-		const uc = new DeleteEntryUseCase(repo);
-		await uc.execute('e1');
-		expect(repo.delete).toHaveBeenCalledWith('e1');
+	it('deletes entry successfully', async () => {
+		const entryId = 'entry-1';
+		entryRepository.delete.mockResolvedValue(undefined);
+
+		await useCase.execute(entryId);
+
+		expect(entryRepository.delete).toHaveBeenCalledWith(entryId);
+	});
+
+	it('handles delete errors', async () => {
+		const entryId = 'entry-1';
+		const error = new Error('Delete failed');
+		entryRepository.delete.mockRejectedValue(error);
+
+		await expect(useCase.execute(entryId)).rejects.toThrow('Delete failed');
+		expect(entryRepository.delete).toHaveBeenCalledWith(entryId);
 	});
 });

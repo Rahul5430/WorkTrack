@@ -12,7 +12,7 @@ describe('UpdateEntryUseCase', () => {
 			getForTracker: jest.fn(),
 			getForPeriod: jest.fn(),
 		};
-		const entry = new WorkEntry('e1', 'u1', 't1', '2023-02-01', 'present');
+		const entry = new WorkEntry('e1', 'u1', 't1', '2023-02-01', 'office');
 		repo.update.mockResolvedValue(entry);
 
 		const uc = new UpdateEntryUseCase(repo);

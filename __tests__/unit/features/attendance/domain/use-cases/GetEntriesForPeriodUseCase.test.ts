@@ -15,7 +15,7 @@ describe('GetEntriesForPeriodUseCase', () => {
 		};
 		const range = new DateRange('2023-01-01', '2023-01-31');
 		const entries = [
-			new WorkEntry('e1', 'u1', 't1', '2023-01-05', 'present'),
+			new WorkEntry('e1', 'u1', 't1', '2023-01-05', 'office'),
 		];
 		repo.getForPeriod.mockResolvedValue(entries);
 

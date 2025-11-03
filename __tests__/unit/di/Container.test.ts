@@ -178,6 +178,17 @@ describe('Container', () => {
 			container.registerSingleton('parent', () => ({}));
 			expect(container.resolve('parent')).toBeDefined();
 		});
+
+		it('should check isRegistered with parent container lookup', () => {
+			const identifier = 'parent-service';
+			const factory = () => ({ value: 'parent' });
+
+			container.registerSingleton(identifier, factory);
+			const child = container.createChild();
+
+			// Child should find service registered in parent
+			expect(child.isRegistered(identifier)).toBe(true);
+		});
 	});
 
 	describe('Disposal', () => {
@@ -265,6 +276,24 @@ describe('Container', () => {
 
 			// This should throw due to circular dependency
 			expect(() => container.resolve(serviceA)).toThrow();
+		});
+	});
+
+	describe('error handling', () => {
+		it('should throw error for unknown service scope', () => {
+			const identifier = 'test-service';
+			const factory = () => ({ value: 'test' });
+
+			// Register with invalid scope by using the register method directly
+			container.register({
+				identifier,
+				factory,
+				scope: 'invalid-scope' as unknown as import('@/di/types').ServiceScope,
+			});
+
+			expect(() => container.resolve(identifier)).toThrow(
+				'Unknown service scope'
+			);
 		});
 	});
 });

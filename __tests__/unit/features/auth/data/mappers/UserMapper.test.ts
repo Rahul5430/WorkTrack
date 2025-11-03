@@ -1,162 +1,208 @@
-import { UserMapper } from '@/features/auth/data/mappers';
+import { UserMapper } from '@/features/auth/data/mappers/UserMapper';
 import UserModel from '@/features/auth/data/models/UserModel';
-import { User } from '@/features/auth/domain/entities';
-
-// Mock WatermelonDB model
-jest.mock('@/features/auth/data/models/UserModel');
+import { User } from '@/features/auth/domain/entities/User';
 
 describe('UserMapper', () => {
 	describe('toDomain', () => {
-		it('should convert UserModel to User domain entity', () => {
-			const mockModel = {
-				id: 'user-123',
+		it('converts UserModel to User domain entity', () => {
+			const model = {
+				id: 'user-1',
 				email: 'test@example.com',
 				name: 'Test User',
 				photoUrl: 'https://example.com/photo.jpg',
-				createdAt: new Date('2023-01-01'),
-				updatedAt: new Date('2023-01-02'),
+				isActive: true,
+				createdAt: new Date('2024-01-01T00:00:00Z'),
+				updatedAt: new Date('2024-01-02T00:00:00Z'),
 			} as unknown as UserModel;
 
-			const user = UserMapper.toDomain(mockModel);
+			const result = UserMapper.toDomain(model);
 
-			expect(user.id).toBe(mockModel.id);
-			expect(user.email.value).toBe(mockModel.email);
-			expect(user.name).toBe(mockModel.name);
-			expect(user.photoUrl).toBe(mockModel.photoUrl);
-			expect(user.createdAt).toEqual(mockModel.createdAt);
-			expect(user.updatedAt).toEqual(mockModel.updatedAt);
+			expect(result).toBeInstanceOf(User);
+			expect(result.id).toBe('user-1');
+			expect(result.email.value).toBe('test@example.com');
+			expect(result.name).toBe('Test User');
+			expect(result.photoUrl).toBe('https://example.com/photo.jpg');
 		});
 
-		it('should handle optional photoUrl', () => {
-			const mockModel = {
-				id: 'user-123',
+		it('handles undefined photoUrl', () => {
+			const model = {
+				id: 'user-1',
 				email: 'test@example.com',
 				name: 'Test User',
-				createdAt: new Date('2023-01-01'),
-				updatedAt: new Date('2023-01-02'),
+				photoUrl: undefined,
+				isActive: true,
+				createdAt: new Date('2024-01-01T00:00:00Z'),
+				updatedAt: new Date('2024-01-02T00:00:00Z'),
 			} as unknown as UserModel;
 
-			const user = UserMapper.toDomain(mockModel);
+			const result = UserMapper.toDomain(model);
 
-			expect(user.photoUrl).toBeUndefined();
+			expect(result.photoUrl).toBeUndefined();
 		});
 	});
 
 	describe('toModel', () => {
-		it('should convert User domain entity to model data', () => {
+		it('converts User domain entity to UserModel shape', () => {
+			const createdAt = new Date('2024-01-01T00:00:00Z');
+			const updatedAt = new Date('2024-01-02T00:00:00Z');
 			const user = new User(
-				'user-123',
+				'user-1',
 				'test@example.com',
 				'Test User',
-				'https://example.com/photo.jpg'
+				'https://example.com/photo.jpg',
+				createdAt,
+				updatedAt
 			);
 
-			const modelData = UserMapper.toModel(user);
+			const result = UserMapper.toModel(user);
 
-			expect(modelData.email).toBe('test@example.com');
-			expect(modelData.name).toBe('Test User');
-			expect(modelData.photoUrl).toBe('https://example.com/photo.jpg');
-			expect(modelData.isActive).toBe(true);
-			expect(modelData.createdAt).toBeGreaterThan(0);
-			expect(modelData.updatedAt).toBeGreaterThan(0);
+			expect(result.email).toBe('test@example.com');
+			expect(result.name).toBe('Test User');
+			expect(result.photoUrl).toBe('https://example.com/photo.jpg');
+			expect(result.isActive).toBe(true);
+			expect(result.createdAt).toBe(createdAt.getTime());
+			expect(result.updatedAt).toBe(updatedAt.getTime());
 		});
 
-		it('should handle optional photoUrl', () => {
-			const user = new User('user-123', 'test@example.com', 'Test User');
+		it('handles undefined photoUrl in model conversion', () => {
+			const createdAt = new Date('2024-01-01T00:00:00Z');
+			const updatedAt = new Date('2024-01-02T00:00:00Z');
+			const user = new User(
+				'user-1',
+				'test@example.com',
+				'Test User',
+				undefined,
+				createdAt,
+				updatedAt
+			);
 
-			const modelData = UserMapper.toModel(user);
+			const result = UserMapper.toModel(user);
 
-			expect(modelData.photoUrl).toBeUndefined();
-		});
-
-		it('should set isActive to true', () => {
-			const user = new User('user-123', 'test@example.com', 'Test User');
-
-			const modelData = UserMapper.toModel(user);
-
-			expect(modelData.isActive).toBe(true);
-		});
-	});
-
-	describe('fromFirebase', () => {
-		it('should convert Firebase user to User domain entity', () => {
-			const firebaseUser = {
-				uid: 'firebase-123',
-				email: 'test@example.com',
-				displayName: 'Test User',
-				photoURL: 'https://example.com/photo.jpg',
-			};
-
-			const user = UserMapper.fromFirebase(firebaseUser);
-
-			expect(user.id).toBe(firebaseUser.uid);
-			expect(user.email.value).toBe(firebaseUser.email);
-			expect(user.name).toBe(firebaseUser.displayName);
-			expect(user.photoUrl).toBe(firebaseUser.photoURL);
-		});
-
-		it('should handle null email', () => {
-			const firebaseUser = {
-				uid: 'firebase-123',
-				email: null,
-				displayName: 'Test User',
-				photoURL: 'https://example.com/photo.jpg',
-			};
-
-			const user = UserMapper.fromFirebase(firebaseUser);
-
-			expect(user.email.value).toBe('');
-		});
-
-		it('should handle null displayName', () => {
-			const firebaseUser = {
-				uid: 'firebase-123',
-				email: 'test@example.com',
-				displayName: null,
-				photoURL: 'https://example.com/photo.jpg',
-			};
-
-			const user = UserMapper.fromFirebase(firebaseUser);
-
-			expect(user.name).toBe('Unknown');
-		});
-
-		it('should handle null photoURL', () => {
-			const firebaseUser = {
-				uid: 'firebase-123',
-				email: 'test@example.com',
-				displayName: 'Test User',
-				photoURL: null,
-			};
-
-			const user = UserMapper.fromFirebase(firebaseUser);
-
-			expect(user.photoUrl).toBeUndefined();
+			expect(result.photoUrl).toBeUndefined();
 		});
 	});
 
 	describe('updateModel', () => {
-		it('should update model with user data', () => {
-			const mockModel = {
+		it('updates UserModel with data from User domain entity', () => {
+			const model = {
 				email: 'old@example.com',
-				name: 'Old User',
-				photoUrl: 'https://example.com/old.jpg',
-				updatedAt: new Date('2023-01-01'),
+				name: 'Old Name',
+				photoUrl: 'https://old.com/photo.jpg',
+				updatedAt: new Date('2024-01-01T00:00:00Z'),
 			} as unknown as UserModel;
 
 			const user = new User(
-				'user-123',
+				'user-1',
 				'new@example.com',
-				'New User',
-				'https://example.com/new.jpg'
+				'New Name',
+				'https://new.com/photo.jpg'
 			);
 
-			UserMapper.updateModel(mockModel, user);
+			UserMapper.updateModel(model, user);
 
-			expect(mockModel.email).toBe('new@example.com');
-			expect(mockModel.name).toBe('New User');
-			expect(mockModel.photoUrl).toBe('https://example.com/new.jpg');
-			expect(mockModel.updatedAt).toBeInstanceOf(Date);
+			expect(model.email).toBe('new@example.com');
+			expect(model.name).toBe('New Name');
+			expect(model.photoUrl).toBe('https://new.com/photo.jpg');
+			expect(model.updatedAt).toBeInstanceOf(Date);
+			expect(model.updatedAt.getTime()).toBeGreaterThan(
+				new Date('2024-01-01T00:00:00Z').getTime()
+			);
+		});
+
+		it('handles undefined photoUrl in update', () => {
+			const model = {
+				email: 'old@example.com',
+				name: 'Old Name',
+				photoUrl: 'https://old.com/photo.jpg',
+				updatedAt: new Date('2024-01-01T00:00:00Z'),
+			} as unknown as UserModel;
+
+			const user = new User(
+				'user-1',
+				'new@example.com',
+				'New Name',
+				undefined
+			);
+
+			UserMapper.updateModel(model, user);
+
+			expect(model.email).toBe('new@example.com');
+			expect(model.name).toBe('New Name');
+			expect(model.photoUrl).toBeUndefined();
+			expect(model.updatedAt).toBeInstanceOf(Date);
+		});
+	});
+
+	describe('fromFirebase', () => {
+		it('converts Firebase user to User domain entity', () => {
+			const firebaseUser = {
+				uid: 'firebase-uid-123',
+				email: 'firebase@example.com',
+				displayName: 'Firebase User',
+				photoURL: 'https://firebase.com/photo.jpg',
+			};
+
+			const result = UserMapper.fromFirebase(firebaseUser);
+
+			expect(result).toBeInstanceOf(User);
+			expect(result.id).toBe('firebase-uid-123');
+			expect(result.email.value).toBe('firebase@example.com');
+			expect(result.name).toBe('Firebase User');
+			expect(result.photoUrl).toBe('https://firebase.com/photo.jpg');
+		});
+
+		it('handles null email from Firebase', () => {
+			const firebaseUser = {
+				uid: 'firebase-uid-123',
+				email: null,
+				displayName: 'Firebase User',
+				photoURL: null,
+			};
+
+			const result = UserMapper.fromFirebase(firebaseUser);
+
+			expect(result.email.value).toBe('');
+		});
+
+		it('handles null displayName from Firebase', () => {
+			const firebaseUser = {
+				uid: 'firebase-uid-123',
+				email: 'firebase@example.com',
+				displayName: null,
+				photoURL: null,
+			};
+
+			const result = UserMapper.fromFirebase(firebaseUser);
+
+			expect(result.name).toBe('Unknown');
+		});
+
+		it('handles null photoURL from Firebase', () => {
+			const firebaseUser = {
+				uid: 'firebase-uid-123',
+				email: 'firebase@example.com',
+				displayName: 'Firebase User',
+				photoURL: null,
+			};
+
+			const result = UserMapper.fromFirebase(firebaseUser);
+
+			expect(result.photoUrl).toBeUndefined();
+		});
+
+		it('handles undefined fields from Firebase', () => {
+			const firebaseUser = {
+				uid: 'firebase-uid-123',
+				email: null,
+				displayName: null,
+				photoURL: null,
+			};
+
+			const result = UserMapper.fromFirebase(firebaseUser);
+
+			expect(result.email.value).toBe('');
+			expect(result.name).toBe('Unknown');
+			expect(result.photoUrl).toBeUndefined();
 		});
 	});
 });

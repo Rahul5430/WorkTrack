@@ -7,6 +7,32 @@ describe('ShareValidator', () => {
 			const share = new Share('s1', 't1', 'user@example.com', 'read');
 			expect(() => ShareValidator.validate(share)).not.toThrow();
 		});
+
+		it('throws error when trackerId is missing', () => {
+			// Share constructor validates trackerId and throws during construction
+			// The validator also checks this, but constructor validation happens first
+			// We can test the validator logic by creating a mock share object
+			const mockShare = {
+				trackerId: '',
+				sharedWithUserId: 'user@example.com',
+			} as Share;
+			expect(() => ShareValidator.validate(mockShare)).toThrow(
+				'trackerId required'
+			);
+		});
+
+		it('throws error when sharedWithUserId is missing', () => {
+			// Share constructor validates sharedWithUserId and throws during construction
+			// The validator also checks this, but constructor validation happens first
+			// We can test the validator logic by creating a mock share object
+			const mockShare = {
+				trackerId: 't1',
+				sharedWithUserId: '',
+			} as Share;
+			expect(() => ShareValidator.validate(mockShare)).toThrow(
+				'sharedWithUserId required'
+			);
+		});
 	});
 
 	describe('email format validation', () => {

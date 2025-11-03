@@ -1,13 +1,7 @@
-// Work status constants
+// Work status constants (UI concerns) built on top of shared types
+import { WORK_STATUS, type WorkStatusType } from '@/shared/types/workStatus';
 
-export const WORK_STATUS = {
-	OFFICE: 'office',
-	WFH: 'wfh',
-	HOLIDAY: 'holiday',
-	LEAVE: 'leave',
-	WEEKEND: 'weekend',
-	FORECAST: 'forecast',
-} as const;
+export { WORK_STATUS, type WorkStatusType };
 
 export const WORK_STATUS_COLORS = {
 	[WORK_STATUS.OFFICE]: '#2196F3',

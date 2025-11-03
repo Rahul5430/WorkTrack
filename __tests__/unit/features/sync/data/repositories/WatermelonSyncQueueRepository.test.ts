@@ -67,6 +67,36 @@ describe('WatermelonSyncQueueRepository', () => {
 			expect(database.get).toHaveBeenCalledWith('sync_queue');
 			expect(collection.create).toHaveBeenCalled();
 		});
+
+		it('creates a sync operation with nextRetryAt', async () => {
+			const nextRetryAt = new Date('2023-12-31');
+			const op = new SyncOperation(
+				'op1',
+				'create',
+				'work_entries',
+				'w1',
+				{ foo: 'bar' },
+				'pending',
+				0,
+				5,
+				nextRetryAt
+			);
+
+			const mockModel = {
+				destroyPermanently: jest.fn(),
+			};
+
+			collection.create.mockImplementation((cb) => {
+				const model = {} as unknown as SyncOperationModel;
+				cb(model);
+				return Promise.resolve(mockModel);
+			});
+
+			await repository.enqueue(op);
+
+			expect(database.get).toHaveBeenCalledWith('sync_queue');
+			expect(collection.create).toHaveBeenCalled();
+		});
 	});
 
 	describe('dequeue', () => {
@@ -136,14 +166,49 @@ describe('WatermelonSyncQueueRepository', () => {
 	});
 
 	describe('update', () => {
-		it('updates existing sync operation', async () => {
+		it('updates existing sync operation with all fields', async () => {
 			const op = new SyncOperation(
 				'op1',
 				'create',
 				'work_entries',
 				'w1',
+				{ foo: 'bar' },
+				'syncing',
+				1,
+				5,
+				new Date('2023-01-01T00:00:00Z')
+			);
+
+			const nextRetryAt = new Date('2023-01-02T00:00:00Z');
+			const opWithRetry = op
+				.withStatus('syncing')
+				.incrementRetry(nextRetryAt);
+
+			const mockModel = {
+				update: jest.fn().mockImplementation((cb) => {
+					cb({});
+					return Promise.resolve();
+				}),
+			};
+
+			collection.find.mockResolvedValue(
+				mockModel as unknown as SyncOperationModel
+			);
+
+			await repository.update(opWithRetry);
+
+			expect(collection.find).toHaveBeenCalledWith('op1');
+			expect(mockModel.update).toHaveBeenCalled();
+		});
+
+		it('updates operation without nextRetryAt', async () => {
+			const op = new SyncOperation(
+				'op1',
+				'update',
+				'trackers',
+				't1',
 				undefined,
-				'syncing'
+				'completed'
 			);
 
 			const mockModel = {
@@ -159,7 +224,6 @@ describe('WatermelonSyncQueueRepository', () => {
 
 			await repository.update(op);
 
-			expect(collection.find).toHaveBeenCalledWith('op1');
 			expect(mockModel.update).toHaveBeenCalled();
 		});
 
@@ -177,29 +241,33 @@ describe('WatermelonSyncQueueRepository', () => {
 	});
 
 	describe('getAll', () => {
-		it('returns all pending and syncing operations', async () => {
+		it('returns all pending and syncing operations with default limit', async () => {
 			const mockModels = [
 				{
 					id: 'op1',
 					operation: 'create',
 					tableName: 'work_entries',
 					recordId: 'w1',
+					data: '{"foo":"bar"}',
 					status: 'pending',
 					retryCount: 0,
 					maxRetries: 5,
 					createdAt: new Date('2023-01-01'),
 					updatedAt: new Date('2023-01-01'),
+					nextRetryAt: new Date(Date.now() - 1000), // Past date
 				},
 				{
 					id: 'op2',
 					operation: 'update',
 					tableName: 'trackers',
 					recordId: 't1',
+					data: undefined,
 					status: 'syncing',
 					retryCount: 1,
 					maxRetries: 5,
 					createdAt: new Date('2023-01-01'),
 					updatedAt: new Date('2023-01-01'),
+					nextRetryAt: new Date(Date.now() - 2000), // Past date
 				},
 			] as unknown as SyncOperationModel[];
 
@@ -207,7 +275,92 @@ describe('WatermelonSyncQueueRepository', () => {
 
 			const result = await repository.getAll();
 
+			expect(collection.query).toHaveBeenCalled();
 			expect(result).toHaveLength(2);
+			expect(result[0]).toBeInstanceOf(SyncOperation);
+			expect(result[1]).toBeInstanceOf(SyncOperation);
+		});
+
+		it('returns operations with custom limit', async () => {
+			const mockModels = [
+				{
+					id: 'op1',
+					operation: 'create',
+					tableName: 'work_entries',
+					recordId: 'w1',
+					data: '{}',
+					status: 'pending',
+					retryCount: 0,
+					maxRetries: 5,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					nextRetryAt: new Date(Date.now() - 1000),
+				},
+				{
+					id: 'op2',
+					operation: 'update',
+					tableName: 'trackers',
+					recordId: 't1',
+					data: '{}',
+					status: 'syncing',
+					retryCount: 1,
+					maxRetries: 5,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					nextRetryAt: new Date(Date.now() - 2000),
+				},
+				{
+					id: 'op3',
+					operation: 'delete',
+					tableName: 'work_entries',
+					recordId: 'w2',
+					data: undefined,
+					status: 'pending',
+					retryCount: 0,
+					maxRetries: 5,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					nextRetryAt: new Date(Date.now() - 3000),
+				},
+			] as unknown as SyncOperationModel[];
+
+			queryBuilder.fetch.mockResolvedValueOnce(mockModels);
+
+			const result = await repository.getAll(2);
+
+			expect(result).toHaveLength(2); // Limited to 2
+		});
+
+		it('returns empty array when no operations match', async () => {
+			queryBuilder.fetch.mockResolvedValueOnce([]);
+
+			const result = await repository.getAll();
+
+			expect(result).toEqual([]);
+		});
+
+		it('handles operations without nextRetryAt', async () => {
+			const mockModels = [
+				{
+					id: 'op1',
+					operation: 'create',
+					tableName: 'work_entries',
+					recordId: 'w1',
+					data: '{}',
+					status: 'pending',
+					retryCount: 0,
+					maxRetries: 5,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					nextRetryAt: undefined,
+				},
+			] as unknown as SyncOperationModel[];
+
+			queryBuilder.fetch.mockResolvedValueOnce(mockModels);
+
+			const result = await repository.getAll();
+
+			expect(result).toHaveLength(1);
 		});
 	});
 

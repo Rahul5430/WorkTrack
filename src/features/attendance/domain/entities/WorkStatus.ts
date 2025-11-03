@@ -1,11 +1,8 @@
 // Status value object
-export type WorkStatusType =
-	| 'present'
-	| 'absent'
-	| 'leave'
-	| 'holiday'
-	| 'wfh'
-	| 'half-day';
+import {
+	WORK_STATUS_VALUES,
+	type WorkStatusType,
+} from '@/shared/types/workStatus';
 
 export class WorkStatus {
 	private readonly _value: WorkStatusType;
@@ -19,7 +16,7 @@ export class WorkStatus {
 	}
 
 	static allowed(): WorkStatusType[] {
-		return ['present', 'absent', 'leave', 'holiday', 'wfh', 'half-day'];
+		return [...WORK_STATUS_VALUES];
 	}
 
 	static validate(value: WorkStatusType | string): WorkStatusType {

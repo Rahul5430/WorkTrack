@@ -24,6 +24,27 @@ describe('InMemorySyncQueueRepository', () => {
 		expect(next).toBeNull();
 	});
 
+	it('dequeue returns null when no pending operations', async () => {
+		const dequeued = await repo.dequeue();
+		expect(dequeued).toBeNull();
+	});
+
+	it('dequeue handles empty array correctly', async () => {
+		// Add a completed operation, should not be dequeued
+		await repo.enqueue(
+			new SyncOperation(
+				'1',
+				'create',
+				'work_entries',
+				'w1',
+				undefined,
+				'completed'
+			)
+		);
+		const dequeued = await repo.dequeue();
+		expect(dequeued).toBeNull();
+	});
+
 	it('updates operation status', async () => {
 		const op = new SyncOperation('1', 'create', 'work_entries', 'w1');
 		await repo.enqueue(op);
@@ -31,6 +52,16 @@ describe('InMemorySyncQueueRepository', () => {
 		await repo.update(syncing);
 		const all = await repo.getAll();
 		expect(all[0].status).toBe('syncing');
+	});
+
+	it('update does nothing when operation not found', async () => {
+		const op = new SyncOperation('1', 'create', 'work_entries', 'w1');
+		await repo.enqueue(op);
+		const notFound = new SyncOperation('2', 'update', 'work_entries', 'w2');
+		await repo.update(notFound);
+		const all = await repo.getAll();
+		expect(all).toHaveLength(1);
+		expect(all[0].id).toBe('1');
 	});
 
 	it('getAll returns pending and syncing only', async () => {

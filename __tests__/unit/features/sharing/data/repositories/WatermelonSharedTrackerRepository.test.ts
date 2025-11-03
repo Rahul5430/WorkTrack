@@ -76,11 +76,127 @@ describe('WatermelonSharedTrackerRepository', () => {
 		expect(found.update).toHaveBeenCalled();
 	});
 
-	it('lists shares', async () => {
-		(
-			collection.query() as unknown as { fetch: jest.Mock }
-		).fetch.mockResolvedValueOnce([]);
-		const res = await repo.getMyShares('u1');
-		expect(Array.isArray(res)).toBe(true);
+	it('gets my shares', async () => {
+		const mockShare1 = {
+			id: 's1',
+			trackerId: 't1',
+			sharedWithUserId: 'u2',
+			permission: 'read',
+			isActive: true,
+			createdByUserId: 'u1',
+			createdAt: new Date('2023-01-01'),
+			updatedAt: new Date('2023-01-02'),
+		} as unknown as ShareModel;
+		const mockShare2 = {
+			id: 's2',
+			trackerId: 't2',
+			sharedWithUserId: 'u3',
+			permission: 'write',
+			isActive: true,
+			createdByUserId: 'u1',
+			createdAt: new Date('2023-01-03'),
+			updatedAt: new Date('2023-01-04'),
+		} as unknown as ShareModel;
+		const queryBuilder = {
+			fetch: jest.fn().mockResolvedValue([mockShare1, mockShare2]),
+		};
+		(collection.query as jest.Mock).mockReturnValue(queryBuilder);
+
+		const result = await repo.getMyShares('u1');
+
+		expect(collection.query).toHaveBeenCalled();
+		expect(queryBuilder.fetch).toHaveBeenCalled();
+		expect(result).toHaveLength(2);
+		expect(result[0].id).toBe('s1');
+		expect(result[1].id).toBe('s2');
+	});
+
+	it('gets shared with me', async () => {
+		const mockShare = {
+			id: 's1',
+			trackerId: 't1',
+			sharedWithUserId: 'u2',
+			permission: 'read',
+			isActive: true,
+			createdByUserId: 'u1',
+			createdAt: new Date('2023-01-01'),
+			updatedAt: new Date('2023-01-02'),
+		} as unknown as ShareModel;
+		const queryBuilder = {
+			fetch: jest.fn().mockResolvedValue([mockShare]),
+		};
+		(collection.query as jest.Mock).mockReturnValue(queryBuilder);
+
+		const result = await repo.getSharedWithMe('u2');
+
+		expect(collection.query).toHaveBeenCalled();
+		expect(queryBuilder.fetch).toHaveBeenCalled();
+		expect(result).toHaveLength(1);
+		expect(result[0].id).toBe('s1');
+		expect(result[0].sharedWithUserId).toBe('u2');
+	});
+
+	it('returns empty array when no shares found', async () => {
+		const queryBuilder = {
+			fetch: jest.fn().mockResolvedValue([]),
+		};
+		(collection.query as jest.Mock).mockReturnValue(queryBuilder);
+
+		const result = await repo.getMyShares('u1');
+
+		expect(result).toEqual([]);
+	});
+
+	it('queries with isActive filter', async () => {
+		const mockShare1 = {
+			id: 's1',
+			trackerId: 't1',
+			sharedWithUserId: 'u2',
+			permission: 'read',
+			isActive: true,
+			createdByUserId: 'u1',
+			createdAt: new Date('2023-01-01'),
+			updatedAt: new Date('2023-01-02'),
+		} as unknown as ShareModel;
+		const queryBuilder = {
+			fetch: jest.fn().mockResolvedValue([mockShare1]),
+		};
+		(collection.query as jest.Mock).mockReturnValue(queryBuilder);
+
+		const result = await repo.getMyShares('u1');
+
+		// Verify query was called with is_active filter
+		expect(collection.query).toHaveBeenCalled();
+		expect(queryBuilder.fetch).toHaveBeenCalled();
+		expect(result).toHaveLength(1);
+		expect(result[0].id).toBe('s1');
+	});
+
+	it('creates share with correct data mapping', async () => {
+		const share = new Share('s1', 't1', 'u2', 'read', true);
+		const createdModel = {
+			id: 's1',
+			trackerId: 't1',
+			sharedWithUserId: 'u2',
+			permission: 'read',
+			isActive: true,
+			createdByUserId: 'u1',
+			createdAt: new Date('2023-01-01'),
+			updatedAt: new Date('2023-01-02'),
+		} as unknown as ShareModel;
+		let capturedCallback: ((model: ShareModel) => void) | null = null;
+		collection.create.mockImplementation((cb) => {
+			if (typeof cb === 'function') {
+				capturedCallback = cb;
+				capturedCallback(createdModel);
+			}
+			return Promise.resolve(createdModel);
+		});
+
+		const result = await repo.shareTracker(share);
+
+		expect(collection.create).toHaveBeenCalled();
+		expect(result).toBeDefined();
+		expect(result.id).toBe('s1');
 	});
 });

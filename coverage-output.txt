@@ -1,0 +1,4458 @@
+
+> WorkTrack@0.0.1 test:coverage
+> jest --coverage
+
+watchman warning:  Recrawled this watch 1 time, most recently because:
+MustScanSubDirs UserDroppedTo resolve, please review the information on
+https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+To clear this warning, run:
+`watchman watch-del '/Users/rahulsharma/Developer/WorkTrack' ; watchman watch-project '/Users/rahulsharma/Developer/WorkTrack'`
+
+PASS __tests__/integration/app/initialization.test.tsx
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.008Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.019Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.020Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.020Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.021Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.021Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.022Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.022Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.022Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.022Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.023Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.023Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.024Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.026Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.026Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.026Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.026Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.027Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.027Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.027Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.027Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.027Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.028Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.029Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.030Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.030Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.031Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.031Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.031Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.032Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.033Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.033Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.035Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.038Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.038Z] INFO: Registered service: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.038Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.038Z] INFO: Registered service: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.039Z] INFO: Created singleton instance: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.039Z] INFO: Created singleton instance: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.039Z] INFO: Registered service: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.039Z] INFO: Registered service: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.039Z] INFO: Registered service: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.040Z] INFO: Registered service: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.040Z] INFO: Registered service: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.041Z] INFO: Registered service: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.041Z] INFO: Registered service: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.041Z] INFO: Registered service: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.041Z] INFO: Registered service: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.042Z] INFO: Registered service: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.042Z] INFO: Registered service: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.042Z] INFO: Registered service: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.042Z] INFO: Created singleton instance: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.042Z] INFO: Registered service: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.043Z] INFO: Registered service: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.043Z] INFO: Registered service: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.043Z] INFO: Registered service: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.043Z] INFO: Registered service: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.044Z] INFO: Registered service: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.044Z] INFO: Registered service: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.046Z] INFO: Registered service: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.046Z] INFO: Created singleton instance: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.047Z] INFO: Registered service: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.047Z] INFO: Registered service: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.047Z] INFO: Created singleton instance: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.047Z] INFO: Created singleton instance: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.047Z] INFO: Registered service: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.048Z] INFO: Registered service: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.048Z] INFO: Registered service: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.048Z] INFO: Registered service: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.048Z] INFO: Built container with 30 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/auth/ui/screens/WelcomeScreen.test.tsx
+PASS __tests__/unit/shared/domain/value-objects/Timestamp.test.ts
+PASS __tests__/unit/di/registry.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.415Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.415Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.416Z] INFO: Built container with 2 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Built container with 2 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.417Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.418Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.419Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.419Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.420Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.421Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.422Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.423Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.424Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.425Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.426Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.426Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.428Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.429Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.430Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.431Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.432Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.433Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.434Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.435Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.436Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.437Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.438Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.439Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.440Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.441Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.442Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.443Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.443Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.443Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.443Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.444Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Registered service: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Registered service: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.445Z] INFO: Created singleton instance: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Created singleton instance: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Registered service: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Registered service: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Registered service: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Registered service: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.446Z] INFO: Registered service: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.447Z] INFO: Registered service: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.447Z] INFO: Registered service: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.448Z] INFO: Registered service: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.448Z] INFO: Registered service: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.449Z] INFO: Registered service: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.449Z] INFO: Registered service: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.449Z] INFO: Registered service: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.449Z] INFO: Created singleton instance: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.450Z] INFO: Registered service: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.450Z] INFO: Registered service: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.450Z] INFO: Registered service: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.450Z] INFO: Registered service: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Created singleton instance: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Registered service: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.451Z] INFO: Created singleton instance: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.452Z] INFO: Created singleton instance: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.452Z] INFO: Registered service: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.452Z] INFO: Registered service: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.452Z] INFO: Registered service: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.452Z] INFO: Registered service: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.453Z] INFO: Built container with 30 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.453Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.453Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.453Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.453Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Built container with 2 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.454Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.455Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.456Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.456Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.456Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.456Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.457Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.458Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.459Z] INFO: Registered service: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Registered service: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Created singleton instance: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Created singleton instance: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Registered service: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Registered service: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Registered service: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.460Z] INFO: Registered service: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Created singleton instance: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.461Z] INFO: Registered service: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Created singleton instance: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Registered service: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.462Z] INFO: Created singleton instance: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Created singleton instance: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Registered service: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Registered service: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Registered service: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Registered service: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Built container with 30 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.463Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.464Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.464Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.464Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.464Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.464Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.465Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.466Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.467Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Registered service: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Registered service: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Created singleton instance: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.468Z] INFO: Created singleton instance: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.469Z] INFO: Registered service: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Created singleton instance: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.470Z] INFO: Registered service: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.471Z] INFO: Created singleton instance: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.471Z] INFO: Registered service: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.471Z] INFO: Registered service: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.471Z] INFO: Created singleton instance: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.471Z] INFO: Created singleton instance: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registered service: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registered service: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registered service: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registered service: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Built container with 30 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registering core services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Queued service registration: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Queued service registration: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Core services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registering feature services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.472Z] INFO: Registering auth services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Auth services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Registering attendance services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.473Z] INFO: Queued service registration: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Attendance services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Registering sharing services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.474Z] INFO: Queued service registration: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Sharing services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Registering sync services...
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.475Z] INFO: Queued service registration: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Queued service registration: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Queued service registration: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Sync services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Feature services registered
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Registered service: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Registered service: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.476Z] INFO: Created singleton instance: Symbol(AuthService)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Created singleton instance: Symbol(AuthRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(SignInUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(SignOutUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(CheckAuthStateUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(EntryRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(TrackerRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(CreateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(UpdateEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(DeleteEntryUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.477Z] INFO: Registered service: Symbol(GetEntriesForPeriodUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(GetEntriesForTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(ShareRepositoryRemote)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Created singleton instance: Symbol(ShareRepositoryLocal)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(ShareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(UnshareTrackerUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(UpdatePermissionUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.478Z] INFO: Registered service: Symbol(GetMySharesUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(GetSharedWithMeUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Created singleton instance: Symbol(SyncQueueRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(EnqueueSyncOperationUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.479Z] INFO: Registered service: Symbol(SyncManager)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Created singleton instance: Symbol(SyncRepository)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Created singleton instance: Symbol(NetworkMonitor)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Registered service: Symbol(ProcessSyncQueueUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Registered service: Symbol(SyncToRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Registered service: Symbol(SyncFromRemoteUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Registered service: Symbol(ResolveConflictUseCase)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Built container with 30 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.480Z] INFO: Queued service registration: dependent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.481Z] INFO: Registered service: dependent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.481Z] INFO: Built container with 1 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/di/mock-injection.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.623Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.624Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.624Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.624Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.625Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.626Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.627Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.628Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Registered service: dependent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Created singleton instance: dependent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Registered service: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Registered service: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.629Z] INFO: Created singleton instance: Symbol(WatermelonDB)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Registered service: level1-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Created singleton instance: level1-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Created singleton instance: Symbol(FirestoreClient)
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Registered service: level2-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Created singleton instance: level2-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Registered service: disposable-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Created singleton instance: disposable-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.630Z] INFO: Disposed instance: disposable-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.631Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.631Z] INFO: Registered service: error-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.631Z] INFO: Created singleton instance: error-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:39.631Z] ERROR: Error disposing instance error-mock: Error: Mock disposal error
+          at Object.dispose (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/mock-injection.test.ts:206:12)
+          at Container.dispose [as disposeInstance] (/Users/rahulsharma/Developer/WorkTrack/src/di/Container.ts:285:14)
+          at Container.disposeInstance [as dispose] (/Users/rahulsharma/Developer/WorkTrack/src/di/Container.ts:172:9)
+          at dispose (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/mock-injection.test.ts:214:27)
+          at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/expect/build/toThrowMatchers.js:74:11)
+          at Object.throwingMatcher [as toThrow] (/Users/rahulsharma/Developer/WorkTrack/node_modules/expect/build/index.js:320:21)
+          at Object.toThrow (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/mock-injection.test.ts:214:42)
+          at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+          at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+          at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34)
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at Container.error [as disposeInstance] (src/di/Container.ts:288:12)
+      at Container.disposeInstance [as dispose] (src/di/Container.ts:172:9)
+      at dispose (__tests__/unit/di/mock-injection.test.ts:214:27)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (__tests__/unit/di/mock-injection.test.ts:214:42)
+
+    console.info
+      [2025-11-01T20:17:39.640Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.640Z] INFO: Registered service: transient-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.640Z] INFO: Created transient instance: transient-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.640Z] INFO: Created transient instance: transient-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.640Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.641Z] INFO: Registered service: scoped-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.641Z] INFO: Created scoped instance: scoped-mock
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.641Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/auth/ui/screens/LoadingScreen.test.tsx
+PASS __tests__/unit/di/Container.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.733Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.734Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.734Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.734Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.734Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.734Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.735Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.743Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.743Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Created transient instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.744Z] INFO: Created transient instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Created scoped instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Registered service: test
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.745Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.746Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.746Z] INFO: Registered service: parent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.746Z] INFO: Created singleton instance: parent-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.746Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.746Z] INFO: Registered service: child-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Registered service: child-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Registered service: parent
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Created singleton instance: parent
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.747Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.749Z] INFO: Registered service: disposable-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.749Z] INFO: Created singleton instance: disposable-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Disposed instance: disposable-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Registered service: error-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Created singleton instance: error-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:39.750Z] ERROR: Error disposing instance error-service: Error: Disposal error
+          at Object.dispose (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/Container.test.ts:216:12)
+          at Container.dispose [as disposeInstance] (/Users/rahulsharma/Developer/WorkTrack/src/di/Container.ts:285:14)
+          at Container.disposeInstance [as dispose] (/Users/rahulsharma/Developer/WorkTrack/src/di/Container.ts:172:9)
+          at dispose (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/Container.test.ts:224:27)
+          at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/expect/build/toThrowMatchers.js:74:11)
+          at Object.throwingMatcher [as toThrow] (/Users/rahulsharma/Developer/WorkTrack/node_modules/expect/build/index.js:320:21)
+          at Object.toThrow (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/di/Container.test.ts:224:42)
+          at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+          at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+          at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+          at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34)
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at Container.error [as disposeInstance] (src/di/Container.ts:288:12)
+      at Container.disposeInstance [as dispose] (src/di/Container.ts:172:9)
+      at dispose (__tests__/unit/di/Container.test.ts:224:27)
+      at Object.<anonymous> (node_modules/expect/build/toThrowMatchers.js:74:11)
+      at Object.throwingMatcher [as toThrow] (node_modules/expect/build/index.js:320:21)
+      at Object.toThrow (__tests__/unit/di/Container.test.ts:224:42)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.750Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Registered service: service-a
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Created singleton instance: service-a
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Registered service: service-b
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Created singleton instance: service-b
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Registered service: service-a
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.751Z] INFO: Registered service: service-b
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.755Z] INFO: Container disposed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/auth/domain/entities/AuthSession.test.ts
+PASS __tests__/unit/features/sharing/domain/validators/ShareValidator.test.ts
+PASS __tests__/unit/features/auth/domain/entities/User.test.ts
+PASS __tests__/unit/shared/domain/value-objects/Email.test.ts
+PASS __tests__/unit/di/ContainerBuilder.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.912Z] INFO: Queued service registration: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.913Z] INFO: Queued service registration: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.913Z] INFO: Queued service registration: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.914Z] INFO: Queued service registration: service1
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.914Z] INFO: Queued service registration: service2
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.915Z] INFO: Queued service registration: service3
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.915Z] INFO: Queued service registration: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.921Z] INFO: Queued service registration: service1
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.921Z] INFO: Queued service registration: service2
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.921Z] INFO: Queued service registration: service3
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Queued service registration: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Registered service: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Built container with 1 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Created singleton instance: test-service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Built container with 0 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Queued service registration: singleton
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.922Z] INFO: Queued service registration: transient
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Queued service registration: scoped
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Registered service: singleton
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Registered service: transient
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Registered service: scoped
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Built container with 3 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Created singleton instance: singleton
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Created transient instance: transient
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.923Z] INFO: Created transient instance: transient
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.924Z] INFO: Created scoped instance: scoped
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.924Z] INFO: Queued service registration: service1
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.924Z] INFO: Queued service registration: service2
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.924Z] INFO: Cleared all service registrations
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.924Z] INFO: Queued service registration: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Registered service: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Built container with 1 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Queued service registration: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Registered service: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Built container with 1 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Registered service: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Built container with 1 services
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Created singleton instance: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.925Z] INFO: Created singleton instance: service
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/shared/domain/BaseEntity.test.ts
+PASS __tests__/unit/features/auth/domain/use-cases/SignInUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:39.981Z] INFO: Starting sign-in process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.982Z] INFO: User signed in: user-123
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.982Z] INFO: User does not exist, creating new user
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.982Z] INFO: Starting sign-in process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.983Z] INFO: User signed in: user-123
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.983Z] INFO: User exists, updating user information
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:39.983Z] INFO: Starting sign-in process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:39.985Z] ERROR: Sign-in failed {
+        error: AuthenticationError: Sign in failed
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/features/auth/domain/use-cases/SignInUseCase.test.ts:87:18)
+            at Generator.next (<anonymous>)
+            at asyncGeneratorStep (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+            at _next (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+            at /Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+            at new Promise (<anonymous>)
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+            at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+            at new Promise (<anonymous>)
+            at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+            at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+            at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+            at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+            at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+            at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+            at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34) {
+          code: 'AUTHENTICATION_ERROR',
+          statusCode: 401,
+          timestamp: 2025-11-01T20:17:39.983Z,
+          context: { reason: 'INVALID_CREDENTIALS' },
+          reason: 'INVALID_CREDENTIALS'
+        }
+      }
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at SignInUseCase.error (src/features/auth/domain/use-cases/SignInUseCase.ts:43:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [2025-11-01T20:17:39.987Z] INFO: Starting sign-in process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:39.987Z] ERROR: Sign-in failed {
+        error: Error: Network error
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/features/auth/domain/use-cases/SignInUseCase.test.ts:99:18)
+            at Generator.next (<anonymous>)
+            at asyncGeneratorStep (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+            at _next (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+            at /Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+            at new Promise (<anonymous>)
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+            at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+            at new Promise (<anonymous>)
+            at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+            at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+            at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+            at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+            at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+            at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+            at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34)
+      }
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at SignInUseCase.error (src/features/auth/domain/use-cases/SignInUseCase.ts:43:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS __tests__/unit/shared/domain/value-objects/UUID.test.ts
+PASS __tests__/unit/features/sync/data/repositories/WatermelonSyncQueueRepository.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.041Z] INFO: Enqueued sync operation { id: 'op1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.045Z] INFO: Updated sync operation { id: 'op1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.051Z] INFO: Cleared completed sync operations
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/shared/domain/errors/AuthenticationError.test.ts
+PASS __tests__/unit/features/auth/domain/use-cases/CheckAuthStateUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.095Z] INFO: Checking authentication state
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.096Z] INFO: User is authenticated: user-123
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.096Z] INFO: Checking authentication state
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.096Z] INFO: User is not authenticated
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.097Z] INFO: Checking authentication state
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:40.097Z] ERROR: Failed to check authentication state {
+        error: Error: Auth state check failed
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/features/auth/domain/use-cases/CheckAuthStateUseCase.test.ts:65:5)
+            at Generator.next (<anonymous>)
+            at asyncGeneratorStep (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+            at _next (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+            at /Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+            at new Promise (<anonymous>)
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+            at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+            at new Promise (<anonymous>)
+            at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+            at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+            at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+            at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+            at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+            at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+            at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34)
+      }
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at CheckAuthStateUseCase.error (src/features/auth/domain/use-cases/CheckAuthStateUseCase.ts:43:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+    console.info
+      [2025-11-01T20:17:40.098Z] INFO: Checking authentication state
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.098Z] INFO: User is authenticated but no user data found
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/attendance/domain/entities/WorkEntry.test.ts
+PASS __tests__/unit/shared/domain/errors/AppError.test.ts
+PASS __tests__/unit/features/attendance/data/repositories/SyncingTrackerRepositoryDecorator.test.ts
+PASS __tests__/unit/shared/domain/errors/SyncError.test.ts
+PASS __tests__/unit/features/attendance/domain/entities/DateRange.test.ts
+PASS __tests__/unit/features/attendance/domain/entities/Tracker.test.ts
+PASS __tests__/unit/features/sync/data/services/SyncManager.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.253Z] INFO: SyncManager: cycle completed
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.256Z] INFO: SyncManager: offline, skipping cycle
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:40.256Z] ERROR: SyncManager: cycle error {
+        error: Error: boom
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/features/sync/data/services/SyncManager.test.ts:57:43)
+            at Generator.next (<anonymous>)
+            at asyncGeneratorStep (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+            at _next (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+            at /Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+            at new Promise (<anonymous>)
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+            at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+            at new Promise (<anonymous>)
+            at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+            at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+            at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+            at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+            at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+            at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+            at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34),
+        nextInMs: 120000
+      }
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at SyncManager.error (src/features/sync/data/services/SyncManager.ts:172:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS __tests__/unit/features/auth/domain/use-cases/SignOutUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.277Z] INFO: Starting sign-out process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.278Z] INFO: User signed out successfully
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.info
+      [2025-11-01T20:17:40.279Z] INFO: Starting sign-out process
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+    console.error
+      [2025-11-01T20:17:40.279Z] ERROR: Sign-out failed {
+        error: Error: Sign out failed
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/__tests__/unit/features/auth/domain/use-cases/SignOutUseCase.test.ts:32:18)
+            at Generator.next (<anonymous>)
+            at asyncGeneratorStep (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+            at _next (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+            at /Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+            at new Promise (<anonymous>)
+            at Object.<anonymous> (/Users/rahulsharma/Developer/WorkTrack/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+            at Promise.then.completed (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:298:28)
+            at new Promise (<anonymous>)
+            at callAsyncCircusFn (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/utils.js:231:10)
+            at _callCircusTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:316:40)
+            at _runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:252:3)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:126:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at _runTestsForDescribeBlock (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:121:9)
+            at run (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/run.js:71:3)
+            at runAndTransformResultsToJestFormat (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+            at jestAdapter (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+            at runTestInternal (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:367:16)
+            at runTest (/Users/rahulsharma/Developer/WorkTrack/node_modules/jest-runner/build/runTest.js:444:34)
+      }
+
+      71 | 					break;
+      72 | 				case 'ERROR':
+    > 73 | 					console.error(logMessage, ...args);
+         | 					             ^
+      74 | 					break;
+      75 | 			}
+      76 | 		}
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:73:19)
+      at Logger.apply (src/shared/utils/logging/Logger.ts:49:12)
+      at SignOutUseCase.error (src/features/auth/domain/use-cases/SignOutUseCase.ts:24:11)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+PASS __tests__/unit/shared/domain/errors/NetworkError.test.ts
+PASS __tests__/unit/features/auth/data/mappers/UserMapper.test.ts
+PASS __tests__/unit/features/sharing/data/repositories/WatermelonSharedTrackerRepository.test.ts
+PASS __tests__/unit/shared/domain/errors/ValidationError.test.ts
+PASS __tests__/unit/features/attendance/domain/entities/WorkStatus.test.ts
+PASS __tests__/unit/features/attendance/domain/use-cases/CreateEntryUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.398Z] INFO: Creating work entry { id: 'e1', date: '2023-02-01' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/attendance/domain/use-cases/GetEntriesForPeriodUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.418Z] INFO: Querying entries for period { userId: 'u1', range: '2023-01-01..2023-01-31', trackerId: undefined }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/attendance/domain/use-cases/GetEntriesForTrackerUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.437Z] INFO: Querying entries for tracker { trackerId: 't1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/sync/domain/entities/SyncQueue.test.ts
+PASS __tests__/unit/features/sync/domain/use-cases/EnqueueSyncOperationUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.477Z] INFO: Enqueue sync operation { id: '1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/sync/domain/entities/SyncStatus.test.ts
+PASS __tests__/unit/features/sync/data/mappers/SyncOperationMapper.test.ts
+PASS __tests__/unit/features/sync/data/repositories/InMemorySyncQueueRepository.test.ts
+PASS __tests__/unit/features/sharing/domain/entities/Share.test.ts
+PASS __tests__/unit/features/sync/domain/use-cases/ProcessSyncQueueUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.582Z] INFO: Skipping sync: offline
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/attendance/data/repositories/SyncingEntryRepositoryDecorator.test.ts
+PASS __tests__/unit/features/attendance/domain/use-cases/UpdateEntryUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.624Z] INFO: Updating work entry { id: 'e1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/sync/domain/entities/SyncOperation.test.ts
+PASS __tests__/unit/features/sharing/data/mappers/ShareMapper.test.ts
+PASS __tests__/unit/features/sync/domain/use-cases/SyncToRemoteUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.680Z] INFO: Syncing to remote { count: 1 }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/attendance/domain/use-cases/DeleteEntryUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.698Z] INFO: Deleting work entry { id: 'e1' }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/sync/domain/use-cases/SyncFromRemoteUseCase.test.ts
+  ● Console
+
+    console.info
+      [2025-11-01T20:17:40.715Z] INFO: Syncing from remote { since: undefined }
+
+      at Logger.apply [as log] (src/shared/utils/logging/Logger.ts:67:18)
+
+PASS __tests__/unit/features/sync/domain/use-cases/ResolveConflictUseCase.test.ts
+-------------------------------------------|---------|----------|---------|---------|-------------------------------
+File                                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s             
+-------------------------------------------|---------|----------|---------|---------|-------------------------------
+All files                                  |   45.84 |    49.43 |   54.38 |   46.45 |                               
+ app/initialization                        |       0 |        0 |       0 |       0 |                               
+  bootstrap.ts                             |       0 |        0 |       0 |       0 | 20-75                         
+ app/store                                 |     100 |      100 |     100 |     100 |                               
+  middleware.ts                            |     100 |      100 |     100 |     100 |                               
+  rootReducer.ts                           |     100 |      100 |     100 |     100 |                               
+  store.ts                                 |     100 |      100 |     100 |     100 |                               
+ app/store/reducers                        |   70.58 |      100 |   45.45 |   70.58 |                               
+  userSlice.ts                             |   72.72 |      100 |   66.66 |   72.72 | 43,49-50                      
+  workTrackSlice.ts                        |   66.66 |      100 |      20 |   66.66 | 21-24                         
+ di                                        |   98.21 |    93.54 |     100 |   98.19 |                               
+  Container.ts                             |    97.1 |     93.1 |     100 |    97.1 | 149,207                       
+  ContainerBuilder.ts                      |     100 |      100 |     100 |     100 |                               
+  registry.ts                              |     100 |      100 |     100 |     100 |                               
+ features/attendance                       |    92.3 |      100 |     100 |    92.3 |                               
+  di.ts                                    |    92.3 |      100 |     100 |    92.3 | 50,65                         
+ features/attendance/data/mappers          |   28.57 |        0 |       0 |   28.57 |                               
+  EntryMapper.ts                           |      25 |        0 |       0 |      25 | 21-47                         
+  TrackerMapper.ts                         |   33.33 |      100 |       0 |   33.33 | 15-32                         
+ features/attendance/data/repositories     |   16.32 |        0 |    30.3 |   16.84 |                               
+  SyncingEntryRepositoryDecorator.ts       |   72.72 |      100 |   57.14 |   72.72 | 55-67                         
+  SyncingTrackerRepositoryDecorator.ts     |      80 |      100 |   66.66 |      80 | 57-61                         
+  WatermelonEntryRepository.ts             |       0 |        0 |    9.09 |       0 | 15-95                         
+  WatermelonTrackerRepository.ts           |       0 |        0 |   11.11 |       0 | 12-66                         
+ features/attendance/domain/entities       |   89.83 |       76 |   94.73 |   91.22 |                               
+  DateRange.ts                             |   92.85 |       75 |     100 |   92.85 | 11                            
+  Tracker.ts                               |   91.66 |    85.71 |     100 |   91.66 | 56                            
+  WorkEntry.ts                             |    87.5 |    69.56 |     100 |    90.9 | 47,88                         
+  WorkStatus.ts                            |   88.88 |      100 |   83.33 |   88.88 | 38                            
+ features/attendance/domain/ports          |       0 |        0 |       0 |       0 |                               
+  IEntryRepository.ts                      |       0 |        0 |       0 |       0 |                               
+  IEntryValidator.ts                       |       0 |        0 |       0 |       0 |                               
+  ITrackerRepository.ts                    |       0 |        0 |       0 |       0 |                               
+ features/attendance/domain/use-cases      |     100 |      100 |     100 |     100 |                               
+  CreateEntryUseCase.ts                    |     100 |      100 |     100 |     100 |                               
+  DeleteEntryUseCase.ts                    |     100 |      100 |     100 |     100 |                               
+  GetEntriesForPeriodUseCase.ts            |     100 |      100 |     100 |     100 |                               
+  GetEntriesForTrackerUseCase.ts           |     100 |      100 |     100 |     100 |                               
+  UpdateEntryUseCase.ts                    |     100 |      100 |     100 |     100 |                               
+ features/attendance/domain/validators     |      50 |       50 |      50 |      75 |                               
+  EntryValidator.ts                        |      50 |       50 |      50 |      75 | 19                            
+ features/attendance/store                 |       0 |      100 |     100 |       0 |                               
+  attendanceSelectors.ts                   |       0 |      100 |     100 |       0 | 2                             
+ features/attendance/ui/hooks              |    1.92 |        0 |       0 |    1.98 |                               
+  useAttendance.ts                         |    6.66 |      100 |       0 |    7.14 | 15-57                         
+  useCalendar.ts                           |      10 |      100 |       0 |      10 | 4-19                          
+  useEntryForm.ts                          |    3.84 |        0 |       0 |    3.84 | 7-54                          
+  useResponsiveLayout.ts                   |    5.71 |        0 |       0 |    6.06 | 8-85                          
+  useSharedWorkTracks.ts                   |    1.88 |        0 |       0 |    1.92 | 26-159                        
+  useWorkTrackManager.ts                   |       0 |        0 |       0 |       0 | 97-567                        
+ features/auth                             |     100 |      100 |     100 |     100 |                               
+  di.ts                                    |     100 |      100 |     100 |     100 |                               
+ features/auth/data/mappers                |     100 |      100 |     100 |     100 |                               
+  UserMapper.ts                            |     100 |      100 |     100 |     100 |                               
+ features/auth/data/repositories           |       0 |        0 |    12.5 |       0 |                               
+  FirebaseAuthRepository.ts                |       0 |        0 |    12.5 |       0 | 21-134                        
+ features/auth/data/services               |       0 |        0 |       0 |       0 |                               
+  FirebaseAuthService.ts                   |       0 |        0 |       0 |       0 | 25-204                        
+ features/auth/domain/entities             |      90 |    71.11 |     100 |      90 |                               
+  AuthSession.ts                           |   85.29 |    55.17 |     100 |   85.29 | 78-86                         
+  User.ts                                  |     100 |      100 |     100 |     100 |                               
+ features/auth/domain/ports                |       0 |        0 |       0 |       0 |                               
+  IAuthRepository.ts                       |       0 |        0 |       0 |       0 |                               
+  IAuthService.ts                          |       0 |        0 |       0 |       0 |                               
+ features/auth/domain/use-cases            |     100 |      100 |     100 |     100 |                               
+  CheckAuthStateUseCase.ts                 |     100 |      100 |     100 |     100 |                               
+  SignInUseCase.ts                         |     100 |      100 |     100 |     100 |                               
+  SignOutUseCase.ts                        |     100 |      100 |     100 |     100 |                               
+ features/auth/store                       |       0 |      100 |     100 |       0 |                               
+  authSelectors.ts                         |       0 |      100 |     100 |       0 | 2                             
+ features/auth/ui/hooks                    |       0 |        0 |       0 |       0 |                               
+  useAuth.ts                               |       0 |        0 |       0 |       0 | 23-122                        
+ features/insights                         |       0 |        0 |       0 |       0 |                               
+  di.ts                                    |       0 |        0 |       0 |       0 |                               
+ features/notifications                    |       0 |        0 |       0 |       0 |                               
+  di.ts                                    |       0 |        0 |       0 |       0 |                               
+ features/sharing                          |     100 |      100 |     100 |     100 |                               
+  di.ts                                    |     100 |      100 |     100 |     100 |                               
+ features/sharing/data/mappers             |     100 |      100 |     100 |     100 |                               
+  ShareMapper.ts                           |     100 |      100 |     100 |     100 |                               
+ features/sharing/data/repositories        |   55.55 |        0 |   44.44 |   55.55 |                               
+  FirebaseShareRepository.ts               |       0 |        0 |       0 |       0 | 8-65                          
+  WatermelonSharedTrackerRepository.ts     |   83.33 |      100 |   72.72 |   83.33 | 57-70                         
+ features/sharing/domain/entities          |   44.82 |    48.14 |   55.55 |   44.82 |                               
+  Permission.ts                            |      50 |      100 |   33.33 |      50 | 11-15                         
+  Share.ts                                 |   84.61 |    81.81 |     100 |   84.61 | 63,69                         
+  SharedTracker.ts                         |       0 |        0 |       0 |       0 | 20-36                         
+ features/sharing/domain/ports             |       0 |        0 |       0 |       0 |                               
+  IShareRepository.ts                      |       0 |        0 |       0 |       0 |                               
+  IShareValidator.ts                       |       0 |        0 |       0 |       0 |                               
+ features/sharing/domain/use-cases         |       0 |      100 |      50 |       0 |                               
+  GetMySharesUseCase.ts                    |       0 |      100 |      50 |       0 | 8                             
+  GetSharedWithMeUseCase.ts                |       0 |      100 |      50 |       0 | 8                             
+  ShareTrackerUseCase.ts                   |       0 |      100 |      50 |       0 | 10-11                         
+  UnshareTrackerUseCase.ts                 |       0 |      100 |      50 |       0 | 11-12                         
+  UpdatePermissionUseCase.ts               |       0 |      100 |      50 |       0 | 13-17                         
+ features/sharing/domain/validators        |   85.71 |    81.25 |     100 |   85.71 |                               
+  ShareValidator.ts                        |   85.71 |    81.25 |     100 |   85.71 | 13,16                         
+ features/sharing/store                    |       0 |      100 |     100 |       0 |                               
+  sharingSelectors.ts                      |       0 |      100 |     100 |       0 | 2                             
+ features/sharing/ui/hooks                 |    4.81 |        0 |       0 |    4.87 |                               
+  useDefaultView.ts                        |    8.69 |        0 |       0 |    8.69 | 8-61                          
+  useShares.ts                             |    4.76 |        0 |       0 |       5 | 13-59                         
+  useSharing.ts                            |    2.56 |        0 |       0 |    2.56 | 24-132                        
+ features/sync                             |     100 |      100 |     100 |     100 |                               
+  di.ts                                    |     100 |      100 |     100 |     100 |                               
+ features/sync/data/mappers                |     100 |      100 |     100 |     100 |                               
+  SyncOperationMapper.ts                   |     100 |      100 |     100 |     100 |                               
+ features/sync/data/repositories           |    73.4 |    53.33 |      88 |   72.94 |                               
+  FirebaseSyncRepository.ts                |       0 |        0 |       0 |       0 | 13-64                         
+  InMemorySyncQueueRepository.ts           |   94.44 |       70 |     100 |     100 | 13-15,24                      
+  WatermelonSyncQueueRepository.ts         |     100 |    81.81 |     100 |     100 | 31,84                         
+ features/sync/data/services               |   36.25 |    24.32 |   34.78 |   39.18 |                               
+  NetworkMonitorService.ts                 |       0 |        0 |       0 |       0 | 8-16                          
+  SyncManager.ts                           |   38.66 |    27.27 |      40 |   42.02 | 42-102,114,126-137            
+ features/sync/domain/entities             |   82.14 |    66.66 |    90.9 |   88.46 |                               
+  SyncOperation.ts                         |   80.95 |    63.63 |     100 |   89.47 | 88,93                         
+  SyncQueue.ts                             |   83.33 |      100 |      80 |   83.33 | 11                            
+  SyncStatus.ts                            |     100 |      100 |     100 |     100 |                               
+ features/sync/domain/ports                |       0 |        0 |       0 |       0 |                               
+  IConflictResolver.ts                     |       0 |        0 |       0 |       0 |                               
+  INetworkMonitor.ts                       |       0 |        0 |       0 |       0 |                               
+  ISyncQueueRepository.ts                  |       0 |        0 |       0 |       0 |                               
+  ISyncRepository.ts                       |       0 |        0 |       0 |       0 |                               
+ features/sync/domain/strategies           |       0 |        0 |       0 |       0 |                               
+  LastWriteWinsStrategy.ts                 |       0 |        0 |       0 |       0 | 9-11                          
+  ManualResolutionStrategy.ts              |       0 |        0 |       0 |       0 | 11                            
+ features/sync/domain/use-cases            |   93.02 |    66.66 |     100 |     100 |                               
+  EnqueueSyncOperationUseCase.ts           |     100 |      100 |     100 |     100 |                               
+  ProcessSyncQueueUseCase.ts               |   93.54 |       70 |     100 |     100 | 33-58                         
+  ResolveConflictUseCase.ts                |     100 |      100 |     100 |     100 |                               
+  SyncFromRemoteUseCase.ts                 |     100 |      100 |     100 |     100 |                               
+  SyncToRemoteUseCase.ts                   |   85.71 |       50 |     100 |     100 | 14                            
+ features/sync/store                       |       0 |      100 |       0 |       0 |                               
+  syncSelectors.ts                         |       0 |      100 |       0 |       0 | 7-21                          
+  syncSlice.ts                             |       0 |      100 |       0 |       0 | 11-43                         
+ features/sync/ui/hooks                    |       0 |        0 |       0 |       0 |                               
+  useSync.ts                               |       0 |      100 |       0 |       0 | 4-39                          
+  useSyncStatus.ts                         |       0 |        0 |       0 |       0 | 6-39                          
+ shared/constants                          |   57.14 |      100 |     100 |   57.14 |                               
+  apiEndpoints.ts                          |       0 |      100 |     100 |       0 | 2                             
+  appConfig.ts                             |       0 |      100 |     100 |       0 | 2                             
+  storageKeys.ts                           |       0 |      100 |     100 |       0 | 2                             
+  workStatus.ts                            |     100 |      100 |     100 |     100 |                               
+ shared/data/database/firebase             |   18.42 |    36.84 |    4.54 |   19.17 |                               
+  Firebase.ts                              |      80 |       70 |     100 |      80 | 35-37                         
+  FirestoreClient.ts                       |    3.27 |        0 |    4.54 |    3.44 | 45-241                        
+ shared/data/database/watermelon           |     100 |      100 |       0 |     100 |                               
+  Database.ts                              |     100 |      100 |       0 |     100 |                               
+  migrations.ts                            |     100 |      100 |     100 |     100 |                               
+ shared/data/database/watermelon/worktrack |      50 |      100 |       0 |      50 |                               
+  load.ts                                  |      50 |      100 |       0 |      50 | 37                            
+ shared/data/network                       |       0 |      100 |       0 |       0 |                               
+  NetworkClient.ts                         |       0 |      100 |       0 |       0 | 4                             
+  NetworkMonitor.ts                        |       0 |      100 |       0 |       0 | 4                             
+ shared/data/storage                       |       0 |      100 |       0 |       0 |                               
+  AsyncStorageAdapter.ts                   |       0 |      100 |       0 |       0 | 5-11                          
+  SecureStorage.ts                         |       0 |      100 |       0 |       0 | 4                             
+ shared/domain/entities                    |   96.42 |    95.23 |     100 |   96.42 |                               
+  BaseEntity.ts                            |   96.42 |    95.23 |     100 |   96.42 | 108                           
+ shared/domain/errors                      |     100 |    92.85 |     100 |     100 |                               
+  AppError.ts                              |     100 |        0 |     100 |     100 | 14                            
+  AuthenticationError.ts                   |     100 |      100 |     100 |     100 |                               
+  NetworkError.ts                          |     100 |      100 |     100 |     100 |                               
+  SyncError.ts                             |     100 |      100 |     100 |     100 |                               
+  ValidationError.ts                       |     100 |      100 |     100 |     100 |                               
+ shared/domain/value-objects               |   97.31 |     94.8 |   98.33 |   97.29 |                               
+  Email.ts                                 |   96.22 |    93.93 |     100 |   96.22 | 79,83                         
+  Timestamp.ts                             |   96.61 |    91.66 |   96.96 |   96.61 | 29,269                        
+  UUID.ts                                  |     100 |      100 |     100 |     100 |                               
+ shared/ui/hooks                           |    7.69 |        0 |       0 |    7.69 |                               
+  useKeyboard.ts                           |       0 |        0 |       0 |       0 |                               
+  useNetworkStatus.ts                      |       0 |        0 |       0 |       0 |                               
+  useResponsive.ts                         |    7.69 |      100 |       0 |    7.69 | 5-24                          
+  useToast.ts                              |    7.69 |        0 |       0 |    7.69 | 7-43                          
+ shared/ui/theme                           |     100 |      100 |     100 |     100 |                               
+  colors.ts                                |     100 |      100 |     100 |     100 |                               
+  spacing.ts                               |       0 |        0 |       0 |       0 |                               
+  theme.ts                                 |       0 |        0 |       0 |       0 |                               
+  typography.ts                            |       0 |        0 |       0 |       0 |                               
+ shared/utils/date                         |       0 |      100 |       0 |       0 |                               
+  dateCalculator.ts                        |       0 |      100 |       0 |       0 | 2-4                           
+  dateFormatter.ts                         |       0 |      100 |       0 |       0 | 2-4                           
+ shared/utils/logging                      |   61.53 |    36.84 |   55.55 |   61.53 |                               
+  Logger.ts                                |   61.53 |    36.84 |   55.55 |   61.53 | 30-31,42-43,64-65,70-71,85-89 
+  LoggerConfig.ts                          |       0 |        0 |       0 |       0 |                               
+ shared/utils/testing                      |       0 |        0 |       0 |       0 |                               
+  mockFactories.ts                         |       0 |        0 |       0 |       0 | 2-5                           
+  testHelpers.ts                           |       0 |      100 |       0 |       0 | 2-3                           
+ shared/utils/toast                        |       0 |        0 |       0 |       0 |                               
+  ToastQueueService.ts                     |       0 |        0 |       0 |       0 | 19-157                        
+ shared/utils/validation                   |       0 |        0 |       0 |       0 |                               
+  schemas.ts                               |       0 |      100 |     100 |       0 | 2                             
+  validators.ts                            |       0 |        0 |       0 |       0 | 2-5                           
+-------------------------------------------|---------|----------|---------|---------|-------------------------------
+
+=============================== Coverage summary ===============================
+Statements   : 45.84% ( 883/1926 )
+Branches     : 49.43% ( 307/621 )
+Functions    : 54.38% ( 335/616 )
+Lines        : 46.45% ( 872/1877 )
+================================================================================
+Jest: "global" coverage threshold for statements (95%) not met: 45.84%
+Jest: "global" coverage threshold for branches (95%) not met: 49.43%
+Jest: "global" coverage threshold for lines (95%) not met: 46.45%
+Jest: "global" coverage threshold for functions (95%) not met: 54.38%
+
+Test Suites: 49 passed, 49 total
+Tests:       379 passed, 379 total
+Snapshots:   0 total
+Time:        2.957 s, estimated 3 s
+Ran all test suites.

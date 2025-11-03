@@ -98,6 +98,67 @@ describe('BaseEntity', () => {
 			const entity = new TestEntity('test-id', '', 30);
 			expect(entity.isValid()).toBe(false);
 		});
+
+		it('should throw error when _id is empty in base validate', () => {
+			// Create a minimal entity class that exposes validate for testing
+			class MinimalEntityWithTest extends BaseEntity<
+				Record<string, never>
+			> {
+				constructor(id: string) {
+					super(id);
+				}
+
+				// Expose validate for testing
+				public testValidate(): void {
+					this.validate();
+				}
+			}
+
+			// Create entity with valid ID, then manually set _id to empty
+			const entity = new MinimalEntityWithTest('valid-id');
+			Object.defineProperty(entity, '_id', {
+				value: '',
+				writable: true,
+				configurable: true,
+			});
+
+			// Call isValid which internally calls validate
+			expect(entity.isValid()).toBe(false);
+			// Also test that validate throws directly
+			expect(() => {
+				entity.testValidate();
+			}).toThrow('Entity ID is required');
+		});
+
+		it('should throw error when _id is whitespace-only in base validate', () => {
+			// Create a minimal entity class that doesn't override validate
+			class MinimalEntity extends BaseEntity<Record<string, never>> {
+				constructor(id: string) {
+					super(id);
+				}
+
+				// Expose validate for testing
+				public testValidate(): void {
+					this.validate();
+				}
+			}
+
+			// Create entity with valid ID, then manually set _id to whitespace
+			const entity = new MinimalEntity('valid-id');
+			// Manually set _id to whitespace to test base validate (bypass constructor validation)
+			Object.defineProperty(entity, '_id', {
+				value: '   ',
+				writable: true,
+				configurable: true,
+			});
+
+			// Call isValid which internally calls validate
+			expect(entity.isValid()).toBe(false);
+			// Also test that validate throws directly
+			expect(() => {
+				entity.testValidate();
+			}).toThrow('Entity ID is required');
+		});
 	});
 
 	describe('equality', () => {

@@ -13,7 +13,7 @@ describe('GetEntriesForTrackerUseCase', () => {
 			getForPeriod: jest.fn(),
 		};
 		const entries = [
-			new WorkEntry('e1', 'u1', 't1', '2023-01-05', 'present'),
+			new WorkEntry('e1', 'u1', 't1', '2023-01-05', 'office'),
 		];
 		repo.getForTracker.mockResolvedValue(entries);
 

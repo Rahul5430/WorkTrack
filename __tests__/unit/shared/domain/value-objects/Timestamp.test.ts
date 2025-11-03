@@ -22,6 +22,13 @@ describe('Timestamp', () => {
 			expect(timestamp.value).toEqual(new Date(milliseconds));
 		});
 
+		it('should return seconds property', () => {
+			const date = new Date('2023-01-01T12:00:00Z');
+			const timestamp = new Timestamp(date);
+
+			expect(timestamp.seconds).toBe(Math.floor(date.getTime() / 1000));
+		});
+
 		it('should throw error for invalid input', () => {
 			expect(() => new Timestamp('invalid-date')).toThrow(
 				'Invalid timestamp value'
@@ -271,6 +278,23 @@ describe('Timestamp', () => {
 			expect(timestamp.format('date')).toBeDefined();
 			expect(timestamp.format('time')).toBeDefined();
 			expect(timestamp.format('datetime')).toBeDefined();
+		});
+
+		it('should use default iso format when no format specified', () => {
+			const timestamp = new Timestamp('2023-01-01T12:00:00Z');
+
+			// Call format() without any arguments to use the default 'iso' format
+			const result = timestamp.format();
+			expect(result).toBe('2023-01-01T12:00:00.000Z');
+		});
+
+		it('should use default format when format type is invalid', () => {
+			const timestamp = new Timestamp('2023-01-01T12:00:00Z');
+
+			// @ts-expect-error Testing invalid format type
+			expect(timestamp.format('invalid')).toBe(
+				'2023-01-01T12:00:00.000Z'
+			);
 		});
 
 		it('should check if in past', () => {
