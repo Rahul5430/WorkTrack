@@ -42,7 +42,7 @@ jobs:
                   flags: unittests
                   fail_ci_if_error: true
             - name: Upload coverage artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: jest-coverage
                   path: coverage

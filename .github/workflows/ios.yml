@@ -221,7 +221,7 @@ jobs:
                   mkdir -p ios/build/simulator
                   cp -r ios/build/Build/Products/Release-iphonesimulator/WorkTrack.app ios/build/simulator/
             - name: Upload iOS simulator app
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: ios-simulator-app
                   path: ios/build/simulator/WorkTrack.app
