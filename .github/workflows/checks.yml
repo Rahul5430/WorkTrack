@@ -11,10 +11,10 @@ jobs:
             group: checks-${{ github.ref }}
             cancel-in-progress: true
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   fetch-depth: 0 # Fetch full history for gitleaks
-            - uses: actions/setup-node@v5
+            - uses: actions/setup-node@v6
               with:
                   node-version: 20
                   cache: "npm"
@@ -42,7 +42,7 @@ jobs:
                   flags: unittests
                   fail_ci_if_error: true
             - name: Upload coverage artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v5
               with:
                   name: jest-coverage
                   path: coverage
