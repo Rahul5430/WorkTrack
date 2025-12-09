@@ -4,7 +4,8 @@ jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
 
 // Provide env vars globally for tests
-jest.mock('@env', () => ({ FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080' }));
+// @env is mocked via jest.config.js moduleNameMapper to __mocks__/@env.js
+// That mock exports a mutable object that tests can modify directly
 
 // AsyncStorage mock
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -40,7 +41,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
 });
 
 // Vector icons mock
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
+jest.mock('@react-native-vector-icons/material-design-icons', () => 'Icon');
 
 // Safe area context mock
 jest.mock('react-native-safe-area-context', () => ({
@@ -91,6 +92,19 @@ jest.mock('@nozbe/watermelondb', () => ({
 	Model: class {},
 	tableSchema: (schema) => schema,
 	appSchema: (schema) => schema,
+	Q: {
+		where: jest.fn((field, value) => ({ field, value, type: 'where' })),
+		sortBy: jest.fn((field, direction) => ({
+			field,
+			direction,
+			type: 'sortBy',
+		})),
+		take: jest.fn((count) => ({ count, type: 'take' })),
+		oneOf: jest.fn((values) => ({ values, type: 'oneOf' })),
+		lte: jest.fn((value) => ({ comparator: 'lte', value })),
+		asc: 'asc',
+		desc: 'desc',
+	},
 }));
 
 jest.mock('@nozbe/watermelondb/decorators', () => ({
@@ -98,6 +112,56 @@ jest.mock('@nozbe/watermelondb/decorators', () => ({
 	field: () => () => {},
 	readonly: () => () => {},
 	relation: () => () => {},
+}));
+
+// Simplify react-native-paper Button for tests to make press events reliable
+jest.mock('react-native-paper', () => {
+	const React = require('react');
+	const { Text } = require('react-native');
+	return {
+		__esModule: true,
+		Button: ({ onPress, children }) =>
+			React.createElement(Text, { onPress }, children),
+	};
+});
+
+// Mock Firebase Web Auth ESM for Jest (avoid ESM parsing issues)
+jest.mock('firebase/auth', () => ({
+	getAuth: jest.fn(() => ({
+		currentUser: null,
+	})),
+	GoogleAuthProvider: { credential: jest.fn() },
+	signInWithCredential: jest.fn(async () => undefined),
+	signOut: jest.fn(async () => undefined),
+}));
+
+// Mock Firebase App ESM
+jest.mock('firebase/app', () => ({
+	getApps: jest.fn(() => []),
+	initializeApp: jest.fn(() => ({ name: 'test-app' })),
+}));
+
+// Mock Firebase Analytics ESM
+jest.mock('firebase/analytics', () => ({
+	getAnalytics: jest.fn(() => ({})),
+}));
+
+// Mock Firebase Performance ESM
+jest.mock('firebase/performance', () => ({
+	getPerformance: jest.fn(() => ({})),
+}));
+
+// Mock Firebase Firestore ESM
+jest.mock('firebase/firestore', () => ({
+	getFirestore: jest.fn(() => ({})),
+	connectFirestoreEmulator: jest.fn(),
+	collection: jest.fn(() => ({})),
+	doc: jest.fn(() => ({})),
+	batch: jest.fn(() => ({
+		set: jest.fn(),
+		delete: jest.fn(),
+		commit: jest.fn(),
+	})),
 }));
 
 // Google Sign-In mock

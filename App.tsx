@@ -1,15 +1,31 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useEffect } from 'react';
-import { AppState, AppStateStatus, StyleSheet } from 'react-native';
+import { AppState, AppStateStatus, LogBox, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as ReduxProvider } from 'react-redux';
 
-import { GlobalToast } from './src/components';
-import MainNavigator from './src/navigation/MainNavigator';
-import { store } from './src/store';
+import { RootNavigator } from '@/app/navigation';
+import { AppProviders } from '@/app/providers';
+import { store } from '@/app/store';
+import { GlobalToast } from '@/shared/ui/components/feedback';
+
+// Ignore known dev warnings until migration is complete
+if (__DEV__) {
+	LogBox.ignoreLogs([
+		'JSI SQLiteAdapter not available',
+		'React Native Firebase namespaced API',
+		'Please use getApp()',
+		'Method called was `collection`',
+		'Method called was `get`',
+		'Method called was `onAuthStateChanged`',
+		'This method is deprecated',
+		'will be removed in the next major release',
+		'migrating-to-v22',
+	]);
+}
 
 export default function App() {
 	useEffect(() => {
@@ -41,10 +57,12 @@ export default function App() {
 			<SafeAreaProvider>
 				<ReduxProvider store={store}>
 					<PaperProvider>
-						<NavigationContainer>
-							<MainNavigator />
-							<GlobalToast />
-						</NavigationContainer>
+						<BottomSheetModalProvider>
+							<AppProviders>
+								<RootNavigator />
+								<GlobalToast />
+							</AppProviders>
+						</BottomSheetModalProvider>
 					</PaperProvider>
 				</ReduxProvider>
 			</SafeAreaProvider>

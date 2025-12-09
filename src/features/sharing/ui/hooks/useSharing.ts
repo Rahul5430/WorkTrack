@@ -1,0 +1,142 @@
+// migrated to V2 structure
+import { useCallback, useState } from 'react';
+
+import { useDI as useContainer } from '@/app/providers/DIProvider';
+import { SharingServiceIdentifiers } from '@/features/sharing/di';
+import { Permission } from '@/features/sharing/domain/entities/Permission';
+import { Share } from '@/features/sharing/domain/entities/Share';
+import {
+	ShareTrackerUseCase,
+	UnshareTrackerUseCase,
+	UpdatePermissionUseCase,
+} from '@/features/sharing/domain/use-cases';
+import { ShareValidator } from '@/features/sharing/domain/validators';
+import { UUID } from '@/shared/domain/value-objects/UUID';
+
+interface ShareTrackerParams {
+	trackerId: string;
+	email: string;
+	permission: 'read' | 'write';
+	userEmail?: string;
+	existingShareEmails?: string[];
+}
+
+export const useSharing = () => {
+	const container = useContainer();
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const shareTracker = useCallback(
+		async ({
+			trackerId,
+			email,
+			permission,
+			userEmail,
+			existingShareEmails,
+		}: ShareTrackerParams): Promise<Share> => {
+			setIsLoading(true);
+			setError(null);
+
+			try {
+				const useCase = container.resolve<ShareTrackerUseCase>(
+					SharingServiceIdentifiers.SHARE_TRACKER
+				);
+
+				const shareId = UUID.generate().value;
+				const share = new Share(
+					shareId,
+					trackerId,
+					email.toLowerCase(),
+					new Permission(permission)
+				);
+
+				// Validate before executing
+				ShareValidator.validate(share, {
+					userEmail,
+					existingShareEmails,
+				});
+
+				return await useCase.execute(share);
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error
+						? err.message
+						: 'Failed to share tracker';
+				setError(errorMessage);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[container]
+	);
+
+	const updatePermission = useCallback(
+		async (
+			shareId: string,
+			permission: 'read' | 'write'
+		): Promise<Share> => {
+			setIsLoading(true);
+			setError(null);
+
+			try {
+				const useCase = container.resolve<UpdatePermissionUseCase>(
+					SharingServiceIdentifiers.UPDATE_PERMISSION
+				);
+
+				return await useCase.execute(
+					shareId,
+					new Permission(permission)
+				);
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error
+						? err.message
+						: 'Failed to update permission';
+				setError(errorMessage);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[container]
+	);
+
+	const removeShare = useCallback(
+		async (shareId: string): Promise<void> => {
+			setIsLoading(true);
+			setError(null);
+
+			try {
+				const useCase = container.resolve<UnshareTrackerUseCase>(
+					SharingServiceIdentifiers.UNSHARE_TRACKER
+				);
+
+				await useCase.execute(shareId);
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error
+						? err.message
+						: 'Failed to remove share';
+				setError(errorMessage);
+				throw err;
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[container]
+	);
+
+	const clearError = useCallback(() => {
+		setError(null);
+	}, []);
+
+	return {
+		isLoading,
+		error,
+		shareTracker,
+		updatePermission,
+		removeShare,
+		clearError,
+	};
+};
