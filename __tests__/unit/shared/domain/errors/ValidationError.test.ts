@@ -34,6 +34,83 @@ describe('ValidationError', () => {
 			expect(error.context?.field).toBe('fieldName');
 			expect(error.context?.value).toBe('invalidValue');
 		});
+
+		it('should serialize number value', () => {
+			const error = new ValidationError('Invalid number', 'age', 123);
+
+			expect(error.value).toBe(123);
+			expect(error.context?.value).toBe(123);
+		});
+
+		it('should serialize boolean value', () => {
+			const error = new ValidationError(
+				'Invalid boolean',
+				'active',
+				true
+			);
+
+			expect(error.value).toBe(true);
+			expect(error.context?.value).toBe(true);
+		});
+
+		it('should serialize object value as JSON string', () => {
+			const objValue = { name: 'test', count: 5 };
+			const error = new ValidationError(
+				'Invalid object',
+				'data',
+				objValue
+			);
+
+			expect(error.value).toEqual(objValue);
+			expect(error.context?.value).toBe(JSON.stringify(objValue));
+		});
+
+		it('should handle circular object by converting to string', () => {
+			const circularObj: Record<string, unknown> = { name: 'test' };
+			circularObj.self = circularObj; // Create circular reference
+
+			const error = new ValidationError(
+				'Invalid circular object',
+				'data',
+				circularObj
+			);
+
+			expect(error.value).toEqual(circularObj);
+			// Should fallback to String(value) when JSON.stringify fails
+			expect(error.context?.value).toBe(String(circularObj));
+		});
+
+		it('should serialize null value', () => {
+			const error = new ValidationError('Invalid null', 'value', null);
+
+			expect(error.value).toBe(null);
+			expect(error.context?.value).toBe(null);
+		});
+
+		it('should serialize undefined value as string', () => {
+			// Note: undefined values are not serialized (handled by the if check)
+			const error = new ValidationError(
+				'Invalid undefined',
+				'value',
+				undefined
+			);
+
+			expect(error.value).toBeUndefined();
+			expect(error.context?.value).toBeUndefined();
+		});
+
+		it('should serialize function value as string', () => {
+			const fnValue = () => 'test';
+			const error = new ValidationError(
+				'Invalid function',
+				'callback',
+				fnValue
+			);
+
+			expect(error.value).toBe(fnValue);
+			// Functions are not objects, so should fallback to String(value)
+			expect(typeof error.context?.value).toBe('string');
+		});
 	});
 
 	describe('static methods', () => {

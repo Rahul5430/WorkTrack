@@ -1,3 +1,5 @@
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 import { AppError } from './AppError';
 
 /**
@@ -13,7 +15,7 @@ export class NetworkError extends AppError {
 		url?: string,
 		method?: string,
 		statusCode?: number,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	) {
 		const actualStatusCode = statusCode ?? 0;
 		super(message, 'NETWORK_ERROR', actualStatusCode, {
@@ -36,7 +38,7 @@ export class NetworkError extends AppError {
 		method: string,
 		statusCode: number,
 		message?: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): NetworkError {
 		return new NetworkError(
 			message ||
@@ -55,7 +57,7 @@ export class NetworkError extends AppError {
 		url: string,
 		method: string,
 		timeoutMs: number,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): NetworkError {
 		return new NetworkError(
 			`Request timeout: ${method} ${url} timed out after ${timeoutMs}ms`,
@@ -72,7 +74,7 @@ export class NetworkError extends AppError {
 	static noConnection(
 		url: string,
 		method: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): NetworkError {
 		return new NetworkError(
 			`No internet connection: ${method} ${url}`,

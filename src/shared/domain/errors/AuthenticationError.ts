@@ -1,3 +1,5 @@
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 import { AppError } from './AppError';
 
 /**
@@ -9,7 +11,7 @@ export class AuthenticationError extends AppError {
 	constructor(
 		message: string,
 		reason: string = 'INVALID_CREDENTIALS',
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	) {
 		super(message, 'AUTHENTICATION_ERROR', 401, {
 			reason,
@@ -23,7 +25,7 @@ export class AuthenticationError extends AppError {
 	 * Create an authentication error for invalid credentials
 	 */
 	static invalidCredentials(
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): AuthenticationError {
 		return new AuthenticationError(
 			'Invalid email or password',
@@ -35,9 +37,7 @@ export class AuthenticationError extends AppError {
 	/**
 	 * Create an authentication error for expired token
 	 */
-	static expiredToken(
-		context?: Record<string, unknown>
-	): AuthenticationError {
+	static expiredToken(context?: SerializableRecord): AuthenticationError {
 		return new AuthenticationError(
 			'Authentication token has expired',
 			'EXPIRED_TOKEN',
@@ -48,9 +48,7 @@ export class AuthenticationError extends AppError {
 	/**
 	 * Create an authentication error for missing token
 	 */
-	static missingToken(
-		context?: Record<string, unknown>
-	): AuthenticationError {
+	static missingToken(context?: SerializableRecord): AuthenticationError {
 		return new AuthenticationError(
 			'Authentication token is required',
 			'MISSING_TOKEN',
@@ -61,9 +59,7 @@ export class AuthenticationError extends AppError {
 	/**
 	 * Create an authentication error for invalid token
 	 */
-	static invalidToken(
-		context?: Record<string, unknown>
-	): AuthenticationError {
+	static invalidToken(context?: SerializableRecord): AuthenticationError {
 		return new AuthenticationError(
 			'Invalid authentication token',
 			'INVALID_TOKEN',
@@ -76,7 +72,7 @@ export class AuthenticationError extends AppError {
 	 */
 	static insufficientPermissions(
 		requiredPermission: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): AuthenticationError {
 		return new AuthenticationError(
 			`Insufficient permissions: ${requiredPermission} required`,
@@ -91,9 +87,7 @@ export class AuthenticationError extends AppError {
 	/**
 	 * Create an authentication error for account locked
 	 */
-	static accountLocked(
-		context?: Record<string, unknown>
-	): AuthenticationError {
+	static accountLocked(context?: SerializableRecord): AuthenticationError {
 		return new AuthenticationError(
 			'Account is locked due to too many failed login attempts',
 			'ACCOUNT_LOCKED',

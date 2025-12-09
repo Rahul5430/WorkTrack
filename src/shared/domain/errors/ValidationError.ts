@@ -1,3 +1,5 @@
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 import { AppError } from './AppError';
 
 /**
@@ -11,16 +13,41 @@ export class ValidationError extends AppError {
 		message: string,
 		field?: string,
 		value?: unknown,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	) {
-		super(message, 'VALIDATION_ERROR', 400, {
-			field,
-			value,
-			...context,
-		});
+		const errorContext: SerializableRecord = {
+			...(context || {}),
+		};
+
+		if (field) {
+			errorContext.field = field;
+		}
+
+		if (value !== undefined) {
+			errorContext.value = ValidationError.serializeValue(value);
+		}
+
+		super(message, 'VALIDATION_ERROR', 400, errorContext);
 
 		this.field = field;
 		this.value = value;
+	}
+
+	private static serializeValue(
+		value: unknown
+	): string | number | boolean | null {
+		if (value === null) return null;
+		if (typeof value === 'string') return value;
+		if (typeof value === 'number') return value;
+		if (typeof value === 'boolean') return value;
+		if (typeof value === 'object') {
+			try {
+				return JSON.stringify(value);
+			} catch {
+				return String(value);
+			}
+		}
+		return String(value);
 	}
 
 	/**
@@ -30,7 +57,7 @@ export class ValidationError extends AppError {
 		field: string,
 		message: string,
 		value?: unknown,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): ValidationError {
 		return new ValidationError(
 			`${field}: ${message}`,
@@ -45,7 +72,7 @@ export class ValidationError extends AppError {
 	 */
 	static required(
 		field: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): ValidationError {
 		return new ValidationError(
 			`${field} is required`,
@@ -62,7 +89,7 @@ export class ValidationError extends AppError {
 		field: string,
 		expectedFormat: string,
 		value?: unknown,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): ValidationError {
 		return new ValidationError(
 			`${field} must be in format: ${expectedFormat}`,
@@ -79,7 +106,7 @@ export class ValidationError extends AppError {
 		field: string,
 		maxLength: number,
 		actualLength: number,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): ValidationError {
 		return new ValidationError(
 			`${field} must be no more than ${maxLength} characters (got ${actualLength})`,
@@ -96,7 +123,7 @@ export class ValidationError extends AppError {
 		field: string,
 		minLength: number,
 		actualLength: number,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): ValidationError {
 		return new ValidationError(
 			`${field} must be at least ${minLength} characters (got ${actualLength})`,

@@ -8,6 +8,20 @@ import {
 } from '@/app/store/reducers/workTrackSlice';
 
 describe('workTrackSlice', () => {
+	type MarkedDayStatus =
+		| 'office'
+		| 'wfh'
+		| 'holiday'
+		| 'leave'
+		| 'weekend'
+		| 'forecast'
+		| 'advisory';
+	type MarkedDay = {
+		date: string;
+		status: MarkedDayStatus;
+		isAdvisory: boolean;
+	};
+
 	const initialState = {
 		loading: false,
 		error: null,
@@ -52,7 +66,9 @@ describe('workTrackSlice', () => {
 
 	describe('setWorkTrackData', () => {
 		it('sets work track data', () => {
-			const data = { entries: [], trackers: [] };
+			const data: MarkedDay[] = [
+				{ date: '2024-01-01', status: 'office', isAdvisory: false },
+			];
 			const action = setWorkTrackData(data);
 			const state = workTrackSlice.reducer(initialState, action);
 
@@ -62,7 +78,11 @@ describe('workTrackSlice', () => {
 
 	describe('addOrUpdateEntry', () => {
 		it('does not modify state (placeholder)', () => {
-			const entry = { id: 'entry-1', date: '2024-01-01' };
+			const entry: MarkedDay = {
+				date: '2024-01-01',
+				status: 'office',
+				isAdvisory: false,
+			};
 			const action = addOrUpdateEntry(entry);
 			const state = workTrackSlice.reducer(initialState, action);
 

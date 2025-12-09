@@ -2,7 +2,7 @@ module.exports = {
 	preset: 'react-native',
 	testMatch: ['**/__tests__/**/*.test.(ts|tsx)', '**/*.test.(ts|tsx)'],
 	transformIgnorePatterns: [
-		'node_modules/(?!(react-native|@react-native|@nozbe|@react-native-firebase|@react-navigation|react-native-gesture-handler|react-redux|immer)/)',
+		'node_modules/(?!(react-native|@react-native|@nozbe|@react-native-firebase|@react-navigation|react-native-gesture-handler|react-redux|immer|@shopify)/)',
 	],
 	setupFiles: ['./jest.setup.js'],
 	// setupFilesAfterEnv: ['react-native-gesture-handler/jestSetup'],

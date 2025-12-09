@@ -1,4 +1,5 @@
 import { BaseEntity } from '@/shared/domain/entities';
+import type { SerializableObject } from '@/shared/types/serialization';
 
 /**
  * AuthSession domain entity representing an active authentication session
@@ -147,7 +148,7 @@ export class AuthSession extends BaseEntity<{
 	/**
 	 * Convert to JSON
 	 */
-	toJSON(): Record<string, unknown> {
+	toJSON(): SerializableObject {
 		return {
 			...super.toJSON(),
 			userId: this.userId,

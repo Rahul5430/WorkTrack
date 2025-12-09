@@ -1,8 +1,14 @@
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { HelperText, Switch } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { WORK_STATUS_COLORS } from '@/shared/constants/workStatus';
+import {
+	WORK_STATUS_COLORS,
+	// WORK_STATUS_LABELS,
+} from '@/shared/constants/workStatus';
+// import { WORK_STATUS } from '@/shared/types/workStatus';
 import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { colors, fonts } from '@/shared/ui/theme';
 import { MarkedDayStatus } from '@/types';
@@ -23,12 +29,17 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 	initialIsAdvisory = false,
 }) => {
 	const { RFValue, getResponsiveSize } = useResponsiveLayout();
+	const insets = useSafeAreaInsets();
 	const [status, setStatus] = useState<MarkedDayStatus | null>(
 		initialStatus ?? null
 	);
 	const [isAdvisory, setIsAdvisory] = useState(initialIsAdvisory);
 	const [error, setError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
+
+	// Calculate bottom padding for gesture bar
+	// Use safe area inset if available, otherwise use a minimum of 24px for gesture bar clearance
+	const bottomPadding = Math.max(insets.bottom || 0, 24);
 
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -82,7 +93,9 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 	];
 
 	return (
-		<View style={[styles.container, { padding: getResponsiveSize(5) }]}>
+		<BottomSheetView
+			style={[styles.container, { padding: getResponsiveSize(5).width }]}
+		>
 			<Text style={[styles.title, { fontSize: RFValue(16) }]}>
 				Mark your status for {formatDate(selectedDate)}
 			</Text>
@@ -117,12 +130,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 				</View>
 			</View>
 
-			<View
-				style={[
-					styles.statusOptions,
-					{ paddingHorizontal: getResponsiveSize(2) },
-				]}
-			>
+			<View style={styles.statusOptions}>
 				<View style={styles.statusRow}>
 					<TouchableOpacity
 						onPress={() => {
@@ -173,6 +181,40 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 						</Text>
 					</TouchableOpacity>
 				</View>
+				{/* <View style={styles.statusRow}>
+					<TouchableOpacity
+						onPress={() => {
+							setStatus('forecast');
+							setError(null);
+						}}
+						style={[
+							styles.statusButton,
+							getStatusStyle('forecast'),
+						]}
+						disabled={isSaving}
+						testID='forecast-button'
+					>
+						<Text style={getStatusTextStyle('forecast')}>
+							{WORK_STATUS_LABELS[WORK_STATUS.FORECAST]}
+						</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() => {
+							setStatus('advisory');
+							setError(null);
+						}}
+						style={[
+							styles.statusButton,
+							getStatusStyle('advisory'),
+						]}
+						disabled={isSaving}
+						testID='advisory-button'
+					>
+						<Text style={getStatusTextStyle('advisory')}>
+							{WORK_STATUS_LABELS[WORK_STATUS.ADVISORY]}
+						</Text>
+					</TouchableOpacity>
+				</View> */}
 			</View>
 
 			{error && (
@@ -191,7 +233,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 			<View
 				style={[
 					styles.buttonContainer,
-					{ paddingHorizontal: getResponsiveSize(2) },
+					{ marginBottom: bottomPadding },
 				]}
 			>
 				<TouchableOpacity
@@ -216,7 +258,7 @@ const DayMarkingBottomSheet: React.FC<Props> = ({
 					</Text>
 				</TouchableOpacity>
 			</View>
-		</View>
+		</BottomSheetView>
 	);
 };
 
@@ -235,7 +277,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'space-between',
 		marginBottom: 16,
-		paddingHorizontal: 8,
 	},
 	advisoryLabel: {
 		fontFamily: fonts.PoppinsMedium,
@@ -268,7 +309,6 @@ const styles = StyleSheet.create({
 	},
 	buttonContainer: {
 		marginTop: 8,
-		marginBottom: 8,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		gap: 12,

@@ -288,7 +288,7 @@ describe('Container', () => {
 			container.register({
 				identifier,
 				factory,
-				scope: 'invalid-scope' as unknown as import('@/di/types').ServiceScope,
+				scope: 'invalid-scope' as import('@/di/types').ServiceScope,
 			});
 
 			expect(() => container.resolve(identifier)).toThrow(

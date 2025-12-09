@@ -1,3 +1,4 @@
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Animated,
@@ -11,7 +12,6 @@ import {
 	View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { MainStackScreenProps } from '@/app/navigation/types';
@@ -51,12 +51,11 @@ const getDisplayName = (name: string, isOwnWorkTrack: boolean) => {
 	return `${firstName}'s WorkTrack`;
 };
 
-// Helper function to handle sync with appropriate timeout
 const syncWithTimeout = async (
 	manager: { triggerSync: () => Promise<void> },
 	isInitialSync: boolean = false
 ) => {
-	const timeoutMs = isInitialSync ? 60000 : 30000; // 60s for initial, 30s for manual
+	const timeoutMs = isInitialSync ? 60000 : 30000;
 	const timeoutName = isInitialSync ? 'Initial sync' : 'Manual sync';
 
 	logger.info(`Starting ${timeoutName.toLowerCase()}...`);
@@ -100,9 +99,13 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const [selectedMonth, setSelectedMonth] = useState(new Date());
 	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+	const [dayMarkingSheetIndex, setDayMarkingSheetIndex] = useState(-1);
+	const [workTrackSwitcherIndex, setWorkTrackSwitcherIndex] = useState(-1);
 	const rotateAnim = useRef(new Animated.Value(0)).current;
 	const manager = useWorkTrackManager();
 	const isInitialMount = useRef(true);
+	const sheetInteractionRef = useRef<'idle' | 'opening' | 'closing'>('idle');
+	const lastSelectedDateRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		const initializeUser = async () => {
@@ -112,32 +115,28 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 			dispatch(setLoading(true));
 
 			try {
-				// Initialize user data - this handles new vs returning users properly
 				const tracker = await manager.userManagement.initializeUserData(
 					user.id
 				);
 
-				// Trigger sync to get latest data from remote with timeout
 				await syncWithTimeout(manager, true);
 
 				logger.info('User initialized successfully', {
 					trackerId: tracker.id,
 				});
 
-				// Update currentWorkTrack with the tracker info
 				setCurrentWorkTrack({
 					id: tracker.id,
 					name: tracker.name,
 				});
 
-				// Load entries for this tracker
 				const entries = await manager.entry.getEntriesForTracker(
 					tracker.id
 				);
 				const mappedEntries = entries.map((entry) => ({
 					date: entry.date,
 					status: entry.status as MarkedDayStatus,
-					isAdvisory: entry.isAdvisory,
+					isAdvisory: Boolean(entry.isAdvisory),
 				}));
 
 				dispatch(setWorkTrackData(mappedEntries));
@@ -166,14 +165,11 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 		initializeUser();
 	}, [user?.id, dispatch, manager]);
 
-	// Handle default view switching after initial load
 	useEffect(() => {
 		const loadDefaultView = async () => {
 			if (!defaultViewUserId || !currentWorkTrack?.id) return;
 
-			// Only switch if different from current and defaultViewUserId is a valid tracker
 			if (currentWorkTrack.id !== defaultViewUserId) {
-				// Check if defaultViewUserId corresponds to a shared tracker
 				const defaultTrack = sharedWorkTracks.find(
 					(track) => track.id === defaultViewUserId
 				);
@@ -192,7 +188,6 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 		loadDefaultView();
 	}, [defaultViewUserId, currentWorkTrack?.id, sharedWorkTracks]);
 
-	// Load entries when currentWorkTrack changes (after initial mount)
 	useEffect(() => {
 		const loadCurrentTrackerEntries = async () => {
 			if (isInitialMount.current || !currentWorkTrack?.id) return;
@@ -204,7 +199,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 				const mappedEntries = entries.map((entry) => ({
 					date: entry.date,
 					status: entry.status as MarkedDayStatus,
-					isAdvisory: entry.isAdvisory,
+					isAdvisory: Boolean(entry.isAdvisory),
 				}));
 
 				dispatch(setWorkTrackData(mappedEntries));
@@ -222,15 +217,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 		loadCurrentTrackerEntries();
 	}, [currentWorkTrack?.id, manager, dispatch]);
 
-	const handleDayMarkingSheetChanges = useCallback((index: number) => {
-		setIsBottomSheetOpen(index !== -1);
-		if (index === -1) {
-			setSelectedDate(null);
-		}
-	}, []);
-
 	const handlePressIn = useCallback(() => {
-		// Animate on press for opening
 		Animated.timing(rotateAnim, {
 			toValue: 1,
 			duration: 400,
@@ -240,7 +227,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	}, [rotateAnim]);
 
 	const handleCloseAnimation = useCallback(() => {
-		// Animate when closing
+		setWorkTrackSwitcherIndex(-1);
 		Animated.timing(rotateAnim, {
 			toValue: 0,
 			duration: 400,
@@ -249,12 +236,76 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 		}).start();
 	}, [rotateAnim]);
 
+	const handleDayMarkingSheetChanges = useCallback((index: number) => {
+		setDayMarkingSheetIndex(index);
+		setIsBottomSheetOpen(index !== -1);
+
+		if (index === -1) {
+			if (sheetInteractionRef.current !== 'opening') {
+				sheetInteractionRef.current = 'closing';
+				setTimeout(() => {
+					if (sheetInteractionRef.current === 'closing') {
+						setSelectedDate((prevDate) => {
+							if (
+								prevDate !== null &&
+								prevDate === lastSelectedDateRef.current
+							) {
+								lastSelectedDateRef.current = null;
+								sheetInteractionRef.current = 'idle';
+								return null;
+							}
+							sheetInteractionRef.current = 'idle';
+							return prevDate;
+						});
+					}
+				}, 100);
+			}
+		} else {
+			sheetInteractionRef.current = 'idle';
+		}
+	}, []);
+
+	const handleWorkTrackSwitcherChanges = useCallback(
+		(index: number) => {
+			setWorkTrackSwitcherIndex(index);
+			if (index === -1) {
+				handleCloseAnimation();
+			}
+		},
+		[handleCloseAnimation]
+	);
+
+	useEffect(() => {
+		const interactionState = sheetInteractionRef.current;
+
+		if (interactionState === 'closing') {
+			return;
+		}
+
+		if (selectedDate) {
+			const isNewDate = lastSelectedDateRef.current !== selectedDate;
+
+			if (isNewDate) {
+				lastSelectedDateRef.current = selectedDate;
+			}
+
+			if (dayMarkingSheetIndex === -1 || isNewDate) {
+				sheetInteractionRef.current = 'opening';
+				setDayMarkingSheetIndex(0);
+			}
+		} else {
+			if (dayMarkingSheetIndex !== -1) {
+				setDayMarkingSheetIndex(-1);
+			}
+			lastSelectedDateRef.current = null;
+		}
+	}, [selectedDate, dayMarkingSheetIndex]);
+
 	const onDatePress = useCallback((date: string) => {
-		// Update state and bottom sheet in a single render cycle
-		requestAnimationFrame(() => {
-			setSelectedDate(date);
-			dayMarkingSheetRef.current?.expand();
-		});
+		sheetInteractionRef.current = 'opening';
+		lastSelectedDateRef.current = date;
+		setSelectedDate(date);
+		setDayMarkingSheetIndex(0);
 	}, []);
 
 	const handleWorkTrackSelect = async (workTrackId: string) => {
@@ -267,7 +318,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 					id: workTrack.id,
 					name: workTrack.ownerName,
 				});
-				workTrackSwitcherRef.current?.close();
+				setWorkTrackSwitcherIndex(-1);
 			}
 		} catch (switchError) {
 			logger.error('Error switching worktrack:', { error: switchError });
@@ -277,19 +328,15 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 	const onRefresh = useCallback(async () => {
 		dispatch(setLoading(true));
 		try {
-			// Add a small delay to ensure JSI bridge is ready
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// Trigger sync to get latest data with timeout
 			await syncWithTimeout(manager, false);
 
-			// Always ensure we have the current tracker and load its data
 			if (user?.id) {
 				const tracker =
 					await manager.userManagement.ensureUserHasTracker(user.id);
 
 				if (tracker) {
-					// Update currentWorkTrack if it's not set or different
 					if (
 						!currentWorkTrack?.id ||
 						currentWorkTrack.id !== tracker.id
@@ -300,7 +347,6 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 						});
 					}
 
-					// Load entries for this tracker
 					const entries = await manager.entry.getEntriesForTracker(
 						tracker.id
 					);
@@ -308,7 +354,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 					const refreshEntries = entries.map((entry) => ({
 						date: entry.date,
 						status: entry.status as MarkedDayStatus,
-						isAdvisory: entry.isAdvisory,
+						isAdvisory: Boolean(entry.isAdvisory),
 					}));
 
 					dispatch(setWorkTrackData(refreshEntries));
@@ -325,16 +371,13 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 
 			dispatch(setError(errorMessage));
 
-			// Show error toast for better user feedback
 			logger.warn('Sync failed during refresh:', { error: refreshError });
 		} finally {
-			// Always ensure loading state is cleared
 			dispatch(setLoading(false));
 		}
 	}, [dispatch, currentWorkTrack?.id, user?.id, manager]);
 
 	const resolveTrackerId = async (): Promise<string> => {
-		// If no tracker is loaded yet, ensure we have one
 		if (!currentWorkTrack?.id && user?.id) {
 			const tracker = await manager.userManagement.ensureUserHasTracker(
 				user.id
@@ -350,7 +393,6 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 			throw new Error('No tracker available');
 		}
 
-		// If currentWorkTrack.id is a user ID, resolve to actual tracker
 		if (currentWorkTrack.id === user?.id) {
 			const tracker = await manager.userManagement.getTrackerByOwnerId(
 				currentWorkTrack.id
@@ -359,7 +401,6 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 				throw new Error('No tracker found for user');
 			}
 
-			// Update state with resolved tracker info
 			setCurrentWorkTrack({
 				id: tracker.id,
 				name: tracker.name,
@@ -380,18 +421,15 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 		try {
 			dispatch(setError(null));
 
-			// Optimistic update in Redux
 			dispatch(
 				addOrUpdateEntry({ date: selectedDate, status, isAdvisory })
 			);
 
-			// Close the sheet immediately for better UX
-			dayMarkingSheetRef.current?.close();
+			setSelectedDate(null);
+			setDayMarkingSheetIndex(-1);
 
-			// Handle async operations in the background
 			const trackerId = await resolveTrackerId();
 
-			// Save to WatermelonDB using the new service
 			await manager.entry.createOrUpdateEntry({
 				trackerId,
 				date: selectedDate,
@@ -399,10 +437,8 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 				isAdvisory,
 			});
 
-			// Trigger sync to send to Firebase (non-blocking)
 			manager.triggerSync().catch((syncError) => {
 				logger.error('Background sync failed:', { syncError });
-				// Optionally show a non-blocking error indicator
 			});
 		} catch (saveError) {
 			logger.error('Error saving work status:', { error: saveError });
@@ -444,7 +480,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 			>
 				<View style={styles.header}>
 					<Pressable
-						onPress={() => workTrackSwitcherRef.current?.expand()}
+						onPress={() => setWorkTrackSwitcherIndex(0)}
 						onPressIn={handlePressIn}
 						style={({ pressed }) => [
 							styles.titleContainer,
@@ -463,7 +499,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 								{currentWorkTrack?.name
 									? getDisplayName(
 											currentWorkTrack.name,
-											true // Always show as own work track for now, can be enhanced later for shared trackers
+											true
 										)
 									: 'My WorkTrack'}
 							</Text>
@@ -485,7 +521,7 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 									},
 								]}
 							>
-								<MaterialCommunityIcons
+								<MaterialDesignIcons
 									name='chevron-down'
 									size={24}
 									color={colors.text.primary}
@@ -546,8 +582,13 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 
 			<CommonBottomSheet
 				ref={dayMarkingSheetRef}
+				index={dayMarkingSheetIndex}
 				onChange={handleDayMarkingSheetChanges}
-				snapPoints={['40%']}
+				snapPoints={['45%']}
+				onBackdropPress={() => {
+					setSelectedDate(null);
+					setDayMarkingSheetIndex(-1);
+				}}
 			>
 				{selectedDate &&
 					(() => {
@@ -563,9 +604,10 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 							<DayMarkingBottomSheet
 								selectedDate={selectedDate}
 								onSave={handleSave}
-								onCancel={() =>
-									dayMarkingSheetRef.current?.close()
-								}
+								onCancel={() => {
+									setSelectedDate(null);
+									setDayMarkingSheetIndex(-1);
+								}}
 								initialStatus={entry?.status}
 								initialIsAdvisory={entry?.isAdvisory ?? false}
 							/>
@@ -575,6 +617,8 @@ const HomeScreen: React.FC<MainStackScreenProps<'HomeScreen'>> = ({
 
 			<CommonBottomSheet
 				ref={workTrackSwitcherRef}
+				index={workTrackSwitcherIndex}
+				onChange={handleWorkTrackSwitcherChanges}
 				snapPoints={['50%']}
 				onBackdropPress={handleCloseAnimation}
 				onClose={handleCloseAnimation}

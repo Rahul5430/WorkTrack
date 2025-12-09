@@ -30,6 +30,17 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
 	},
 }));
 
+jest.mock('@react-native-firebase/auth', () => ({
+	getAuth: jest.fn(() => ({
+		currentUser: null,
+	})),
+	onAuthStateChanged: jest.fn(() => jest.fn()),
+	signInWithCredential: jest.fn(),
+	GoogleAuthProvider: {
+		credential: jest.fn(),
+	},
+}));
+
 // Mock the logger
 jest.mock('@/shared/utils/logging', () => ({
 	logger: {

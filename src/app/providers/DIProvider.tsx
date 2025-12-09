@@ -12,7 +12,8 @@ interface DIProviderProps {
 }
 
 export function DIProvider({ children }: DIProviderProps) {
-	const container = createContainer();
+	// Memoize container creation to prevent double initialization
+	const container = React.useMemo(() => createContainer(), []);
 
 	return (
 		<DIContext.Provider value={container}>{children}</DIContext.Provider>

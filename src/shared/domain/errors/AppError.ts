@@ -1,3 +1,5 @@
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 /**
  * Base error class for all application errors
  * Provides common error handling functionality
@@ -6,13 +8,13 @@ export abstract class AppError extends Error {
 	public readonly code: string;
 	public readonly statusCode: number;
 	public readonly timestamp: Date;
-	public readonly context?: Record<string, unknown>;
+	public readonly context?: SerializableRecord;
 
 	constructor(
 		message: string,
 		code: string,
 		statusCode: number = 500,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	) {
 		super(message);
 
@@ -29,16 +31,24 @@ export abstract class AppError extends Error {
 	/**
 	 * Convert the error to a plain object for serialization
 	 */
-	toJSON(): Record<string, unknown> {
-		return {
+	toJSON(): SerializableRecord {
+		const result: SerializableRecord = {
 			name: this.name,
 			message: this.message,
 			code: this.code,
 			statusCode: this.statusCode,
 			timestamp: this.timestamp.toISOString(),
-			context: this.context,
-			stack: this.stack,
 		};
+
+		if (this.stack) {
+			result.stack = this.stack;
+		}
+
+		if (this.context) {
+			Object.assign(result, this.context);
+		}
+
+		return result;
 	}
 
 	/**
@@ -60,7 +70,7 @@ export abstract class AppError extends Error {
 	/**
 	 * Create a copy of this error with additional context
 	 */
-	withContext(additionalContext: Record<string, unknown>): this {
+	withContext(additionalContext: SerializableRecord): this {
 		const newContext = {
 			...this.context,
 			...additionalContext,
@@ -70,7 +80,7 @@ export abstract class AppError extends Error {
 			message: string,
 			code: string,
 			statusCode: number,
-			context?: Record<string, unknown>
+			context?: SerializableRecord
 		) => this;
 
 		return new constructor(

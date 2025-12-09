@@ -1,3 +1,5 @@
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 import { AppError } from './AppError';
 
 /**
@@ -15,7 +17,7 @@ export class SyncError extends AppError {
 		entityType?: string,
 		entityId?: string,
 		retryable: boolean = true,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	) {
 		super(message, 'SYNC_ERROR', 500, {
 			operation,
@@ -38,7 +40,7 @@ export class SyncError extends AppError {
 		entityType: string,
 		entityId: string,
 		reason: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Failed to upload ${entityType} ${entityId}: ${reason}`,
@@ -57,7 +59,7 @@ export class SyncError extends AppError {
 		entityType: string,
 		entityId: string,
 		reason: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Failed to download ${entityType} ${entityId}: ${reason}`,
@@ -77,7 +79,7 @@ export class SyncError extends AppError {
 		entityId: string,
 		localVersion: number,
 		remoteVersion: number,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Sync conflict for ${entityType} ${entityId}: local version ${localVersion} conflicts with remote version ${remoteVersion}`,
@@ -99,7 +101,7 @@ export class SyncError extends AppError {
 	static networkIssue(
 		operation: string,
 		reason: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Network issue during ${operation}: ${reason}`,
@@ -118,7 +120,7 @@ export class SyncError extends AppError {
 		operation: string,
 		statusCode: number,
 		reason: string,
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Server error during ${operation}: ${statusCode} - ${reason}`,
@@ -140,7 +142,7 @@ export class SyncError extends AppError {
 		entityType: string,
 		entityId: string,
 		validationErrors: string[],
-		context?: Record<string, unknown>
+		context?: SerializableRecord
 	): SyncError {
 		return new SyncError(
 			`Validation failed for ${entityType} ${entityId}: ${validationErrors.join(', ')}`,

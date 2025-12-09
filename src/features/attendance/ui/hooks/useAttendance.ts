@@ -10,6 +10,7 @@ import {
 	setLoading,
 	setWorkTrackData,
 } from '@/app/store/reducers/workTrackSlice';
+import { MarkedDay } from '@/types';
 
 export const useAttendance = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -20,7 +21,7 @@ export const useAttendance = () => {
 	} = useSelector((state: RootState) => state.workTrack);
 
 	const addEntry = useCallback(
-		(entry: unknown) => {
+		(entry: MarkedDay) => {
 			dispatch(addOrUpdateEntry(entry));
 		},
 		[dispatch]
@@ -48,7 +49,7 @@ export const useAttendance = () => {
 	);
 
 	const updateWorkTrackData = useCallback(
-		(data: unknown[]) => {
+		(data: MarkedDay[]) => {
 			dispatch(setWorkTrackData(data));
 		},
 		[dispatch]

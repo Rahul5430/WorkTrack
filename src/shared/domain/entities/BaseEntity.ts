@@ -1,3 +1,5 @@
+import type { SerializableObject } from '@/shared/types/serialization';
+
 /**
  * Base entity class that provides common functionality for all domain entities
  * Implements validation, equality, and serialization helpers
@@ -75,7 +77,7 @@ export abstract class BaseEntity<T> {
 	 * Convert the entity to a plain object for serialization
 	 * Subclasses should override this method to include their specific properties
 	 */
-	toJSON(): Record<string, unknown> {
+	toJSON(): SerializableObject {
 		return {
 			id: this._id,
 			createdAt: this._createdAt.toISOString(),

@@ -1,4 +1,5 @@
 import { BottomSheetView } from '@gorhom/bottom-sheet';
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import React, { useCallback } from 'react';
 import {
 	ActivityIndicator,
@@ -15,7 +16,6 @@ import Animated, {
 	withRepeat,
 	withTiming,
 } from 'react-native-reanimated';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 
 import { RootState } from '@/app/store';
@@ -161,7 +161,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 							</View>
 						</View>
 						{myWorkTrack.id === currentWorkTrackId && (
-							<MaterialCommunityIcons
+							<MaterialDesignIcons
 								name='check-circle'
 								size={24}
 								color={colors.ui.checkCircle}
@@ -203,7 +203,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 										<View
 											style={styles.ownerPhotoPlaceholder}
 										>
-											<MaterialCommunityIcons
+											<MaterialDesignIcons
 												name='account'
 												size={24}
 												color={colors.ui.accountIcon}
@@ -254,7 +254,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 									</View>
 								</View>
 								{workTrack.id === currentWorkTrackId && (
-									<MaterialCommunityIcons
+									<MaterialDesignIcons
 										name='check-circle'
 										size={24}
 										color={colors.ui.checkCircle}
@@ -274,7 +274,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 
 	return (
 		<BottomSheetView
-			style={[styles.container, { padding: getResponsiveSize(5) }]}
+			style={[styles.container, { padding: getResponsiveSize(5).width }]}
 		>
 			<View style={styles.header}>
 				<Text style={[styles.title, { fontSize: RFValue(18) }]}>
@@ -282,7 +282,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 				</Text>
 				<Pressable style={styles.refreshButton} onPress={handleRefresh}>
 					<Animated.View style={animatedStyle}>
-						<MaterialCommunityIcons
+						<MaterialDesignIcons
 							name='refresh'
 							size={24}
 							color={colors.text.primary}
@@ -305,7 +305,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 					) : (
 						<View style={styles.emptyContainer}>
 							<View style={styles.emptyState}>
-								<MaterialCommunityIcons
+								<MaterialDesignIcons
 									name='account-group-outline'
 									size={48}
 									color={colors.text.secondary}
@@ -324,7 +324,7 @@ const WorkTrackSwitcher: React.FC<Props> = ({
 
 					<View style={styles.noteContainer}>
 						<View style={styles.noteContent}>
-							<MaterialCommunityIcons
+							<MaterialDesignIcons
 								name='information-outline'
 								size={16}
 								color={colors.text.secondary}

@@ -211,7 +211,7 @@ describe('useResponsiveLayout', () => {
 
 	it('should use 0 on Android when StatusBar.currentHeight is null', () => {
 		Platform.OS = 'android';
-		StatusBar.currentHeight = null as unknown as number | undefined;
+		StatusBar.currentHeight = null as never as number | undefined;
 		mockUseWindowDimensions.mockReturnValue({
 			width: 375,
 			height: 812,

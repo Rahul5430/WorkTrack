@@ -1,9 +1,11 @@
+import MaterialDesignIcons, {
+	type MaterialDesignIconsIconName,
+} from '@react-native-vector-icons/material-design-icons';
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface IconButtonProps {
-	name: string;
+	name: MaterialDesignIconsIconName;
 	size?: number;
 	color?: string;
 	onPress: () => void;
@@ -17,7 +19,7 @@ export default function IconButton({
 }: IconButtonProps) {
 	return (
 		<TouchableOpacity onPress={onPress} accessibilityRole='button'>
-			<MaterialCommunityIcons name={name} size={size} color={color} />
+			<MaterialDesignIcons name={name} size={size} color={color} />
 		</TouchableOpacity>
 	);
 }

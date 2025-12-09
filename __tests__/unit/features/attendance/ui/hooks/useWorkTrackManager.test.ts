@@ -1032,6 +1032,17 @@ describe('useWorkTrackManager', () => {
 		});
 
 		it('should create tracker', async () => {
+			const user = {
+				id: 'user-1',
+				email: 'test@example.com',
+				name: 'Test User',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			};
+			act(() => {
+				store.dispatch(userSlice.actions.setUser(user));
+			});
+
 			const tracker = new Tracker('tracker-1', 'New Tracker', '', true);
 			mockTrackerRepository.create.mockResolvedValue(tracker);
 
@@ -1045,7 +1056,10 @@ describe('useWorkTrackManager', () => {
 				});
 			});
 
-			expect(mockTrackerRepository.create).toHaveBeenCalled();
+			expect(mockTrackerRepository.create).toHaveBeenCalledWith(
+				expect.any(Tracker),
+				'user-1'
+			);
 			expect(created).toEqual({ id: 'tracker-1', name: 'New Tracker' });
 		});
 
@@ -1154,7 +1168,10 @@ describe('useWorkTrackManager', () => {
 				id: 'tracker-new',
 				name: 'My WorkTrack',
 			});
-			expect(mockTrackerRepository.create).toHaveBeenCalled();
+			expect(mockTrackerRepository.create).toHaveBeenCalledWith(
+				expect.any(Tracker),
+				'user-1'
+			);
 		});
 
 		it('should ensure user has tracker (alias for initializeUserData)', async () => {
@@ -1181,6 +1198,10 @@ describe('useWorkTrackManager', () => {
 				id: 'tracker-new',
 				name: 'My WorkTrack',
 			});
+			expect(mockTrackerRepository.create).toHaveBeenCalledWith(
+				expect.any(Tracker),
+				'user-1'
+			);
 		});
 
 		it('should get tracker by owner ID', async () => {

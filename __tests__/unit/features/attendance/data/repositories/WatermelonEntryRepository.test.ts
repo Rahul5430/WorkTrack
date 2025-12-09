@@ -36,7 +36,7 @@ describe('WatermelonEntryRepository', () => {
 		collection = {
 			create: jest.fn(),
 			query: jest.fn().mockReturnValue(queryBuilder),
-		} as unknown as jest.Mocked<
+		} as jest.Mocked<
 			ReturnType<Database['get']> & {
 				create: jest.Mock;
 				query: jest.Mock;
@@ -45,6 +45,7 @@ describe('WatermelonEntryRepository', () => {
 
 		database = {
 			get: jest.fn().mockReturnValue(collection),
+			write: jest.fn((fn) => fn()),
 		} as unknown as jest.Mocked<Database>;
 
 		repository = new WatermelonEntryRepository(database);
@@ -74,7 +75,7 @@ describe('WatermelonEntryRepository', () => {
 				trackerId: 'tracker-1',
 				createdAt: new Date('2024-01-01T00:00:00Z'),
 				updatedAt: new Date('2024-01-02T00:00:00Z'),
-			} as unknown as WorkEntryModelShape;
+			} as WorkEntryModelShape;
 
 			collection.create.mockImplementation((cb) => {
 				cb(mockModel);
@@ -120,7 +121,7 @@ describe('WatermelonEntryRepository', () => {
 					cb(mockModel);
 					return Promise.resolve();
 				}),
-			} as unknown as WorkEntryModelShape & {
+			} as WorkEntryModelShape & {
 				update: (
 					cb: (record: WorkEntryModelShape) => void
 				) => Promise<void>;
@@ -159,7 +160,7 @@ describe('WatermelonEntryRepository', () => {
 				trackerId: 'tracker-1',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-			} as unknown as WorkEntryModelShape;
+			} as WorkEntryModelShape;
 
 			collection.create.mockImplementation((cb) => {
 				cb(mockModel);
@@ -177,7 +178,7 @@ describe('WatermelonEntryRepository', () => {
 		it('marks entry as deleted when found', async () => {
 			const mockModel = {
 				markAsDeleted: jest.fn().mockResolvedValue(undefined),
-			} as unknown as { markAsDeleted: () => Promise<void> };
+			} as { markAsDeleted: () => Promise<void> };
 
 			queryBuilder.fetch.mockResolvedValueOnce([mockModel]);
 

@@ -2,7 +2,7 @@ import { Tracker } from '../entities/Tracker';
 
 // Tracker repository interface
 export interface ITrackerRepository {
-	create(tracker: Tracker): Promise<Tracker>;
+	create(tracker: Tracker, userId: string): Promise<Tracker>;
 	update(tracker: Tracker): Promise<Tracker>;
 	delete(trackerId: string): Promise<void>;
 	getById(trackerId: string): Promise<Tracker | null>;

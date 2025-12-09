@@ -1,5 +1,6 @@
 import { BaseEntity } from '@/shared/domain/entities';
 import { Email } from '@/shared/domain/value-objects';
+import type { SerializableObject } from '@/shared/types/serialization';
 
 /**
  * User domain entity representing an authenticated user
@@ -99,7 +100,7 @@ export class User extends BaseEntity<{
 	/**
 	 * Convert to JSON
 	 */
-	toJSON(): Record<string, unknown> {
+	toJSON(): SerializableObject {
 		return {
 			...super.toJSON(),
 			email: this.email.value,

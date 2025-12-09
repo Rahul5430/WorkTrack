@@ -35,10 +35,15 @@ export const Label = () => {
 			Icon: Plus,
 			color: colors.background.error,
 		},
+		// {
+		// 	label: WORK_STATUS_LABELS[WORK_STATUS.FORECAST],
+		// 	Icon: Forecast,
+		// 	color: colors.background.forecast,
+		// },
 		{
-			label: WORK_STATUS_LABELS[WORK_STATUS.FORECAST],
+			label: WORK_STATUS_LABELS[WORK_STATUS.ADVISORY],
 			Icon: Forecast,
-			color: colors.background.forecast,
+			color: colors.background.advisory,
 		},
 	];
 
@@ -49,7 +54,7 @@ export const Label = () => {
 		<View
 			style={[
 				styles.container,
-				{ paddingHorizontal: getResponsiveSize(25) },
+				{ paddingHorizontal: getResponsiveSize(5).width },
 			]}
 		>
 			<View style={styles.row}>
@@ -131,7 +136,6 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.1,
 		shadowRadius: 3,
-		elevation: 2,
 	},
 	label: {
 		fontFamily: fonts.PoppinsMedium,

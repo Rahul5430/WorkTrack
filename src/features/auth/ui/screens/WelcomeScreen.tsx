@@ -1,9 +1,9 @@
 import { GOOGLE_SIGN_IN_CLIENT_ID } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getApp } from '@react-native-firebase/app';
 import {
 	getAuth,
 	GoogleAuthProvider,
+	onAuthStateChanged,
 	signInWithCredential,
 } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -47,8 +47,8 @@ const WelcomeScreen: React.FC<AuthStackScreenProps<'WelcomeScreen'>> = () => {
 	// Manager wiring handled by SyncManager and DI
 
 	useEffect(() => {
-		const auth = getAuth(getApp());
-		const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+		const auth = getAuth();
+		const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
 			if (firebaseUser) {
 				try {
 					dispatch(setIsFetching(true));
@@ -102,7 +102,7 @@ const WelcomeScreen: React.FC<AuthStackScreenProps<'WelcomeScreen'>> = () => {
 				throw new Error('No ID token found');
 			}
 
-			const auth = getAuth(getApp());
+			const auth = getAuth();
 			const credential = GoogleAuthProvider.credential(idToken);
 			await signInWithCredential(auth, credential);
 

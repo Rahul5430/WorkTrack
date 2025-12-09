@@ -11,6 +11,7 @@ describe('TrackerMapper', () => {
 				id: 'tracker-1',
 				name: 'My Tracker',
 				description: 'Test description',
+				userId: 'user-1',
 				isActive: true,
 				createdAt: new Date('2024-01-01T00:00:00Z'),
 				updatedAt: new Date('2024-01-02T00:00:00Z'),
@@ -31,6 +32,7 @@ describe('TrackerMapper', () => {
 			const model: TrackerModelShape = {
 				id: 'tracker-1',
 				name: 'My Tracker',
+				userId: 'user-1',
 				isActive: false,
 				createdAt: new Date('2024-01-01T00:00:00Z'),
 				updatedAt: new Date('2024-01-02T00:00:00Z'),
@@ -47,6 +49,7 @@ describe('TrackerMapper', () => {
 				id: 'tracker-1',
 				name: 'Inactive Tracker',
 				description: 'Description',
+				userId: 'user-1',
 				isActive: false,
 				createdAt: new Date('2024-01-01T00:00:00Z'),
 				updatedAt: new Date('2024-01-02T00:00:00Z'),

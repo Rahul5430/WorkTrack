@@ -114,5 +114,84 @@ describe('NetworkMonitorService', () => {
 			unsubscribe();
 			expect(mockUnsubscribe).toHaveBeenCalled();
 		});
+
+		it('debounces rapid state changes', async () => {
+			const mockUnsubscribe = jest.fn();
+			const callback = jest.fn();
+			let listenerCallback:
+				| ((state: {
+						isConnected?: boolean;
+						isInternetReachable?: boolean;
+				  }) => void)
+				| undefined;
+
+			(NetInfo.addEventListener as jest.Mock).mockImplementation((cb) => {
+				listenerCallback = cb as (state: {
+					isConnected?: boolean;
+					isInternetReachable?: boolean;
+				}) => void;
+				return mockUnsubscribe;
+			});
+
+			service.listen(callback);
+
+			if (listenerCallback) {
+				// First state change - should trigger callback
+				listenerCallback({
+					isConnected: true,
+					isInternetReachable: true,
+				});
+				await new Promise((resolve) => setTimeout(resolve, 600));
+				expect(callback).toHaveBeenCalledTimes(1);
+				expect(callback).toHaveBeenCalledWith(true);
+
+				// Rapid same state change - should NOT trigger callback (early return)
+				callback.mockClear();
+				listenerCallback({
+					isConnected: true,
+					isInternetReachable: true,
+				});
+				await new Promise((resolve) => setTimeout(resolve, 600));
+				// Callback should not be called because state didn't change
+				expect(callback).not.toHaveBeenCalled();
+			}
+		});
+
+		it('clears debounce timer on unsubscribe', async () => {
+			const mockUnsubscribe = jest.fn();
+			const callback = jest.fn();
+			let listenerCallback:
+				| ((state: {
+						isConnected?: boolean;
+						isInternetReachable?: boolean;
+				  }) => void)
+				| undefined;
+
+			(NetInfo.addEventListener as jest.Mock).mockImplementation((cb) => {
+				listenerCallback = cb as (state: {
+					isConnected?: boolean;
+					isInternetReachable?: boolean;
+				}) => void;
+				return mockUnsubscribe;
+			});
+
+			const unsubscribe = service.listen(callback);
+
+			if (listenerCallback) {
+				// Trigger a state change that starts the debounce timer
+				listenerCallback({
+					isConnected: true,
+					isInternetReachable: true,
+				});
+
+				// Immediately unsubscribe - this should clear the timer
+				unsubscribe();
+
+				// Wait for debounce delay - callback should not be called
+				await new Promise((resolve) => setTimeout(resolve, 600));
+				expect(callback).not.toHaveBeenCalled();
+				expect(mockUnsubscribe).toHaveBeenCalled();
+			}
+		});
 	});
 });

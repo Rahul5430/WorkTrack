@@ -1,23 +1,57 @@
-import firestore from '@react-native-firebase/firestore';
+import {
+	collection,
+	collectionGroup,
+	doc,
+	getDoc,
+	getDocs,
+	getFirestore,
+	setDoc,
+} from '@react-native-firebase/firestore';
 
 import { FirebaseShareRepository } from '@/features/sharing/data/repositories/FirebaseShareRepository';
 import { Permission, Share } from '@/features/sharing/domain/entities';
 
+jest.mock('@react-native-firebase/app', () => ({
+	getApp: jest.fn(() => ({ id: 'mock-app' })),
+}));
+
 jest.mock('@react-native-firebase/firestore', () => {
+	const mockDoc = {
+		set: jest.fn().mockResolvedValue(undefined),
+		get: jest.fn(),
+	};
+
 	const mockCollection = jest.fn(() => ({
-		doc: jest.fn(() => ({
-			set: jest.fn().mockResolvedValue(undefined),
-			get: jest.fn(),
-		})),
+		doc: jest.fn(() => mockDoc),
 		where: jest.fn().mockReturnThis(),
 		get: jest.fn(),
 	}));
 
 	return {
-		__esModule: true,
-		default: jest.fn(() => ({
+		getFirestore: jest.fn(() => ({
 			collection: mockCollection,
 		})),
+		collection: jest.fn((_ref, _path) => mockCollection()),
+		doc: jest.fn((_ref, ..._pathSegments) => mockDoc),
+		collectionGroup: jest.fn((_firestore, _collectionName) => ({
+			where: jest.fn().mockReturnThis(),
+		})),
+		query: jest.fn((ref, ..._constraints) => ref),
+		where: jest.fn((field, op, value) => ({
+			type: 'where',
+			field,
+			op,
+			value,
+		})),
+		setDoc: jest.fn().mockResolvedValue(undefined),
+		getDoc: jest.fn().mockResolvedValue({
+			data: () => ({}),
+			exists: true,
+		}),
+		getDocs: jest.fn().mockResolvedValue({
+			docs: [],
+			size: 0,
+		}),
 	};
 });
 
@@ -34,7 +68,7 @@ describe('FirebaseShareRepository', () => {
 	};
 
 	beforeEach(() => {
-		repository = new FirebaseShareRepository();
+		jest.clearAllMocks();
 		mockDoc = {
 			set: jest.fn().mockResolvedValue(undefined),
 			get: jest.fn(),
@@ -45,10 +79,30 @@ describe('FirebaseShareRepository', () => {
 			get: jest.fn(),
 		};
 
-		(firestore as unknown as jest.Mock).mockReturnValue({
+		// Setup mocks for modular API
+		(getFirestore as jest.Mock).mockReturnValue({
 			collection: jest.fn(() => mockCollection),
 		});
-		jest.clearAllMocks();
+		(collection as jest.Mock).mockImplementation((_ref, _path) => {
+			if (_path) {
+				return mockCollection;
+			}
+			return mockCollection;
+		});
+		(doc as jest.Mock).mockImplementation((_ref, ..._pathSegments) => {
+			return mockDoc;
+		});
+		(setDoc as jest.Mock).mockResolvedValue(undefined);
+		(getDoc as jest.Mock).mockResolvedValue({
+			data: () => ({}),
+			exists: true,
+		});
+		(getDocs as jest.Mock).mockResolvedValue({
+			docs: [],
+			size: 0,
+		});
+
+		repository = new FirebaseShareRepository();
 	});
 
 	describe('shareTracker', () => {
@@ -65,9 +119,10 @@ describe('FirebaseShareRepository', () => {
 
 			const result = await repository.shareTracker(share);
 
-			expect(firestore).toHaveBeenCalled();
-			expect(mockCollection.doc).toHaveBeenCalledWith('share-1');
-			expect(mockDoc.set).toHaveBeenCalledWith({
+			// For shares, it uses subcollection: trackers/{trackerId}/shares/{shareId}
+			expect(doc).toHaveBeenCalled();
+			expect(collection).toHaveBeenCalled();
+			expect(setDoc).toHaveBeenCalledWith(expect.anything(), {
 				tracker_id: 'tracker-1',
 				shared_with_user_id: 'user-2',
 				permission: 'read',
@@ -80,42 +135,83 @@ describe('FirebaseShareRepository', () => {
 	});
 
 	describe('updatePermission', () => {
-		it('updates permission in Firestore', async () => {
+		it('updates permission in Firestore with trackerId', async () => {
 			const permission = new Permission('write');
 			const shareId = 'share-1';
+			const trackerId = 'tracker-1';
 
-			// The implementation has a limitation: it creates Share with empty strings
-			// which fails validation. We verify the Firestore call happens before the error
-			await expect(
-				repository.updatePermission(shareId, permission)
-			).rejects.toThrow('trackerId is required');
+			// Mock getDoc to return share data
+			(getDoc as jest.Mock).mockResolvedValue({
+				data: () => ({
+					tracker_id: 'tracker-1',
+					shared_with_user_id: 'user-2',
+					permission: 'read',
+				}),
+			});
 
-			expect(mockCollection.doc).toHaveBeenCalledWith(shareId);
-			expect(mockDoc.set).toHaveBeenCalledWith(
+			const result = await repository.updatePermission(
+				shareId,
+				permission,
+				trackerId
+			);
+
+			expect(getDoc).toHaveBeenCalled();
+			expect(setDoc).toHaveBeenCalledWith(
+				expect.anything(),
 				{
 					permission: 'write',
 					updated_at: expect.any(Number),
 				},
 				{ merge: true }
 			);
-			// Note: The implementation creates Share(shareId, '', '', permission) which fails validation
-			// This is a known limitation - the repository should fetch the share first
+			expect(result).toBeInstanceOf(Share);
+			expect(result.permission.value).toBe('write');
+		});
+
+		it('throws error when share not found without trackerId', async () => {
+			const permission = new Permission('write');
+			const shareId = 'share-1';
+
+			// Mock collectionGroup to return empty snapshot
+			(getDocs as jest.Mock).mockResolvedValue({
+				docs: [],
+			});
+
+			await expect(
+				repository.updatePermission(shareId, permission)
+			).rejects.toThrow('Share not found: share-1');
 		});
 	});
 
 	describe('unshare', () => {
-		it('deactivates share in Firestore', async () => {
+		it('deactivates share in Firestore with trackerId', async () => {
 			const shareId = 'share-1';
+			const trackerId = 'tracker-1';
 
-			await repository.unshare(shareId);
+			await repository.unshare(shareId, trackerId);
 
-			expect(mockCollection.doc).toHaveBeenCalledWith(shareId);
-			expect(mockDoc.set).toHaveBeenCalledWith(
+			expect(doc).toHaveBeenCalled();
+			expect(collection).toHaveBeenCalled();
+			expect(setDoc).toHaveBeenCalledWith(
+				expect.anything(),
 				{
 					is_active: false,
 					updated_at: expect.any(Number),
 				},
 				{ merge: true }
+			);
+		});
+
+		it('throws error when share not found without trackerId', async () => {
+			const shareId = 'share-1';
+
+			// Mock collectionGroup to return empty snapshot
+			(getDocs as jest.Mock).mockResolvedValue({
+				docs: [],
+			});
+
+			await expect(repository.unshare(shareId)).rejects.toThrow(
+				'Share not found: share-1'
 			);
 		});
 	});
@@ -126,41 +222,33 @@ describe('FirebaseShareRepository', () => {
 			const mockDocs = [
 				{
 					id: 'share-1',
-					get: (field: string) => {
-						if (field === 'tracker_id') return 'tracker-1';
-						if (field === 'shared_with_user_id') return 'user-2';
-						if (field === 'permission') return 'read';
-						return null;
-					},
+					data: () => ({
+						tracker_id: 'tracker-1',
+						shared_with_user_id: 'user-2',
+						permission: 'read',
+					}),
 				},
 				{
 					id: 'share-2',
-					get: (field: string) => {
-						if (field === 'tracker_id') return 'tracker-2';
-						if (field === 'shared_with_user_id') return 'user-3';
-						if (field === 'permission') return 'write';
-						return null;
-					},
+					data: () => ({
+						tracker_id: 'tracker-2',
+						shared_with_user_id: 'user-3',
+						permission: 'write',
+					}),
 				},
 			];
 
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({
+			(getDocs as jest.Mock).mockResolvedValue({
 				docs: mockDocs,
 			});
 
 			const result = await repository.getMyShares(ownerUserId);
 
-			expect(mockCollection.where).toHaveBeenCalledWith(
-				'created_by_user_id',
-				'==',
-				ownerUserId
+			expect(collectionGroup).toHaveBeenCalledWith(
+				expect.anything(),
+				'shares'
 			);
-			expect(mockCollection.where).toHaveBeenCalledWith(
-				'is_active',
-				'==',
-				true
-			);
+			expect(getDocs).toHaveBeenCalled();
 			expect(result).toHaveLength(2);
 			expect(result[0]).toBeInstanceOf(Share);
 			expect(result[0].trackerId).toBe('tracker-1');
@@ -169,8 +257,7 @@ describe('FirebaseShareRepository', () => {
 
 		it('returns empty array when no shares found', async () => {
 			const ownerUserId = 'user-1';
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({ docs: [] });
+			(getDocs as jest.Mock).mockResolvedValue({ docs: [] });
 
 			const result = await repository.getMyShares(ownerUserId);
 
@@ -182,17 +269,15 @@ describe('FirebaseShareRepository', () => {
 			const mockDocs = [
 				{
 					id: 'share-1',
-					get: (field: string) => {
-						if (field === 'tracker_id') return 'tracker-1';
-						if (field === 'shared_with_user_id') return 'user-2';
-						if (field === 'permission') return null;
-						return null;
-					},
+					data: () => ({
+						tracker_id: 'tracker-1',
+						shared_with_user_id: 'user-2',
+						permission: null,
+					}),
 				},
 			];
 
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({
+			(getDocs as jest.Mock).mockResolvedValue({
 				docs: mockDocs,
 			});
 
@@ -209,32 +294,25 @@ describe('FirebaseShareRepository', () => {
 			const mockDocs = [
 				{
 					id: 'share-1',
-					get: (field: string) => {
-						if (field === 'tracker_id') return 'tracker-1';
-						if (field === 'shared_with_user_id') return 'user-2';
-						if (field === 'permission') return 'read';
-						return null;
-					},
+					data: () => ({
+						tracker_id: 'tracker-1',
+						shared_with_user_id: 'user-2',
+						permission: 'read',
+					}),
 				},
 			];
 
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({
+			(getDocs as jest.Mock).mockResolvedValue({
 				docs: mockDocs,
 			});
 
 			const result = await repository.getSharedWithMe(userId);
 
-			expect(mockCollection.where).toHaveBeenCalledWith(
-				'shared_with_user_id',
-				'==',
-				userId
+			expect(collectionGroup).toHaveBeenCalledWith(
+				expect.anything(),
+				'shares'
 			);
-			expect(mockCollection.where).toHaveBeenCalledWith(
-				'is_active',
-				'==',
-				true
-			);
+			expect(getDocs).toHaveBeenCalled();
 			expect(result).toHaveLength(1);
 			expect(result[0]).toBeInstanceOf(Share);
 			expect(result[0].trackerId).toBe('tracker-1');
@@ -242,8 +320,7 @@ describe('FirebaseShareRepository', () => {
 
 		it('returns empty array when no shares found', async () => {
 			const userId = 'user-2';
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({ docs: [] });
+			(getDocs as jest.Mock).mockResolvedValue({ docs: [] });
 
 			const result = await repository.getSharedWithMe(userId);
 
@@ -255,17 +332,15 @@ describe('FirebaseShareRepository', () => {
 			const mockDocs = [
 				{
 					id: 'share-1',
-					get: (field: string) => {
-						if (field === 'tracker_id') return 'tracker-1';
-						if (field === 'shared_with_user_id') return 'user-2';
-						if (field === 'permission') return null;
-						return null;
-					},
+					data: () => ({
+						tracker_id: 'tracker-1',
+						shared_with_user_id: 'user-2',
+						permission: null,
+					}),
 				},
 			];
 
-			mockCollection.where.mockReturnValue(mockCollection);
-			mockCollection.get.mockResolvedValue({
+			(getDocs as jest.Mock).mockResolvedValue({
 				docs: mockDocs,
 			});
 

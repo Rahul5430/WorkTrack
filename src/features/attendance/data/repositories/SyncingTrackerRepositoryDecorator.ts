@@ -10,8 +10,8 @@ export class SyncingTrackerRepositoryDecorator implements ITrackerRepository {
 		private readonly queue: ISyncQueueRepository
 	) {}
 
-	async create(tracker: Tracker): Promise<Tracker> {
-		const created = await this.inner.create(tracker);
+	async create(tracker: Tracker, userId: string): Promise<Tracker> {
+		const created = await this.inner.create(tracker, userId);
 		await this.queue.enqueue(
 			new SyncOperation(
 				`tr-${created.id}`,
@@ -19,6 +19,7 @@ export class SyncingTrackerRepositoryDecorator implements ITrackerRepository {
 				'trackers',
 				created.id,
 				{
+					ownerId: userId,
 					name: created.name,
 					description: created.description,
 					isActive: created.isActive,

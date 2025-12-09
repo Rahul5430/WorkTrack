@@ -12,7 +12,6 @@ import {
 	WORK_STATUS_COLORS,
 	WORK_STATUS_PRESSED_COLORS,
 } from '@/shared/constants/workStatus';
-import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { fonts } from '@/shared/ui/theme';
 import { colors } from '@/shared/ui/theme/colors';
 import { MarkedDayStatus } from '@/types';
@@ -44,7 +43,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 	isToday = false,
 	isCurrentMonth = true,
 }) => {
-	const { getResponsiveSize } = useResponsiveLayout();
 	const scale = useSharedValue(1);
 	const opacity = useSharedValue(1);
 	const backgroundColor = useSharedValue('transparent');
@@ -119,7 +117,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 			},
 			shadowOpacity: shadowOpacity.value,
 			shadowRadius: 3,
-			elevation: 2,
 		};
 	});
 
@@ -146,25 +143,14 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 	}, [backgroundColor, dayColors.background, opacity, scale, shadowOpacity]);
 
 	const containerStyle = useMemo(
-		() => [
-			styles.pressable,
-			{
-				width: getResponsiveSize(40),
-				height: getResponsiveSize(40),
-			},
-			animatedStyle,
-		],
-		[getResponsiveSize, animatedStyle]
+		() => [styles.pressable, animatedStyle],
+		[animatedStyle]
 	);
 
 	const dayStyle = useMemo(
 		() =>
 			[
 				styles.dayStyle,
-				{
-					fontSize: getResponsiveSize(14),
-					lineHeight: getResponsiveSize(20),
-				},
 				!isCurrentMonth && styles.otherMonthDay,
 				isToday && styles.today,
 				type === WORK_STATUS.HOLIDAY && styles.holiday,
@@ -172,7 +158,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
 				type === WORK_STATUS.WFH && styles.workFromHome,
 				type === WORK_STATUS.OFFICE && styles.workFromOffice,
 			] as ViewStyle[],
-		[getResponsiveSize, isCurrentMonth, isToday, type]
+		[isCurrentMonth, isToday, type]
 	);
 
 	return (
@@ -228,7 +214,6 @@ const styles = StyleSheet.create({
 	},
 	otherMonthDay: {
 		shadowOpacity: 0,
-		elevation: 0,
 	},
 	dayTextStyle: {
 		fontFamily: fonts.PoppinsMedium,

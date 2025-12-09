@@ -5,5 +5,5 @@ export * from './database';
 // Storage exports (to be implemented)
 // export * from './storage';
 
-// Network exports (to be implemented)
-// export * from './network';
+// Network exports
+export * from './network';

@@ -1,14 +1,13 @@
-import NetInfo from '@react-native-community/netinfo';
-import { EventEmitter } from 'events';
+import EventEmitter from 'eventemitter3';
 import { AppState } from 'react-native';
 
 import {
 	SyncManager,
 	SyncManagerOptions,
 } from '@/features/sync/data/services/SyncManager';
-import { INetworkMonitor } from '@/features/sync/domain/ports/INetworkMonitor';
 import { ProcessSyncQueueUseCase } from '@/features/sync/domain/use-cases/ProcessSyncQueueUseCase';
 import { SyncFromRemoteUseCase } from '@/features/sync/domain/use-cases/SyncFromRemoteUseCase';
+import { INetworkMonitor } from '@/shared/data/network';
 
 jest.mock('@react-native-community/netinfo');
 jest.mock('react-native', () => ({
@@ -17,13 +16,18 @@ jest.mock('react-native', () => ({
 	},
 }));
 
+// Mock Firebase Auth
+const mockGetAuth = jest.fn();
+jest.mock('@react-native-firebase/auth', () => ({
+	getAuth: () => mockGetAuth(),
+}));
+
 describe('SyncManager', () => {
 	let manager: SyncManager;
 	let mockProcessQueue: jest.Mocked<ProcessSyncQueueUseCase>;
 	let mockPullFromRemote: jest.Mocked<SyncFromRemoteUseCase>;
 	let mockNetwork: jest.Mocked<INetworkMonitor>;
 	let mockAppStateUnsubscribe: jest.Mock;
-	let mockNetInfoUnsubscribe: jest.Mock;
 
 	beforeEach(() => {
 		mockProcessQueue = {
@@ -44,15 +48,15 @@ describe('SyncManager', () => {
 		} as unknown as jest.Mocked<INetworkMonitor>;
 
 		mockAppStateUnsubscribe = jest.fn();
-		mockNetInfoUnsubscribe = jest.fn();
 
 		(AppState.addEventListener as jest.Mock).mockReturnValue({
 			remove: mockAppStateUnsubscribe,
 		});
 
-		(NetInfo.addEventListener as jest.Mock).mockReturnValue(
-			mockNetInfoUnsubscribe
-		);
+		// Mock getAuth to return an authenticated user by default
+		mockGetAuth.mockReturnValue({
+			currentUser: { uid: 'test-user-id' },
+		});
 
 		jest.useFakeTimers();
 		jest.clearAllMocks();
@@ -121,7 +125,7 @@ describe('SyncManager', () => {
 
 			expect(manager.running).toBe(true);
 			expect(AppState.addEventListener).toHaveBeenCalled();
-			expect(NetInfo.addEventListener).toHaveBeenCalled();
+			// SyncManager now uses NetworkMonitor abstraction, not NetInfo directly
 			expect(mockNetwork.listen).toHaveBeenCalled();
 			expect(mockProcessQueue.onItemProcessed).toHaveBeenCalled();
 		});
@@ -169,8 +173,7 @@ describe('SyncManager', () => {
 
 			expect(manager.running).toBe(false);
 			expect(mockAppStateUnsubscribe).toHaveBeenCalled();
-			expect(mockNetInfoUnsubscribe).toHaveBeenCalled();
-			// Network unsubscribe is called via the listen callback
+			// Network unsubscribe is called via the listen callback return value
 			expect(mockNetwork.listen).toHaveBeenCalled();
 		});
 
@@ -379,6 +382,159 @@ describe('SyncManager', () => {
 			expect(mockProcessQueue.execute).toHaveBeenCalled();
 			expect(mockPullFromRemote.execute).toHaveBeenCalled();
 		});
+
+		it('skips cycle when user is not authenticated', async () => {
+			mockGetAuth.mockReturnValue({
+				currentUser: null,
+			});
+
+			const loggerSpy = jest.spyOn(
+				require('@/shared/utils/logging').logger,
+				'debug'
+			);
+
+			await manager.processNow();
+
+			expect(loggerSpy).toHaveBeenCalledWith(
+				'SyncManager: user not authenticated, skipping cycle'
+			);
+			expect(mockProcessQueue.execute).not.toHaveBeenCalled();
+			expect(mockPullFromRemote.execute).not.toHaveBeenCalled();
+
+			loggerSpy.mockRestore();
+		});
+
+		it('handles permission denied error with warning', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			// Create an error-like object that will be converted to Error but retain code property
+			const permissionError = Object.assign(
+				new Error('Permission denied'),
+				{
+					code: 'firestore/permission-denied',
+				}
+			);
+			mockProcessQueue.execute.mockRejectedValue(permissionError);
+
+			const loggerWarnSpy = jest.spyOn(
+				require('@/shared/utils/logging').logger,
+				'warn'
+			);
+			const loggerErrorSpy = jest.spyOn(
+				require('@/shared/utils/logging').logger,
+				'error'
+			);
+
+			await manager.processNow();
+
+			expect(loggerWarnSpy).toHaveBeenCalledWith(
+				'SyncManager: permission denied (check Firestore rules or auth state)',
+				expect.objectContaining({
+					nextInMs: expect.any(Number),
+				})
+			);
+			expect(loggerErrorSpy).not.toHaveBeenCalled();
+
+			loggerWarnSpy.mockRestore();
+			loggerErrorSpy.mockRestore();
+		});
+
+		it('handles error that is not an Error instance but has message property', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			const errorObject = {
+				message: 'Custom error message',
+				code: 'CUSTOM_ERROR',
+			};
+			mockProcessQueue.execute.mockRejectedValue(errorObject);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			expect(emittedError.message).toBe('Custom error message');
+		});
+
+		it('handles error that is not an Error instance and has no message property', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			// Object without message property - should use String(error)
+			const errorObject = { code: 'ERROR_CODE', data: 'some data' };
+			mockProcessQueue.execute.mockRejectedValue(errorObject);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			// Should convert object to string
+			expect(emittedError.message).toBe('[object Object]');
+		});
+
+		it('handles error that is a string', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			const errorString = 'String error';
+			mockProcessQueue.execute.mockRejectedValue(errorString);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			expect(emittedError.message).toBe('String error');
+		});
+
+		it('handles error that is null', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			mockProcessQueue.execute.mockRejectedValue(null);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			expect(emittedError.message).toBe('null');
+		});
+
+		it('handles error that is undefined', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			mockProcessQueue.execute.mockRejectedValue(undefined);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			expect(emittedError.message).toBe('undefined');
+		});
+
+		it('handles error that is a number', async () => {
+			mockNetwork.isOnline.mockResolvedValue(true);
+			mockProcessQueue.execute.mockRejectedValue(404);
+
+			const errorListener = jest.fn();
+			manager.onError(errorListener);
+
+			await manager.processNow();
+
+			expect(errorListener).toHaveBeenCalled();
+			const emittedError = errorListener.mock.calls[0][0];
+			expect(emittedError).toBeInstanceOf(Error);
+			expect(emittedError.message).toBe('404');
+		});
 	});
 
 	describe('app state changes', () => {
@@ -436,7 +592,7 @@ describe('SyncManager', () => {
 	});
 
 	describe('network state changes', () => {
-		it('processes when network comes online via NetInfo', () => {
+		it('processes when network comes online via NetworkMonitor', async () => {
 			manager = new SyncManager(
 				mockProcessQueue,
 				mockPullFromRemote,
@@ -445,14 +601,21 @@ describe('SyncManager', () => {
 
 			manager.start();
 
-			const netInfoHandler = (NetInfo.addEventListener as jest.Mock).mock
-				.calls[0][0];
-			netInfoHandler({ isConnected: true, isInternetReachable: true });
+			// Get the callback passed to network.listen
+			const networkListenCall = (mockNetwork.listen as jest.Mock).mock
+				.calls[0];
+			const networkCallback = networkListenCall
+				? networkListenCall[0]
+				: null;
 
-			expect(mockNetwork.isOnline).toHaveBeenCalled();
+			if (networkCallback) {
+				await networkCallback(true);
+				await Promise.resolve();
+				expect(mockProcessQueue.execute).toHaveBeenCalled();
+			}
 		});
 
-		it('does not process when network is offline via NetInfo', () => {
+		it('does not process when network is offline via NetworkMonitor', () => {
 			manager = new SyncManager(
 				mockProcessQueue,
 				mockPullFromRemote,
@@ -461,11 +624,17 @@ describe('SyncManager', () => {
 
 			manager.start();
 
-			const netInfoHandler = (NetInfo.addEventListener as jest.Mock).mock
-				.calls[0][0];
-			netInfoHandler({ isConnected: false, isInternetReachable: false });
+			// Get the callback passed to network.listen
+			const networkListenCall = (mockNetwork.listen as jest.Mock).mock
+				.calls[0];
+			const networkCallback = networkListenCall
+				? networkListenCall[0]
+				: null;
 
-			expect(mockProcessQueue.execute).not.toHaveBeenCalled();
+			if (networkCallback) {
+				networkCallback(false);
+				expect(mockProcessQueue.execute).not.toHaveBeenCalled();
+			}
 		});
 
 		it('processes when network comes online via monitor', () => {

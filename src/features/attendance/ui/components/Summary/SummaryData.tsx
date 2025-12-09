@@ -26,9 +26,12 @@ type MonthlyDataItem = {
 
 const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 	const { RFValue } = useResponsiveLayout();
-	const workTrackData = useSelector(
-		(state: RootState) => state.workTrack.data
-	) as unknown as MarkedDay[];
+	const workTrackState = useSelector((state: RootState) => state.workTrack);
+	const workTrackData = useMemo(() => {
+		return Array.isArray(workTrackState?.data)
+			? (workTrackState.data as MarkedDay[])
+			: [];
+	}, [workTrackState?.data]);
 
 	const stats = useMemo(() => {
 		const today = selectedMonth || new Date();
@@ -108,6 +111,7 @@ const SummaryData = ({ selectedMonth }: SummaryDataProps) => {
 				[WORK_STATUS.LEAVE]: 0,
 				[WORK_STATUS.WEEKEND]: 0,
 				[WORK_STATUS.FORECAST]: 0,
+				[WORK_STATUS.ADVISORY]: 0,
 			};
 
 			data.forEach((entry: MarkedDay) => {

@@ -34,10 +34,10 @@ describe('Timestamp', () => {
 				'Invalid timestamp value'
 			);
 			expect(() => new Timestamp(NaN)).toThrow('Invalid timestamp value');
-			expect(() => new Timestamp(null as unknown as Date)).toThrow(
+			expect(() => new Timestamp(null as never as Date)).toThrow(
 				'Timestamp must be a Date, string, or number'
 			);
-			expect(() => new Timestamp(undefined as unknown as Date)).toThrow(
+			expect(() => new Timestamp(undefined as never as Date)).toThrow(
 				'Timestamp must be a Date, string, or number'
 			);
 		});
@@ -132,7 +132,7 @@ describe('Timestamp', () => {
 			it('should return false for invalid timestamp', () => {
 				expect(Timestamp.isValid('invalid-date')).toBe(false);
 				expect(Timestamp.isValid(NaN)).toBe(false);
-				expect(Timestamp.isValid(null as unknown as Date)).toBe(false);
+				expect(Timestamp.isValid(null as never as Date)).toBe(false);
 			});
 		});
 	});

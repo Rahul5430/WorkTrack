@@ -1,3 +1,6 @@
+import MaterialDesignIcons, {
+	type MaterialDesignIconsIconName,
+} from '@react-native-vector-icons/material-design-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import Animated, {
@@ -7,7 +10,6 @@ import Animated, {
 	withRepeat,
 	withTiming,
 } from 'react-native-reanimated';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useWorkTrackManager } from '@/hooks';
 import { colors } from '@/shared/ui/theme';
@@ -66,7 +68,11 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 		return () => clearInterval(interval);
 	}, [updateStatus]);
 
-	const getStatusIconProps = () => {
+	const getStatusIconProps = (): {
+		name: MaterialDesignIconsIconName;
+		color: string;
+		rotate: boolean;
+	} => {
 		if (syncStatus?.isSyncing) {
 			return { name: 'sync', color: colors.wfh, rotate: true };
 		}
@@ -89,7 +95,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 			<View>
 				{syncStatus?.isSyncing ? (
 					<Animated.View style={animatedStyle}>
-						<MaterialCommunityIcons
+						<MaterialDesignIcons
 							name={getStatusIconProps().name}
 							size={16}
 							color={getStatusIconProps().color}
@@ -105,7 +111,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
 						/>
 					</Animated.View>
 				) : (
-					<MaterialCommunityIcons
+					<MaterialDesignIcons
 						name={getStatusIconProps().name}
 						size={16}
 						color={getStatusIconProps().color}

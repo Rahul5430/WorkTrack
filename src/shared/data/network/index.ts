@@ -1,2 +1,2 @@
-export * from './NetworkClient';
-export * from './NetworkMonitor';
+export * from './INetworkMonitor';
+export * from './NetworkMonitorService';

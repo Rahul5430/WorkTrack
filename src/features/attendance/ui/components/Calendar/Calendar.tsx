@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -16,9 +16,9 @@ type CalendarComponentProps = {
 const CalendarComponent = React.memo(
 	({ onDatePress, onMonthChange }: CalendarComponentProps) => {
 		const { getResponsiveSize } = useResponsiveLayout();
-		const { data: markedDays } = useSelector(
+		const workTrackState = useSelector(
 			(state: RootState) => state.workTrack
-		) as { data: MarkedDay[] };
+		);
 		const [currentMonth, setCurrentMonth] = useState(new Date());
 
 		const handlePressDate = useCallback(
@@ -40,19 +40,28 @@ const CalendarComponent = React.memo(
 			[onMonthChange]
 		);
 
-		// Transform markedDays to match the expected format
-		const transformedMarkedDays = markedDays.reduce<
-			Record<string, { status: MarkedDay['status']; isAdvisory: boolean }>
-		>((accumulator, day) => {
-			accumulator[day.date] = {
-				status: day.status,
-				isAdvisory: Boolean(day.isAdvisory),
-			};
-			return accumulator;
-		}, {});
+		// Memoize transformed markedDays to prevent unnecessary re-renders
+		// Move conditional logic inside useMemo to fix lint warning
+		const transformedMarkedDays = useMemo(() => {
+			const markedDays = Array.isArray(workTrackState?.data)
+				? (workTrackState.data as MarkedDay[])
+				: [];
+			return markedDays.reduce<
+				Record<
+					string,
+					{ status: MarkedDay['status']; isAdvisory: boolean }
+				>
+			>((accumulator, day) => {
+				accumulator[day.date] = {
+					status: day.status,
+					isAdvisory: Boolean(day.isAdvisory),
+				};
+				return accumulator;
+			}, {});
+		}, [workTrackState?.data]);
 
 		return (
-			<View style={{ paddingHorizontal: getResponsiveSize(5) }}>
+			<View style={{ paddingHorizontal: getResponsiveSize(5).width }}>
 				<CustomCalendar
 					currentMonth={currentMonth}
 					markedDays={transformedMarkedDays}

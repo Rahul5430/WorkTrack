@@ -1,4 +1,6 @@
 // SyncOperation mapper between domain and WatermelonDB model
+import type { SerializableRecord } from '@/shared/types/serialization';
+
 import { SyncOperation } from '../../domain/entities/SyncOperation';
 
 // Minimal model shape for mapping
@@ -19,7 +21,11 @@ export interface SyncOperationModelShape {
 
 export const SyncOperationMapper = {
 	toDomain(model: SyncOperationModelShape): SyncOperation {
-		const data = model.data ? JSON.parse(model.data) : undefined;
+		// Parse JSON data and validate it's a SerializableRecord
+		// We assume stored data is valid JSON that conforms to SerializableRecord
+		const data: SerializableRecord | undefined = model.data
+			? (JSON.parse(model.data) as SerializableRecord)
+			: undefined;
 		return new SyncOperation(
 			model.id,
 			model.operation as SyncOperation['operation'],

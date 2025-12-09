@@ -41,7 +41,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
 });
 
 // Vector icons mock
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
+jest.mock('@react-native-vector-icons/material-design-icons', () => 'Icon');
 
 // Safe area context mock
 jest.mock('react-native-safe-area-context', () => ({

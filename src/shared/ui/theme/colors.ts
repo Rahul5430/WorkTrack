@@ -19,6 +19,7 @@ export const colors = {
 		wfh: '#4CAF5015',
 		holiday: '#FF525215',
 		forecast: '#9C27B015',
+		advisory: '#9C27B015',
 		error: '#EF444415',
 	},
 

@@ -1,38 +1,32 @@
 // migrated to V2 structure
-import {
-	collection,
-	deleteDoc,
-	doc,
-	DocumentData,
-	getDoc,
-	getDocs,
-	limit,
-	onSnapshot,
-	orderBy,
-	query,
-	QueryConstraint,
-	QueryDocumentSnapshot,
-	serverTimestamp,
-	setDoc,
-	startAfter,
-	Timestamp,
-	Unsubscribe,
-	updateDoc,
-	where,
-	WhereFilterOp,
-	WriteBatch,
-	writeBatch,
-} from 'firebase/firestore';
+// React Native Firebase Firestore client using modular API (v22+)
+import { getApp } from '@react-native-firebase/app';
+import firestoreModule, {
+	FirebaseFirestoreTypes,
+	getFirestore,
+} from '@react-native-firebase/firestore';
 
 import { logger } from '@/shared/utils/logging';
 
-import { firestore } from './Firebase';
+import { DocumentData } from './FirestoreDocumentTypes';
+import type {
+	FirestoreQueryConstraint,
+	FirestoreQueryValue,
+} from './FirestoreQueryTypes';
+
+// Re-export for backwards compatibility
+export type { DocumentData } from './FirestoreDocumentTypes';
+export type {
+	FirestoreQueryConstraint,
+	FirestoreQueryValue,
+} from './FirestoreQueryTypes';
 
 export class FirestoreClient {
-	private db: typeof firestore;
+	private db: FirebaseFirestoreTypes.Module;
 
 	constructor() {
-		this.db = firestore;
+		const app = getApp();
+		this.db = getFirestore(app);
 	}
 
 	/**
@@ -43,11 +37,12 @@ export class FirestoreClient {
 		documentId: string
 	): Promise<T | null> {
 		try {
-			const docRef = doc(this.db, collectionName, documentId);
-			const docSnap = await getDoc(docRef);
+			const docRef = this.db.collection(collectionName).doc(documentId);
+			const docSnap = await docRef.get();
 
-			if (docSnap.exists()) {
-				return { id: docSnap.id, ...docSnap.data() } as T;
+			const data = docSnap.data();
+			if (data) {
+				return { id: docSnap.id, ...data } as T;
 			}
 
 			return null;
@@ -62,12 +57,35 @@ export class FirestoreClient {
 	 */
 	async getCollection<T = DocumentData>(
 		collectionName: string,
-		constraints: QueryConstraint[] = []
+		constraints: FirestoreQueryConstraint[] = []
 	): Promise<T[]> {
 		try {
-			const collectionRef = collection(this.db, collectionName);
-			const q = query(collectionRef, ...constraints);
-			const querySnapshot = await getDocs(q);
+			const collectionRef = this.db.collection(collectionName);
+			let queryRef:
+				| FirebaseFirestoreTypes.Query
+				| FirebaseFirestoreTypes.CollectionReference = collectionRef;
+
+			// Apply constraints (where, orderBy, limit, etc.)
+			for (const constraint of constraints) {
+				if (constraint.type === 'where') {
+					queryRef = queryRef.where(
+						constraint.field,
+						constraint.operator,
+						constraint.value
+					);
+				} else if (constraint.type === 'orderBy') {
+					queryRef = queryRef.orderBy(
+						constraint.field,
+						constraint.direction || 'asc'
+					);
+				} else if (constraint.type === 'limit') {
+					queryRef = queryRef.limit(constraint.count);
+				} else if (constraint.type === 'startAfter') {
+					queryRef = queryRef.startAfter(constraint.docSnapshot);
+				}
+			}
+
+			const querySnapshot = await queryRef.get();
 
 			return querySnapshot.docs.map((docSnapshot) => ({
 				id: docSnapshot.id,
@@ -88,11 +106,14 @@ export class FirestoreClient {
 		data: Partial<T>
 	): Promise<void> {
 		try {
-			const docRef = doc(this.db, collectionName, documentId);
-			await setDoc(docRef, {
-				...data,
-				updatedAt: serverTimestamp(),
-			});
+			const docRef = this.db.collection(collectionName).doc(documentId);
+			await docRef.set(
+				{
+					...data,
+					updatedAt: firestoreModule.FieldValue.serverTimestamp(),
+				},
+				{ merge: true }
+			);
 		} catch (error) {
 			logger.error('Error setting document:', error);
 			throw error;
@@ -108,10 +129,10 @@ export class FirestoreClient {
 		data: Partial<T>
 	): Promise<void> {
 		try {
-			const docRef = doc(this.db, collectionName, documentId);
-			await updateDoc(docRef, {
+			const docRef = this.db.collection(collectionName).doc(documentId);
+			await docRef.update({
 				...data,
-				updatedAt: serverTimestamp(),
+				updatedAt: firestoreModule.FieldValue.serverTimestamp(),
 			});
 		} catch (error) {
 			logger.error('Error updating document:', error);
@@ -127,8 +148,8 @@ export class FirestoreClient {
 		documentId: string
 	): Promise<void> {
 		try {
-			const docRef = doc(this.db, collectionName, documentId);
-			await deleteDoc(docRef);
+			const docRef = this.db.collection(collectionName).doc(documentId);
+			await docRef.delete();
 		} catch (error) {
 			logger.error('Error deleting document:', error);
 			throw error;
@@ -142,14 +163,14 @@ export class FirestoreClient {
 		collectionName: string,
 		documentId: string,
 		callback: (data: T | null) => void
-	): Unsubscribe {
-		const docRef = doc(this.db, collectionName, documentId);
+	): () => void {
+		const docRef = this.db.collection(collectionName).doc(documentId);
 
-		return onSnapshot(
-			docRef,
+		return docRef.onSnapshot(
 			(docSnap) => {
-				if (docSnap.exists()) {
-					callback({ id: docSnap.id, ...docSnap.data() } as T);
+				const data = docSnap.data();
+				if (data) {
+					callback({ id: docSnap.id, ...data } as T);
 				} else {
 					callback(null);
 				}
@@ -166,14 +187,35 @@ export class FirestoreClient {
 	 */
 	subscribeToCollection<T = DocumentData>(
 		collectionName: string,
-		constraints: QueryConstraint[] = [],
+		constraints: FirestoreQueryConstraint[] = [],
 		callback: (data: T[]) => void
-	): Unsubscribe {
-		const collectionRef = collection(this.db, collectionName);
-		const q = query(collectionRef, ...constraints);
+	): () => void {
+		const collectionRef = this.db.collection(collectionName);
+		let queryRef:
+			| FirebaseFirestoreTypes.Query
+			| FirebaseFirestoreTypes.CollectionReference = collectionRef;
 
-		return onSnapshot(
-			q,
+		// Apply constraints
+		for (const constraint of constraints) {
+			if (constraint.type === 'where') {
+				queryRef = queryRef.where(
+					constraint.field,
+					constraint.operator,
+					constraint.value
+				);
+			} else if (constraint.type === 'orderBy') {
+				queryRef = queryRef.orderBy(
+					constraint.field,
+					constraint.direction || 'asc'
+				);
+			} else if (constraint.type === 'limit') {
+				queryRef = queryRef.limit(constraint.count);
+			} else if (constraint.type === 'startAfter') {
+				queryRef = queryRef.startAfter(constraint.docSnapshot);
+			}
+		}
+
+		return queryRef.onSnapshot(
 			(querySnapshot) => {
 				const data = querySnapshot.docs.map((docSnapshot) => ({
 					id: docSnapshot.id,
@@ -191,14 +233,16 @@ export class FirestoreClient {
 	/**
 	 * Create a batch for multiple operations
 	 */
-	createBatch(): WriteBatch {
-		return writeBatch(this.db);
+	createBatch(): FirebaseFirestoreTypes.WriteBatch {
+		return this.db.batch();
 	}
 
 	/**
 	 * Execute a batch
 	 */
-	async executeBatch(batch: WriteBatch): Promise<void> {
+	async executeBatch(
+		batch: FirebaseFirestoreTypes.WriteBatch
+	): Promise<void> {
 		try {
 			await batch.commit();
 		} catch (error) {
@@ -209,27 +253,39 @@ export class FirestoreClient {
 
 	/**
 	 * Query helper methods
+	 * These methods create typed constraint objects for building Firestore queries
 	 */
-	static where(field: string, operator: WhereFilterOp, value: unknown) {
-		return where(field, operator, value);
+	static where(
+		field: string,
+		operator: FirebaseFirestoreTypes.WhereFilterOp,
+		value: FirestoreQueryValue
+	): FirestoreQueryConstraint {
+		return { type: 'where', field, operator, value };
 	}
 
-	static orderBy(field: string, direction: 'asc' | 'desc' = 'asc') {
-		return orderBy(field, direction);
+	static orderBy(
+		field: string,
+		direction: 'asc' | 'desc' = 'asc'
+	): FirestoreQueryConstraint {
+		return { type: 'orderBy', field, direction };
 	}
 
-	static limit(count: number) {
-		return limit(count);
+	static limit(count: number): FirestoreQueryConstraint {
+		return { type: 'limit', count };
 	}
 
-	static startAfter(docSnapshot: QueryDocumentSnapshot) {
-		return startAfter(docSnapshot);
+	static startAfter(
+		docSnapshot: FirebaseFirestoreTypes.QueryDocumentSnapshot
+	): FirestoreQueryConstraint {
+		return { type: 'startAfter', docSnapshot };
 	}
 
 	/**
 	 * Convert Firestore timestamp to JavaScript Date
 	 */
-	static timestampToDate(timestamp: Timestamp | null): Date | null {
+	static timestampToDate(
+		timestamp: FirebaseFirestoreTypes.Timestamp | null
+	): Date | null {
 		if (!timestamp) return null;
 		return timestamp.toDate();
 	}
@@ -237,8 +293,8 @@ export class FirestoreClient {
 	/**
 	 * Convert JavaScript Date to Firestore timestamp
 	 */
-	static dateToTimestamp(date: Date): Timestamp {
-		return Timestamp.fromDate(date);
+	static dateToTimestamp(date: Date): FirebaseFirestoreTypes.Timestamp {
+		return firestoreModule.Timestamp.fromDate(date);
 	}
 }
 

@@ -48,13 +48,13 @@ describe('UUID', () => {
 		});
 
 		it('should throw error for non-string input', () => {
-			expect(() => new UUID(null as unknown as string)).toThrow(
+			expect(() => new UUID(null as never as string)).toThrow(
 				'UUID must be a non-empty string'
 			);
-			expect(() => new UUID(undefined as unknown as string)).toThrow(
+			expect(() => new UUID(undefined as never as string)).toThrow(
 				'UUID must be a non-empty string'
 			);
-			expect(() => new UUID(123 as unknown as string)).toThrow(
+			expect(() => new UUID(123 as never as string)).toThrow(
 				'UUID must be a non-empty string'
 			);
 		});

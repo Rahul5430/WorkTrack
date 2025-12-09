@@ -37,7 +37,7 @@ export const ServiceIdentifiers = {
 export function registerCoreServices(
 	builder: ContainerBuilder
 ): ContainerBuilder {
-	logger.info('Registering core services...');
+	logger.debug('Registering core services...');
 
 	// Register database services
 	builder
@@ -47,7 +47,7 @@ export function registerCoreServices(
 			() => firestoreClient
 		);
 
-	logger.info('Core services registered');
+	logger.debug('Core services registered');
 	return builder;
 }
 
@@ -58,7 +58,7 @@ export function registerCoreServices(
 export function registerFeatureServices(
 	builder: ContainerBuilder
 ): ContainerBuilder {
-	logger.info('Registering feature services...');
+	logger.debug('Registering feature services...');
 
 	// Register auth services
 	registerAuthServices(builder);
@@ -88,7 +88,7 @@ export function registerFeatureServices(
 	// 		return new SyncService(watermelonDB, firestoreClient);
 	// 	});
 
-	logger.info('Feature services registered');
+	logger.debug('Feature services registered');
 	return builder;
 }
 

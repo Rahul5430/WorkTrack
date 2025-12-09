@@ -1,19 +1,21 @@
 // migrated to V2 structure
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { colors, fonts } from '@/shared/ui/theme';
 
+export type ShareListItemData = {
+	sharedWithId: string;
+	sharedWithEmail: string;
+	ownerName?: string;
+	permission: 'read' | 'write';
+};
+
 interface ShareListItemProps {
-	share: {
-		sharedWithId: string;
-		sharedWithEmail: string;
-		ownerName?: string;
-		permission: 'read' | 'write';
-	};
-	onEditPermission: (share: unknown) => void;
+	share: ShareListItemData;
+	onEditPermission: (share: ShareListItemData) => void;
 	onRemoveShare: (sharedWithId: string) => void;
 }
 
@@ -61,7 +63,7 @@ const ShareListItem: React.FC<ShareListItemProps> = ({
 					]}
 					onPress={() => onEditPermission(share)}
 				>
-					<MaterialCommunityIcons
+					<MaterialDesignIcons
 						name='pencil'
 						size={16}
 						color={colors.office}
@@ -76,7 +78,7 @@ const ShareListItem: React.FC<ShareListItemProps> = ({
 					]}
 					onPress={() => onRemoveShare(share.sharedWithId)}
 				>
-					<MaterialCommunityIcons
+					<MaterialDesignIcons
 						name='delete'
 						size={16}
 						color={colors.error}

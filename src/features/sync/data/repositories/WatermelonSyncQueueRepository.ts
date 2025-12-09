@@ -11,6 +11,15 @@ import {
 } from '../mappers/SyncOperationMapper';
 import SyncOperationModel from '../models/SyncOperationModel';
 
+/**
+ * Helper function to safely cast WatermelonDB Model to SyncOperationModelShape
+ * This is necessary because WatermelonDB's Model type doesn't expose all properties
+ * directly, but they are available at runtime.
+ */
+function toModelShape(model: SyncOperationModel): SyncOperationModelShape {
+	return model as unknown as SyncOperationModelShape;
+}
+
 export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 	constructor(private readonly database: Database) {}
 
@@ -18,7 +27,7 @@ export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 		const collection = this.database.get<SyncOperationModel>('sync_queue');
 		const data = SyncOperationMapper.toModel(op);
 		await collection.create((model) => {
-			const record = model as unknown as SyncOperationModelShape;
+			const record = toModelShape(model);
 			record.operation = data.operation;
 			record.tableName = data.tableName;
 			record.recordId = data.recordId;
@@ -46,9 +55,7 @@ export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 			.fetch();
 		if (pending.length === 0) return null;
 		const model = pending[0];
-		const op = SyncOperationMapper.toDomain(
-			model as unknown as SyncOperationModelShape
-		);
+		const op = SyncOperationMapper.toDomain(toModelShape(model));
 		await model.destroyPermanently();
 		return op;
 	}
@@ -63,9 +70,7 @@ export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 			)
 			.fetch();
 		if (pending.length === 0) return null;
-		return SyncOperationMapper.toDomain(
-			pending[0] as unknown as SyncOperationModelShape
-		);
+		return SyncOperationMapper.toDomain(toModelShape(pending[0]));
 	}
 
 	async update(op: SyncOperation): Promise<void> {
@@ -76,7 +81,7 @@ export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 		}
 		const data = SyncOperationMapper.toModel(op);
 		await found.update((model) => {
-			const record = model as unknown as SyncOperationModelShape;
+			const record = toModelShape(model);
 			record.status = data.status;
 			record.retryCount = data.retryCount;
 			record.errorMessage = data.errorMessage;
@@ -100,9 +105,7 @@ export class WatermelonSyncQueueRepository implements ISyncQueueRepository {
 			.fetch();
 		const limited = models.slice(0, limit);
 		return limited.map((m) =>
-			SyncOperationMapper.toDomain(
-				m as unknown as SyncOperationModelShape
-			)
+			SyncOperationMapper.toDomain(toModelShape(m))
 		);
 	}
 

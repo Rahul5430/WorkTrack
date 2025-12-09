@@ -47,7 +47,7 @@ describe('EntryValidator', () => {
 
 		it('throws error when userId is null', () => {
 			const mockEntry = {
-				userId: null as unknown as string,
+				userId: null as never as string,
 				trackerId: 'tracker-1',
 				status: new WorkStatus('office'),
 			} as WorkEntry;
@@ -59,7 +59,7 @@ describe('EntryValidator', () => {
 		it('throws error when trackerId is null', () => {
 			const mockEntry = {
 				userId: 'user-1',
-				trackerId: null as unknown as string,
+				trackerId: null as never as string,
 				status: new WorkStatus('office'),
 			} as WorkEntry;
 			expect(() => EntryValidator.validate(mockEntry)).toThrow(

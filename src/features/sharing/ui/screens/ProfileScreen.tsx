@@ -2,6 +2,7 @@ import { Database, Q } from '@nozbe/watermelondb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp } from '@react-native-firebase/app';
 import { getAuth } from '@react-native-firebase/auth';
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import React, {
 	useCallback,
 	useEffect,
@@ -22,7 +23,6 @@ import {
 	View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { MainStackScreenProps } from '@/app/navigation/types';
@@ -39,7 +39,9 @@ import { Share } from '@/features/sharing/domain/entities/Share';
 import ProfileInfo from '@/features/sharing/ui/components/ProfileInfo';
 import ScreenHeader from '@/features/sharing/ui/components/ScreenHeader';
 import SharedWithMeListItem from '@/features/sharing/ui/components/SharedWithMeListItem';
-import ShareListItem from '@/features/sharing/ui/components/ShareListItem';
+import ShareListItem, {
+	ShareListItemData,
+} from '@/features/sharing/ui/components/ShareListItem';
 import {
 	useDefaultView,
 	useShares,
@@ -54,13 +56,6 @@ import { colors, fonts } from '@/shared/ui/theme';
 import { logger } from '@/shared/utils/logging';
 
 // Type for component-compatible share format
-type ShareListItemData = {
-	sharedWithId: string;
-	sharedWithEmail: string;
-	ownerName?: string;
-	permission: 'read' | 'write';
-};
-
 type SharedWithMeListItemData = {
 	ownerId: string;
 	ownerName: string;
@@ -368,12 +363,25 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 			if (user.id) {
 				await loadShares(user.id);
 			}
-		} catch (error: unknown) {
+		} catch (error) {
+			// Ensure error is an Error instance for consistent handling
+			const errorInstance =
+				error instanceof Error
+					? error
+					: new Error(
+							error != null &&
+							typeof error === 'object' &&
+							'message' in error
+								? String(error.message)
+								: 'Failed to share tracker'
+						);
+
 			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'permission-denied'
+				errorInstance &&
+				typeof errorInstance === 'object' &&
+				'code' in errorInstance &&
+				(errorInstance as { code?: string }).code ===
+					'permission-denied'
 			) {
 				showAlert(
 					'Permission Denied',
@@ -381,11 +389,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 					() => setShareEmail('')
 				);
 			} else {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: 'Failed to share tracker';
-				showAlert('Error', errorMessage);
+				showAlert('Error', errorInstance.message);
 			}
 		}
 	};
@@ -471,10 +475,9 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 		}
 	}, [loadShares, user?.id]);
 
-	const handleEditPermission = (share: unknown) => {
-		const shareData = share as ShareListItemData;
-		setEditingShare(shareData);
-		setSharePermission(shareData.permission);
+	const handleEditPermission = (share: ShareListItemData) => {
+		setEditingShare(share);
+		setSharePermission(share.permission);
 		setIsEditDialogVisible(true);
 	};
 
@@ -488,12 +491,19 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 			if (user?.id) {
 				await loadShares(user.id);
 			}
-		} catch (error: unknown) {
-			const errorMessage =
+		} catch (error) {
+			// Ensure error is an Error instance for consistent handling
+			const errorInstance =
 				error instanceof Error
-					? error.message
-					: 'Failed to update permission';
-			showAlert('Error', errorMessage);
+					? error
+					: new Error(
+							error != null &&
+							typeof error === 'object' &&
+							'message' in error
+								? String(error.message)
+								: 'Failed to update permission'
+						);
+			showAlert('Error', errorInstance.message);
 		}
 	};
 
@@ -734,7 +744,7 @@ const ProfileScreen: React.FC<MainStackScreenProps<'ProfileScreen'>> = ({
 						Shared With Me
 					</Text>
 					<View style={styles.sectionNote}>
-						<MaterialCommunityIcons
+						<MaterialDesignIcons
 							name='information-outline'
 							size={16}
 							color={colors.text.secondary}

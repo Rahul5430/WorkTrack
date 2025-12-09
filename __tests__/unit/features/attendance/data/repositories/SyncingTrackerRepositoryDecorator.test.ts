@@ -31,7 +31,7 @@ describe('SyncingTrackerRepositoryDecorator', () => {
 	it('enqueues after create', async () => {
 		const tracker = new Tracker('t1', 'T', undefined, true);
 		inner.create.mockResolvedValue(tracker);
-		await decorator.create(tracker);
+		await decorator.create(tracker, 'user-1');
 		expect(queue.enqueue).toHaveBeenCalled();
 	});
 
@@ -77,13 +77,14 @@ describe('SyncingTrackerRepositoryDecorator', () => {
 		const tracker = new Tracker('t1', 'Test Tracker', 'Description', true);
 		inner.create.mockResolvedValue(tracker);
 
-		await decorator.create(tracker);
+		await decorator.create(tracker, 'user-1');
 
 		const op = queue.enqueue.mock.calls[0][0] as SyncOperation;
 		expect(op.operation).toBe('create');
 		expect(op.tableName).toBe('trackers');
 		expect(op.recordId).toBe('t1');
 		expect(op.data).toEqual({
+			ownerId: 'user-1',
 			name: 'Test Tracker',
 			description: 'Description',
 			isActive: true,

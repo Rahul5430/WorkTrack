@@ -25,8 +25,8 @@ import {
 } from '@/features/sharing/domain/use-cases';
 import { SyncManager } from '@/features/sync/data/services/SyncManager';
 import { SyncServiceIdentifiers } from '@/features/sync/di';
-import { INetworkMonitor } from '@/features/sync/domain/ports/INetworkMonitor';
 import { ISyncQueueRepository } from '@/features/sync/domain/ports/ISyncQueueRepository';
+import { INetworkMonitor } from '@/shared/data/network';
 import { UUID } from '@/shared/domain/value-objects/UUID';
 import { logger } from '@/shared/utils/logging';
 
@@ -34,7 +34,14 @@ import { logger } from '@/shared/utils/logging';
 type TrackerInfo = { id: string; name: string };
 type EntryInfo = {
 	date: string;
-	status: 'office' | 'wfh' | 'holiday' | 'leave' | 'weekend' | 'forecast';
+	status:
+		| 'office'
+		| 'wfh'
+		| 'holiday'
+		| 'leave'
+		| 'weekend'
+		| 'forecast'
+		| 'advisory';
 	isAdvisory?: boolean;
 };
 
@@ -363,6 +370,7 @@ export function useWorkTrackManager(): WorkTrackManager {
 
 	const createTracker = useCallback(
 		async (tracker: Omit<TrackerInfo, 'id'>) => {
+			const userId = getCurrentUserId();
 			const trackerId = UUID.generate().value;
 			const domainTracker = new Tracker(
 				trackerId,
@@ -371,11 +379,14 @@ export function useWorkTrackManager(): WorkTrackManager {
 				true
 			);
 
-			const created = await trackerRepository.create(domainTracker);
+			const created = await trackerRepository.create(
+				domainTracker,
+				userId
+			);
 
 			return { id: created.id, name: created.name };
 		},
-		[trackerRepository]
+		[trackerRepository, getCurrentUserId]
 	);
 
 	const updateTracker = useCallback(
@@ -417,7 +428,7 @@ export function useWorkTrackManager(): WorkTrackManager {
 				'Default work tracker',
 				true
 			);
-			const created = await trackerRepository.create(newTracker);
+			const created = await trackerRepository.create(newTracker, userId);
 			return { id: created.id, name: created.name };
 		},
 		[trackerRepository]

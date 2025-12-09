@@ -42,14 +42,16 @@ export class FirebaseAuthRepository implements IAuthRepository {
 			const usersCollection = this.database.get('users');
 			const userModelData = UserMapper.toModel(user);
 
-			const createdUser = await usersCollection.create((userModel) => {
-				const record = userModel as UserModel;
-				record.email = userModelData.email;
-				record.name = userModelData.name;
-				record.photoUrl = userModelData.photoUrl;
-				record.isActive = userModelData.isActive;
-				record.createdAt = new Date(userModelData.createdAt);
-				record.updatedAt = new Date(userModelData.updatedAt);
+			const createdUser = await this.database.write(async () => {
+				return await usersCollection.create((userModel) => {
+					const record = userModel as UserModel;
+					record.email = userModelData.email;
+					record.name = userModelData.name;
+					record.photoUrl = userModelData.photoUrl;
+					record.isActive = userModelData.isActive;
+					record.createdAt = new Date(userModelData.createdAt);
+					record.updatedAt = new Date(userModelData.updatedAt);
+				});
 			});
 
 			logger.info(`User created: ${user.id}`);
@@ -78,11 +80,13 @@ export class FirebaseAuthRepository implements IAuthRepository {
 			const userModel = existingUsers[0] as UserModel;
 			const userModelData = UserMapper.toModel(user);
 
-			await userModel.update((record) => {
-				record.email = userModelData.email;
-				record.name = userModelData.name;
-				record.photoUrl = userModelData.photoUrl;
-				record.updatedAt = new Date(userModelData.updatedAt);
+			await this.database.write(async () => {
+				await userModel.update((record) => {
+					record.email = userModelData.email;
+					record.name = userModelData.name;
+					record.photoUrl = userModelData.photoUrl;
+					record.updatedAt = new Date(userModelData.updatedAt);
+				});
 			});
 
 			logger.info(`User updated: ${user.id}`);

@@ -1,10 +1,12 @@
 // migrated to V2 structure
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import { MarkedDay } from '@/types';
+
 export interface WorkTrackState {
 	loading: boolean;
 	error: string | null;
-	data: unknown;
+	data: MarkedDay[] | null;
 }
 
 const initialState: WorkTrackState = {
@@ -23,10 +25,10 @@ export const workTrackSlice = createSlice({
 		setError: (state, action: PayloadAction<string | null>) => {
 			state.error = action.payload;
 		},
-		setWorkTrackData: (state, action: PayloadAction<unknown>) => {
+		setWorkTrackData: (state, action: PayloadAction<MarkedDay[]>) => {
 			state.data = action.payload;
 		},
-		addOrUpdateEntry: (_state, _action: PayloadAction<unknown>) => {},
+		addOrUpdateEntry: (_state, _action: PayloadAction<MarkedDay>) => {},
 		rollbackEntry: (_state, _action: PayloadAction<string>) => {},
 	},
 });

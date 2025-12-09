@@ -23,7 +23,10 @@ describe('Logger', () => {
 
 	describe('constructor', () => {
 		it('creates logger with default config', () => {
-			const logger = new Logger();
+			const logger = new Logger({
+				level: LogLevel.INFO,
+				enableConsole: true,
+			});
 
 			logger.info('Test message');
 			expect(consoleSpy.info).toHaveBeenCalled();

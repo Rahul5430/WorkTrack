@@ -17,6 +17,9 @@ import { UpdatePermissionUseCase } from '@/features/sharing/domain/use-cases/Upd
 jest.mock('@/shared/utils/logging', () => ({
 	logger: {
 		info: jest.fn(),
+		debug: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
 	},
 }));
 

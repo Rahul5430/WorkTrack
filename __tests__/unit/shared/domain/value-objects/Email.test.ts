@@ -154,13 +154,13 @@ describe('Email', () => {
 		});
 
 		it('should throw error for non-string input', () => {
-			expect(() => new Email(null as unknown as string)).toThrow(
+			expect(() => new Email(null as never as string)).toThrow(
 				'Email must be a non-empty string'
 			);
-			expect(() => new Email(undefined as unknown as string)).toThrow(
+			expect(() => new Email(undefined as never as string)).toThrow(
 				'Email must be a non-empty string'
 			);
-			expect(() => new Email(123 as unknown as string)).toThrow(
+			expect(() => new Email(123 as never as string)).toThrow(
 				'Email must be a non-empty string'
 			);
 		});

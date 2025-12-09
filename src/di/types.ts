@@ -1,26 +1,65 @@
 // migrated to V2 structure
 
 /**
+ * Branded type for service identifiers that carry type information
+ * This ensures type safety throughout the DI container
+ */
+export type TypedServiceIdentifier<T> = symbol & { __type: T };
+
+/**
  * Service identifier - can be a string, symbol, or class constructor
+ *
+ * TypeScript infers the type from the factory function during registration,
+ * so explicit type parameters are optional. Type assertions are used at
+ * resolution sites, which is acceptable for a controlled codebase.
  */
 export type ServiceIdentifier<T = unknown> =
+	| TypedServiceIdentifier<T>
 	| string
 	| symbol
 	| (new (...args: unknown[]) => T);
 
 /**
  * Factory function for creating service instances
+ *
+ * TypeScript infers the return type from the factory implementation,
+ * so explicit type parameters are optional.
  */
 export type ServiceFactory<T = unknown> = (container: Container) => T;
 
 /**
  * Service registration configuration
+ *
+ * TypeScript infers the service type from the factory function,
+ * so explicit type parameters are optional.
  */
 export interface ServiceRegistration<T = unknown> {
 	identifier: ServiceIdentifier<T>;
 	factory: ServiceFactory<T>;
 	scope: ServiceScope;
 	singleton?: boolean;
+}
+
+/**
+ * Create a typed service identifier (optional helper)
+ *
+ * This is an OPTIONAL helper for type-safe resolution without assertions.
+ * For most use cases, plain Symbols with type assertions at resolution
+ * are sufficient and simpler for a controlled codebase.
+ *
+ * @example
+ * // Optional: Use for type-safe resolution (no assertion needed)
+ * const DB_ID = createServiceIdentifier<Database>('Database');
+ * const db = container.resolve(DB_ID); // Type: Database
+ *
+ * // Standard: Use plain Symbols with assertions (simpler, recommended)
+ * const DB_ID = Symbol('Database');
+ * const db = container.resolve(DB_ID) as Database; // Type assertion
+ */
+export function createServiceIdentifier<T>(
+	description: string
+): TypedServiceIdentifier<T> {
+	return Symbol(description) as TypedServiceIdentifier<T>;
 }
 
 /**
@@ -136,7 +175,7 @@ export interface Disposable {
  * Service registration error
  */
 export class ServiceRegistrationError extends Error {
-	constructor(identifier: ServiceIdentifier, message: string) {
+	constructor(identifier: ServiceIdentifier<unknown>, message: string) {
 		super(
 			`Service registration error for ${String(identifier)}: ${message}`
 		);
@@ -148,7 +187,7 @@ export class ServiceRegistrationError extends Error {
  * Service resolution error
  */
 export class ServiceResolutionError extends Error {
-	constructor(identifier: ServiceIdentifier, message: string) {
+	constructor(identifier: ServiceIdentifier<unknown>, message: string) {
 		super(`Service resolution error for ${String(identifier)}: ${message}`);
 		this.name = 'ServiceResolutionError';
 	}

@@ -1,10 +1,10 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
 	getAuth,
 	GoogleAuthProvider,
 	signInWithCredential,
 	signOut as firebaseSignOut,
-} from 'firebase/auth';
+} from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { AuthenticationError } from '@/shared/domain/errors';
 import { logger } from '@/shared/utils/logging';
@@ -15,7 +15,7 @@ import { UserMapper } from '../mappers';
 
 /**
  * Firebase Auth Service implementation
- * Handles authentication operations using Firebase Auth
+ * Handles authentication operations using React Native Firebase Auth
  */
 export class FirebaseAuthService implements IAuthService {
 	/**

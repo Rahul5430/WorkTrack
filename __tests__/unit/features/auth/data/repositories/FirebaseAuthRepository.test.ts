@@ -34,6 +34,7 @@ describe('FirebaseAuthRepository', () => {
 
 		database = {
 			get: jest.fn().mockReturnValue(collection),
+			write: jest.fn((fn) => fn()),
 		} as unknown as jest.Mocked<Database>;
 
 		repository = new FirebaseAuthRepository(database);

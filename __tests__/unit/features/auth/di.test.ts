@@ -15,6 +15,9 @@ import { SignOutUseCase } from '@/features/auth/domain/use-cases/SignOutUseCase'
 jest.mock('@/shared/utils/logging', () => ({
 	logger: {
 		info: jest.fn(),
+		debug: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
 	},
 }));
 

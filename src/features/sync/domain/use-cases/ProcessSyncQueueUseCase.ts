@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'eventemitter3';
 
+import { INetworkMonitor } from '@/shared/data/network';
 import { logger } from '@/shared/utils/logging';
 
 import { SyncOperation } from '../entities/SyncOperation';
-import { INetworkMonitor } from '../ports/INetworkMonitor';
 import { ISyncQueueRepository } from '../ports/ISyncQueueRepository';
 import { ISyncRepository } from '../ports/ISyncRepository';
 

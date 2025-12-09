@@ -1,10 +1,10 @@
-import NetInfo from '@react-native-community/netinfo';
-import { EventEmitter } from 'events';
+import { getAuth } from '@react-native-firebase/auth';
+import EventEmitter from 'eventemitter3';
 import { AppState, AppStateStatus } from 'react-native';
 
+import { INetworkMonitor } from '@/shared/data/network';
 import { logger } from '@/shared/utils/logging';
 
-import { INetworkMonitor } from '../../domain/ports/INetworkMonitor';
 import { ProcessSyncQueueUseCase } from '../../domain/use-cases/ProcessSyncQueueUseCase';
 import { SyncFromRemoteUseCase } from '../../domain/use-cases/SyncFromRemoteUseCase';
 
@@ -54,7 +54,7 @@ export class SyncManager {
 			(state: AppStateStatus) => {
 				if (!this.running) return;
 				if (state === 'active') {
-					logger.info(
+					logger.debug(
 						'SyncManager: app foregrounded, processing now'
 					);
 					this.processNowSafe().catch(() => {});
@@ -62,25 +62,12 @@ export class SyncManager {
 			}
 		);
 
-		// Trigger on network changes via NetInfo
-		this.netInfoUnsubscribe = NetInfo.addEventListener((state) => {
-			if (!this.running) return;
-			const online = Boolean(
-				state.isConnected && state.isInternetReachable !== false
-			);
-			if (online) {
-				logger.info('SyncManager: network online, processing now');
-				this.processNowSafe().catch(() => {});
-			}
-		});
-
-		// Also use abstraction if provided
-		this.network.listen(async (online) => {
+		// Use NetworkMonitor abstraction (debounced, so this should be less noisy)
+		// Removed redundant NetInfo listener to avoid duplicate triggers
+		this.netInfoUnsubscribe = this.network.listen(async (online) => {
 			if (!this.running) return;
 			if (online) {
-				logger.info(
-					'SyncManager: network online (monitor), processing now'
-				);
+				logger.debug('SyncManager: network online, processing now');
 				await this.processNowSafe();
 			}
 		});
@@ -110,11 +97,13 @@ export class SyncManager {
 		this.emitter.on('cycleEnd', listener);
 	}
 
-	onItemProcessed(listener: (payload: unknown) => void): void {
+	onItemProcessed(
+		listener: (payload: { id: string; success: boolean }) => void
+	): void {
 		this.emitter.on('itemProcessed', listener);
 	}
 
-	onError(listener: (error: unknown) => void): void {
+	onError(listener: (error: Error) => void): void {
 		this.emitter.on('cycleError', listener);
 	}
 
@@ -151,9 +140,18 @@ export class SyncManager {
 	}
 
 	private async processCycle(): Promise<void> {
+		// Check authentication first using React Native Firebase
+		const auth = getAuth();
+		const currentUser = auth.currentUser;
+		if (!currentUser) {
+			logger.debug('SyncManager: user not authenticated, skipping cycle');
+			this.increaseBackoff();
+			return;
+		}
+
 		const online = await this.network.isOnline();
 		if (!online) {
-			logger.info('SyncManager: offline, skipping cycle');
+			logger.debug('SyncManager: offline, skipping cycle');
 			this.increaseBackoff();
 			return;
 		}
@@ -165,15 +163,46 @@ export class SyncManager {
 			// Pull remote changes
 			await this.pullFromRemote.execute();
 			this.resetBackoff();
-			logger.info('SyncManager: cycle completed');
+			logger.debug('SyncManager: cycle completed');
 			this.emitter.emit('cycleEnd');
 		} catch (error) {
-			this.increaseBackoff();
-			logger.error('SyncManager: cycle error', {
-				error,
-				nextInMs: this.currentIntervalMs,
-			});
-			this.emitter.emit('cycleError', error);
+			// Ensure error is an Error instance for consistent handling
+			const errorInstance =
+				error instanceof Error
+					? error
+					: new Error(
+							error != null &&
+							typeof error === 'object' &&
+							'message' in error
+								? String(error.message)
+								: String(error)
+						);
+
+			// Check if error is permission denied
+			const isPermissionDenied =
+				errorInstance &&
+				typeof errorInstance === 'object' &&
+				'code' in errorInstance &&
+				(errorInstance as { code?: string }).code ===
+					'firestore/permission-denied';
+
+			// If permission denied, it might be a rules issue or auth not fully initialized
+			// Log at warning level instead of error to reduce noise
+			if (isPermissionDenied) {
+				logger.warn(
+					'SyncManager: permission denied (check Firestore rules or auth state)',
+					{
+						nextInMs: this.currentIntervalMs,
+					}
+				);
+			} else {
+				this.increaseBackoff();
+				logger.error('SyncManager: cycle error', {
+					error: errorInstance,
+					nextInMs: this.currentIntervalMs,
+				});
+			}
+			this.emitter.emit('cycleError', errorInstance);
 		}
 	}
 }

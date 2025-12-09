@@ -1,7 +1,7 @@
 // migrated to V2 structure
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -21,7 +21,7 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
 
 	return (
 		<View style={styles.container}>
-			<MaterialCommunityIcons
+			<MaterialDesignIcons
 				name='wifi-off'
 				size={16}
 				color={colors.text.light}

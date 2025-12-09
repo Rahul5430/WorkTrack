@@ -5,6 +5,15 @@ module.exports = {
 		['@babel/plugin-proposal-decorators', { legacy: true }],
 		'@babel/plugin-transform-export-namespace-from',
 		'react-native-worklets/plugin',
+		[
+			'babel-plugin-module-resolver',
+			{
+				root: ['./src'],
+				alias: {
+					'@': './src',
+				},
+			},
+		],
 	],
 	env: {
 		production: {

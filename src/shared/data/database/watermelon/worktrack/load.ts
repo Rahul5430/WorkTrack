@@ -9,7 +9,14 @@ export interface WorkTrackData {
 export interface WorkEntry {
 	id: string;
 	date: string;
-	status: 'office' | 'wfh' | 'holiday' | 'leave' | 'weekend' | 'forecast';
+	status:
+		| 'office'
+		| 'wfh'
+		| 'holiday'
+		| 'leave'
+		| 'weekend'
+		| 'forecast'
+		| 'advisory';
 	createdAt: string;
 	updatedAt: string;
 }

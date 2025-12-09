@@ -6,3 +6,20 @@ export {
 	FirestoreClient,
 	firestoreClient,
 } from './FirestoreClient';
+export type {
+	BaseFirestoreDocument,
+	DocumentData,
+	FirestoreEntryDocument,
+	FirestoreShareDocument,
+	FirestoreTrackerDocument,
+	FirestoreUserDocument,
+	KnownFirestoreDocument,
+} from './FirestoreDocumentTypes';
+export type {
+	FirestoreLimitConstraint,
+	FirestoreOrderByConstraint,
+	FirestoreQueryConstraint,
+	FirestoreQueryValue,
+	FirestoreStartAfterConstraint,
+	FirestoreWhereConstraint,
+} from './FirestoreQueryTypes';

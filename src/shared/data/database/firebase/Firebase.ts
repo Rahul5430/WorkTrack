@@ -1,71 +1,34 @@
 // migrated to V2 structure
-import { Analytics, getAnalytics } from 'firebase/analytics';
-import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
-import { Auth, getAuth } from 'firebase/auth';
-import {
-	connectFirestoreEmulator,
-	Firestore,
-	getFirestore,
-} from 'firebase/firestore';
-import { getPerformance } from 'firebase/performance';
+// React Native Firebase - reads config from google-services.json (Android) and GoogleService-Info.plist (iOS)
+// Using modular API (v22+)
+import { getApp } from '@react-native-firebase/app';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore } from '@react-native-firebase/firestore';
 
-// Firebase configuration
-const firebaseConfig = {
-	apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-	authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-	projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-	storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-	messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-	appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-	measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
+// React Native Firebase initializes automatically from native config files
+// No need to initialize manually - just get the instances using modular API
+const app = getApp();
+const auth = getAuth();
+const firestoreInstance = getFirestore(app);
 
-// Initialize Firebase app (only if not already initialized)
-const app: FirebaseApp =
-	getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-// Initialize Firebase services
-const auth: Auth = getAuth(app);
-const firestore: Firestore = getFirestore(app);
-let analytics: Analytics | null = null;
-let performance: unknown | null = null;
-
-// Initialize analytics only in production and on web
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-	try {
-		analytics = getAnalytics(app);
-		performance = getPerformance(app);
-	} catch {
-		// console.warn(
-		// 	'Failed to initialize Firebase analytics/performance:'
-		// );
-	}
-}
-
-// Connect to Firestore emulator if FIRESTORE_EMULATOR_HOST is set
-if (process.env.FIRESTORE_EMULATOR_HOST) {
-	const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
-	const emulatorPort = process.env.FIRESTORE_EMULATOR_PORT || '8080';
-
-	try {
-		connectFirestoreEmulator(
-			firestore,
-			emulatorHost,
-			parseInt(emulatorPort, 10)
-		);
-		// console.log(
-		// 	`Connected to Firestore emulator at ${emulatorHost}:${emulatorPort}`
-		// );
-	} catch {
-		// console.warn('Failed to connect to Firestore emulator');
-	}
-}
+// Analytics and Performance are not available in React Native Firebase
+// Use native Firebase Analytics SDK if needed
+const analytics = null;
+const performance = null;
 
 // Export Firebase services
-export { analytics, app, auth, firestore, performance };
+export { analytics, app, auth, performance };
+export { firestoreInstance as firestore };
 
 // Export default app
 export default app;
 
-// Export types
-export type { Analytics, Auth, FirebaseApp, Firestore };
+// Export types (using React Native Firebase types)
+export type { FirebaseAuthTypes } from '@react-native-firebase/auth';
+export type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+
+// Type aliases for compatibility
+export type Auth = ReturnType<typeof getAuth>;
+export type Firestore = ReturnType<typeof getFirestore>;
+export type Analytics = null;
+export type FirebaseApp = ReturnType<typeof getApp>;

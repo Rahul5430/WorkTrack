@@ -4,7 +4,6 @@ import { ContainerBuilder } from '@/di/ContainerBuilder';
 import { ServiceIdentifiers } from '@/di/registry';
 import { FirebaseSyncRepository } from '@/features/sync/data/repositories/FirebaseSyncRepository';
 import { WatermelonSyncQueueRepository } from '@/features/sync/data/repositories/WatermelonSyncQueueRepository';
-import { NetworkMonitorService } from '@/features/sync/data/services/NetworkMonitorService';
 import { SyncManager } from '@/features/sync/data/services/SyncManager';
 import {
 	registerSyncServices,
@@ -15,10 +14,14 @@ import { ProcessSyncQueueUseCase } from '@/features/sync/domain/use-cases/Proces
 import { ResolveConflictUseCase } from '@/features/sync/domain/use-cases/ResolveConflictUseCase';
 import { SyncFromRemoteUseCase } from '@/features/sync/domain/use-cases/SyncFromRemoteUseCase';
 import { SyncToRemoteUseCase } from '@/features/sync/domain/use-cases/SyncToRemoteUseCase';
+import { NetworkMonitorService } from '@/shared/data/network';
 
 jest.mock('@/shared/utils/logging', () => ({
 	logger: {
 		info: jest.fn(),
+		debug: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
 	},
 }));
 

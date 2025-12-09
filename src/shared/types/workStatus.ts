@@ -7,6 +7,7 @@ export const WORK_STATUS = {
 	LEAVE: 'leave',
 	WEEKEND: 'weekend',
 	FORECAST: 'forecast',
+	ADVISORY: 'advisory',
 } as const;
 
 export type WorkStatusType = (typeof WORK_STATUS)[keyof typeof WORK_STATUS];

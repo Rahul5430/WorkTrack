@@ -1,4 +1,5 @@
 import { BaseEntity } from '@/shared/domain/entities';
+import type { SerializableRecord } from '@/shared/types/serialization';
 
 export type SyncOperationType = 'create' | 'update' | 'delete';
 export type SyncOperationStatus =
@@ -10,14 +11,15 @@ export type SyncOperationStatus =
 export interface SyncOperationPayload {
 	tableName: string;
 	recordId: string;
-	data?: Record<string, unknown>;
+	operation: SyncOperationType;
+	data?: SerializableRecord;
 }
 
 export class SyncOperation extends BaseEntity<SyncOperationPayload> {
 	public readonly operation: SyncOperationType;
 	public readonly tableName: string;
 	public readonly recordId: string;
-	public readonly data?: Record<string, unknown>;
+	public readonly data?: SerializableRecord;
 	public readonly status: SyncOperationStatus;
 	public readonly retryCount: number;
 	public readonly maxRetries: number;
@@ -28,7 +30,7 @@ export class SyncOperation extends BaseEntity<SyncOperationPayload> {
 		operation: SyncOperationType,
 		tableName: string,
 		recordId: string,
-		data?: Record<string, unknown>,
+		data?: SerializableRecord,
 		status: SyncOperationStatus = 'pending',
 		retryCount = 0,
 		maxRetries = 5,

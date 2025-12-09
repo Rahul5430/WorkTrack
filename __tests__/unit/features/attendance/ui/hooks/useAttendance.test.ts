@@ -4,9 +4,16 @@ import { act, renderHook } from '@testing-library/react-native';
 import React from 'react';
 import { Provider } from 'react-redux';
 
+import type { UserState } from '@/app/store/reducers/userSlice';
 import { userSlice } from '@/app/store/reducers/userSlice';
+import type { WorkTrackState } from '@/app/store/reducers/workTrackSlice';
 import { workTrackSlice } from '@/app/store/reducers/workTrackSlice';
 import { useAttendance } from '@/features/attendance/ui/hooks/useAttendance';
+
+interface RootState {
+	workTrack: WorkTrackState;
+	user: UserState;
+}
 
 describe('useAttendance', () => {
 	let store: ReturnType<typeof configureStore>;
@@ -50,15 +57,19 @@ describe('useAttendance', () => {
 
 	it('should dispatch addEntry action', () => {
 		const { result } = renderHook(() => useAttendance(), { wrapper });
-		const entry = { id: '1', date: '2024-01-01', status: 'office' };
+		const entry = {
+			date: '2024-01-01',
+			status: 'office' as const,
+			isAdvisory: false,
+		};
 
 		act(() => {
 			result.current.addEntry(entry);
 		});
 
 		// addOrUpdateEntry is a no-op in the reducer, but the action should be dispatched
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		expect(store.getState().workTrack).toBeDefined();
+		const rootState = store.getState() as RootState;
+		expect(rootState.workTrack).toBeDefined();
 	});
 
 	it('should dispatch removeEntry action', () => {
@@ -69,8 +80,8 @@ describe('useAttendance', () => {
 		});
 
 		// rollbackEntry is a no-op in the reducer, but the action should be dispatched
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		expect(store.getState().workTrack).toBeDefined();
+		const rootState = store.getState() as RootState;
+		expect(rootState.workTrack).toBeDefined();
 	});
 
 	it('should dispatch setError action', () => {
@@ -81,8 +92,10 @@ describe('useAttendance', () => {
 			result.current.setError(errorMessage);
 		});
 
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		const state = store.getState().workTrack as { error: string | null };
+		const rootState = store.getState() as RootState;
+		const state = rootState.workTrack as {
+			error: string | null;
+		};
 		expect(state.error).toBe(errorMessage);
 	});
 
@@ -99,8 +112,10 @@ describe('useAttendance', () => {
 			result.current.setError(null);
 		});
 
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		const state = store.getState().workTrack as { error: string | null };
+		const rootState = store.getState() as RootState;
+		const state = rootState.workTrack as {
+			error: string | null;
+		};
 		expect(state.error).toBeNull();
 	});
 
@@ -111,32 +126,52 @@ describe('useAttendance', () => {
 			result.current.setLoading(true);
 		});
 
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		const state = store.getState().workTrack as { loading: boolean };
+		const rootState = store.getState() as RootState;
+		const state = rootState.workTrack as {
+			loading: boolean;
+		};
 		expect(state.loading).toBe(true);
 
 		act(() => {
 			result.current.setLoading(false);
 		});
 
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		const updatedState = store.getState().workTrack as { loading: boolean };
+		const updatedState = (store.getState() as RootState).workTrack as {
+			loading: boolean;
+		};
 		expect(updatedState.loading).toBe(false);
 	});
 
 	it('should dispatch updateWorkTrackData action', () => {
 		const { result } = renderHook(() => useAttendance(), { wrapper });
 		const data = [
-			{ id: '1', date: '2024-01-01', status: 'office' },
-			{ id: '2', date: '2024-01-02', status: 'wfh' },
+			{
+				date: '2024-01-01',
+				status: 'office' as const,
+				isAdvisory: false,
+			},
+			{ date: '2024-01-02', status: 'wfh' as const, isAdvisory: true },
 		];
 
 		act(() => {
 			result.current.updateWorkTrackData(data);
 		});
 
-		// @ts-expect-error - workTrack state is typed as unknown for testing
-		const state = store.getState().workTrack as { data: unknown };
+		const rootState = store.getState() as RootState;
+		const state = rootState.workTrack as {
+			data: Array<{
+				date: string;
+				status:
+					| 'office'
+					| 'wfh'
+					| 'holiday'
+					| 'leave'
+					| 'weekend'
+					| 'forecast'
+					| 'advisory';
+				isAdvisory: boolean;
+			}>;
+		};
 		expect(state.data).toEqual(data);
 	});
 

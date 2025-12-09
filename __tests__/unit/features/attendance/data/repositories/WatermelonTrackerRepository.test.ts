@@ -34,6 +34,7 @@ describe('WatermelonTrackerRepository', () => {
 
 		database = {
 			get: jest.fn().mockReturnValue(collection),
+			write: jest.fn((fn) => fn()),
 		} as unknown as jest.Mocked<Database>;
 
 		repository = new WatermelonTrackerRepository(database);
@@ -64,7 +65,7 @@ describe('WatermelonTrackerRepository', () => {
 				return Promise.resolve(mockModel);
 			});
 
-			const result = await repository.create(tracker);
+			const result = await repository.create(tracker, 'user-1');
 
 			expect(database.get).toHaveBeenCalledWith('trackers');
 			expect(collection.create).toHaveBeenCalled();
@@ -97,7 +98,7 @@ describe('WatermelonTrackerRepository', () => {
 				return Promise.resolve(mockModel);
 			});
 
-			const result = await repository.create(tracker);
+			const result = await repository.create(tracker, 'user-1');
 
 			expect(result.description).toBeUndefined();
 			expect(result.isActive).toBe(false);
@@ -146,7 +147,7 @@ describe('WatermelonTrackerRepository', () => {
 			expect(result.isActive).toBe(false);
 		});
 
-		it('creates tracker if not found during update', async () => {
+		it('throws error if tracker not found during update', async () => {
 			const tracker = new Tracker(
 				'tracker-1',
 				'New Tracker',
@@ -156,24 +157,9 @@ describe('WatermelonTrackerRepository', () => {
 
 			queryBuilder.fetch.mockResolvedValueOnce([]);
 
-			const mockModel = {
-				id: 'tracker-1',
-				name: 'New Tracker',
-				description: 'Description',
-				isActive: true,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			} as unknown as TrackerModelShape;
-
-			collection.create.mockImplementation((cb) => {
-				cb(mockModel);
-				return Promise.resolve(mockModel);
-			});
-
-			const result = await repository.update(tracker);
-
-			expect(collection.create).toHaveBeenCalled();
-			expect(result).toBeInstanceOf(Tracker);
+			await expect(repository.update(tracker)).rejects.toThrow(
+				'Tracker with id tracker-1 not found'
+			);
 		});
 	});
 

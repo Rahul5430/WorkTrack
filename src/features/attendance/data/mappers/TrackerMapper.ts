@@ -5,6 +5,7 @@ export interface TrackerModelShape {
 	id: string;
 	name: string;
 	description?: string;
+	userId: string;
 	isActive: boolean;
 	createdAt: Date;
 	updatedAt: Date;

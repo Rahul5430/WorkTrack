@@ -65,11 +65,11 @@ describe('LastWriteWinsStrategy', () => {
 		});
 
 		it('handles null updatedAt', () => {
-			const local = { updatedAt: null as unknown as Date | undefined };
+			const local = { updatedAt: null as never as Date | undefined };
 			const remote = { updatedAt: new Date('2024-01-01T00:00:00Z') };
 
 			const result = strategy.resolve(
-				local as unknown as HasUpdatedAt,
+				local as HasUpdatedAt,
 				remote as HasUpdatedAt
 			);
 

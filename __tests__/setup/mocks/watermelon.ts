@@ -143,13 +143,13 @@ export const mockCollection = {
 // Mock database operations
 
 (mockDatabase.write as jest.Mock).mockImplementation(
-	async (callback: () => unknown | Promise<unknown>) => {
+	async <T>(callback: () => T | Promise<T>) => {
 		return await callback();
 	}
 );
 
 (mockDatabase.read as jest.Mock).mockImplementation(
-	async (callback: () => unknown | Promise<unknown>) => {
+	async <T>(callback: () => T | Promise<T>) => {
 		return await callback();
 	}
 );

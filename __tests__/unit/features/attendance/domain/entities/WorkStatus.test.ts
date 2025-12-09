@@ -8,6 +8,7 @@ describe('WorkStatus', () => {
 		expect(new WorkStatus('leave').value).toBe('leave');
 		expect(new WorkStatus('weekend').value).toBe('weekend');
 		expect(new WorkStatus('FORECAST').value).toBe('forecast');
+		expect(new WorkStatus('ADVISORY').value).toBe('advisory');
 	});
 
 	it('rejects invalid statuses', () => {
@@ -37,5 +38,6 @@ describe('WorkStatus', () => {
 		expect(new WorkStatus('holiday').toString()).toBe('holiday');
 		expect(new WorkStatus('weekend').toString()).toBe('weekend');
 		expect(new WorkStatus('forecast').toString()).toBe('forecast');
+		expect(new WorkStatus('advisory').toString()).toBe('advisory');
 	});
 });

@@ -18,9 +18,12 @@ type SummaryProps = {
 
 const Summary = ({ selectedMonth }: SummaryProps) => {
 	const { getResponsiveSize, RFValue } = useResponsiveLayout();
-	const workTrackData = useSelector(
-		(state: RootState) => state.workTrack.data
-	) as unknown as MarkedDay[];
+	const workTrackState = useSelector((state: RootState) => state.workTrack);
+	const workTrackData = useMemo(() => {
+		return Array.isArray(workTrackState?.data)
+			? (workTrackState.data as MarkedDay[])
+			: [];
+	}, [workTrackState?.data]);
 	const isLoading = useSelector(
 		(state: RootState) => state.workTrack.loading
 	);
@@ -167,8 +170,8 @@ const Summary = ({ selectedMonth }: SummaryProps) => {
 			style={[
 				styles.container,
 				{
-					paddingHorizontal: getResponsiveSize(5),
-					marginBottom: getResponsiveSize(5),
+					paddingHorizontal: getResponsiveSize(5).width,
+					marginBottom: getResponsiveSize(5).width,
 				},
 			]}
 		>

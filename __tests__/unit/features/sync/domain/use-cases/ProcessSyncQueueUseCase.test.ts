@@ -1,8 +1,8 @@
 import { SyncOperation } from '@/features/sync/domain/entities/SyncOperation';
-import { INetworkMonitor } from '@/features/sync/domain/ports/INetworkMonitor';
 import { ISyncQueueRepository } from '@/features/sync/domain/ports/ISyncQueueRepository';
 import { ISyncRepository } from '@/features/sync/domain/ports/ISyncRepository';
 import { ProcessSyncQueueUseCase } from '@/features/sync/domain/use-cases/ProcessSyncQueueUseCase';
+import { INetworkMonitor } from '@/shared/data/network';
 
 describe('ProcessSyncQueueUseCase', () => {
 	it('skips when offline', async () => {

@@ -3,16 +3,16 @@ import { Database } from '@nozbe/watermelondb';
 
 import { ContainerBuilder } from '@/di/ContainerBuilder';
 import { ServiceIdentifiers } from '@/di/registry';
+import { INetworkMonitor, NetworkMonitorService } from '@/shared/data/network';
 import { logger } from '@/shared/utils/logging';
 
 import {
 	FirebaseSyncRepository,
 	WatermelonSyncQueueRepository,
 } from './data/repositories';
-import { NetworkMonitorService, SyncManager } from './data/services';
+import { SyncManager } from './data/services';
 import type {
 	IConflictResolver,
-	INetworkMonitor,
 	ISyncQueueRepository,
 	ISyncRepository,
 } from './domain/ports';

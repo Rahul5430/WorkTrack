@@ -1,7 +1,7 @@
 // migrated to V2 structure
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useResponsiveLayout } from '@/shared/ui/hooks/useResponsive';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -30,7 +30,7 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 						]}
 						onPress={onBackPress}
 					>
-						<MaterialCommunityIcons
+						<MaterialDesignIcons
 							name='arrow-left'
 							size={24}
 							color={colors.text.primary}

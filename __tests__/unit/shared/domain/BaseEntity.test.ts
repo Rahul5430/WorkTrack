@@ -1,4 +1,5 @@
 import { BaseEntity } from '../../../../src/shared/domain/entities/BaseEntity';
+import type { SerializableRecord } from '../../../../src/shared/types/serialization';
 
 // Test entity class that extends BaseEntity
 class TestEntity extends BaseEntity<{ name: string; age: number }> {
@@ -24,7 +25,7 @@ class TestEntity extends BaseEntity<{ name: string; age: number }> {
 		}
 	}
 
-	toJSON(): Record<string, unknown> {
+	toJSON(): SerializableRecord {
 		return {
 			...super.toJSON(),
 			name: this.name,

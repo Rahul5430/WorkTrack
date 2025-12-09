@@ -1,10 +1,10 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
 	getAuth,
 	GoogleAuthProvider,
 	signInWithCredential,
 	signOut as firebaseSignOut,
-} from 'firebase/auth';
+} from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { FirebaseAuthService } from '@/features/auth/data/services/FirebaseAuthService';
 import { AuthSession } from '@/features/auth/domain/entities/AuthSession';
@@ -18,7 +18,15 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
 		signOut: jest.fn(),
 	},
 }));
-jest.mock('firebase/auth');
+
+jest.mock('@react-native-firebase/auth', () => ({
+	getAuth: jest.fn(),
+	GoogleAuthProvider: {
+		credential: jest.fn(),
+	},
+	signInWithCredential: jest.fn(),
+	signOut: jest.fn(),
+}));
 
 describe('FirebaseAuthService', () => {
 	let service: FirebaseAuthService;
@@ -33,7 +41,7 @@ describe('FirebaseAuthService', () => {
 	};
 
 	beforeEach(() => {
-		service = new FirebaseAuthService();
+		jest.clearAllMocks();
 		mockFirebaseAuth = {
 			currentUser: {
 				uid: 'user-123',
@@ -45,7 +53,7 @@ describe('FirebaseAuthService', () => {
 		};
 
 		(getAuth as jest.Mock).mockReturnValue(mockFirebaseAuth);
-		jest.clearAllMocks();
+		service = new FirebaseAuthService();
 	});
 
 	describe('signInWithGoogle', () => {

@@ -13,9 +13,10 @@ import {
 /**
  * Container Builder for fluent service registration
  * Provides a fluent API for registering services before building the container
+ * Internal storage uses unknown to allow storing different service types
  */
 export class ContainerBuilder implements IContainerBuilder {
-	private registrations: ServiceRegistration[] = [];
+	private registrations: Array<ServiceRegistration<unknown>> = [];
 
 	/**
 	 * Register a service
@@ -32,7 +33,9 @@ export class ContainerBuilder implements IContainerBuilder {
 			);
 		}
 
-		this.registrations.push(registration);
+		// Store with unknown type for internal storage
+		// Type safety is maintained at the public API level
+		this.registrations.push(registration as ServiceRegistration<unknown>);
 		logger.info(
 			`Queued service registration: ${String(registration.identifier)}`
 		);
@@ -92,7 +95,7 @@ export class ContainerBuilder implements IContainerBuilder {
 			container.register(registration);
 		}
 
-		logger.info(
+		logger.debug(
 			`Built container with ${this.registrations.length} services`
 		);
 		return container;
@@ -108,7 +111,7 @@ export class ContainerBuilder implements IContainerBuilder {
 	/**
 	 * Check if a service is registered
 	 */
-	hasRegistration(identifier: ServiceIdentifier): boolean {
+	hasRegistration(identifier: ServiceIdentifier<unknown>): boolean {
 		return this.registrations.some((reg) => reg.identifier === identifier);
 	}
 
