@@ -114,8 +114,14 @@ jobs:
           echo "Expected CocoaPods version: $EXPECTED_VERSION"
           echo "Actual CocoaPods version: $ACTUAL_VERSION"
           if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
-              echo "Error: CocoaPods version mismatch. Expected $EXPECTED_VERSION but got $ACTUAL_VERSION"
-              exit 1
+              echo "CocoaPods version mismatch. Updating to $EXPECTED_VERSION..."
+              bundle update cocoapods
+              ACTUAL_VERSION=$(bundle exec pod --version)
+              echo "Updated CocoaPods version: $ACTUAL_VERSION"
+              if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+                  echo "Error: Failed to update CocoaPods. Expected $EXPECTED_VERSION but got $ACTUAL_VERSION"
+                  exit 1
+              fi
           fi
           bundle exec pod install --repo-update
       - name: List available simulators
@@ -309,8 +315,10 @@ jobs:
                     ['CocoaPods', '✅', 'Dependencies installed with caching']
                 ])
                 .addHeading('Download Links', 2)
+                .addRaw('')
                 .addRaw(`- 📱 **Simulator App**: ${iosUrl}\n`)
                 .addHeading('Build Details', 2)
+                .addRaw('')
                 .addRaw(`- **Build Type**: Release (Simulator)\n`)
                 .addRaw(`- **Xcode Version**: 26.0\n`)
                 .addRaw(`- **Target**: iOS Simulator\n`)
@@ -319,6 +327,7 @@ jobs:
                 .addRaw(`- **DerivedData Cache**: Enabled\n`)
                 .addRaw(`- **Parallel Build**: Enabled (4 jobs)\n`)
                 .addHeading('Caching Status', 2)
+                .addRaw('')
                 .addRaw(`- ✅ **CocoaPods**: Cached based on Podfile.lock\n`)
                 .addRaw(`- ✅ **DerivedData**: Cached based on source changes\n`)
                 .addRaw(`- ✅ **Metro Bundler**: Cached for JS bundling\n`)

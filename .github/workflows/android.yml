@@ -180,9 +180,11 @@ jobs:
                               ['Release', context.payload.head_branch === 'main' ? '✅' : '⏭️', context.payload.head_branch === 'main' ? 'Updated latest release' : 'Skipped (not main branch)']
                           ])
                           .addHeading('Download Links', 2)
+                          .addRaw('')
                           .addRaw(`- 📱 **APK Artifact**: ${apkUrl}\n`)
                           .addRaw(`- 🚀 **Stable Release**: ${releaseUrl}\n`)
                           .addHeading('Build Details', 2)
+                          .addRaw('')
                           .addRaw(`- **Build Type**: Debug\n`)
                           .addRaw(`- **Target**: Android API 33+\n`)
                           .addRaw(`- **Architecture**: armeabi-v7a, arm64-v8a, x86, x86_64\n`)
