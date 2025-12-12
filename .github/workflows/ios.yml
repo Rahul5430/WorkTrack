@@ -1,375 +1,382 @@
 name: iOS Build
 
 on:
-    workflow_run:
-        workflows: ["Checks"]
-        types: [completed]
-    push:
-        branches: [main]
-        paths:
-            - "ios/**"
-            - "src/**"
-            - "package.json"
-            - "package-lock.json"
-            - "metro.config.js"
-            - "babel.config.js"
-            - "tsconfig.json"
-            - "jest.config.js"
-    pull_request:
-        branches: [main]
-        paths:
-            - "ios/**"
-            - "src/**"
-            - "package.json"
-            - "package-lock.json"
-            - "metro.config.js"
-            - "babel.config.js"
-            - "tsconfig.json"
-            - "jest.config.js"
+  workflow_run:
+    workflows: ["Checks"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "metro.config.js"
+      - "babel.config.js"
+      - "tsconfig.json"
+      - "jest.config.js"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "metro.config.js"
+      - "babel.config.js"
+      - "tsconfig.json"
+      - "jest.config.js"
 
 jobs:
-    build-ios:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        runs-on: macos-15
-        concurrency:
-            group: ios-${{ github.event.workflow_run.head_branch || github.ref }}
-            cancel-in-progress: true
-        steps:
-            - uses: actions/checkout@v6
-              with:
-                  fetch-depth: 0 # Fetch full history
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: 20
-                  cache: "npm"
-            - name: Setup Xcode 26.0
-              uses: maxim-lobanov/setup-xcode@v1
-              with:
-                  xcode-version: "26.0"
-            - name: Cache node_modules
-              uses: actions/cache@v4
-              with:
-                  path: node_modules
-                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node-modules-
-            - name: Install Node dependencies
-              run: npm ci
-            - name: Cache CocoaPods
-              uses: actions/cache@v4
-              with:
-                  path: ios/Pods
-                  key: ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('ios/Podfile') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-
-                      ${{ runner.os }}-pods-v2-
-            - name: Cache DerivedData
-              uses: actions/cache@v4
-              with:
-                  path: ~/Library/Developer/Xcode/DerivedData
-                  key: ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('**/*.swift', '**/*.m', '**/*.h') }}
-                  restore-keys: |
-                      ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}-
-                      ${{ runner.os }}-deriveddata-
-            - name: Cache CocoaPods cache
-              uses: actions/cache@v4
-              with:
-                  path: ~/Library/Caches/CocoaPods
-                  key: ${{ runner.os }}-cocoapods-cache-v2-${{ hashFiles('ios/Podfile.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-cocoapods-cache-v2-
-            - name: Cache Metro bundler
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cache/metro
-                      node_modules/.cache
-                  key: ${{ runner.os }}-metro-${{ hashFiles('package-lock.json', 'metro.config.js', 'babel.config.js') }}
-                  restore-keys: |
-                      ${{ runner.os }}-metro-
-            - name: Cache node_modules
-              uses: actions/cache@v4
-              with:
-                  path: node_modules
-                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node-modules-
-            - name: Install jq (for deterministic simulator selection)
-              run: |
-                  if ! command -v jq >/dev/null 2>&1; then
-                    brew update
-                    brew install jq
-                  fi
-            - name: Setup Ruby and Bundler
-              uses: ruby/setup-ruby@v1
-              with:
-                  ruby-version: "3.0"
-                  bundler-cache: true
-            - name: Install iOS pods
-              working-directory: ios
-              run: |
-                  xcodebuild -version
-                  bundle exec pod --version
-                  bundle exec pod install --repo-update
-            - name: List available simulators
-              run: |
-                  xcrun simctl list devices available
-            - name: Build iOS app (Simulator)
-              run: |
-                  echo "Selecting iPhone 17-series simulator on iOS 26.x (pinned to Xcode 26.0)..."
-                  echo "Dumping available devices JSON for debugging:"
-                  if command -v jq >/dev/null 2>&1; then
-                    xcrun simctl list --json devices available | jq '.'
-                  else
-                    xcrun simctl list --json devices available
-                  fi
-                  SDK_VER=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || true)
-                  if [ -z "$SDK_VER" ]; then
-                    SDK_VER=$(xcodebuild -version -sdk iphonesimulator 2>/dev/null | awk '/SDKVersion/ {print $2; exit}')
-                  fi
-                  echo "Detected iphonesimulator SDK version: ${SDK_VER:-unknown}"
-                  # Prefer jq-powered JSON selection; fall back to grep if jq unavailable
-                  if command -v jq >/dev/null 2>&1; then
-                    # Prefer iOS 26.x runtime and iPhone 17 Pro Max/Pro, then others
-                    read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
-                      xcrun simctl list --json devices available | jq -r '
-                        .devices
-                        | to_entries
-                        | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-26-")))
-                        | map(. as $e | $e.value[]
-                            | {udid, name: (.name // ""), runtime: $e.key})
-                        | map(select(.name | startswith("iPhone")))
-                        | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
-                                             elif (.name | contains("Pro")) then 4
-                                             elif (.name | contains("Plus")) then 3
-                                             elif (.name | contains("SE")) then 1
-                                             else 2 end))
-                        | sort_by(.modelWeight)
-                        | last // empty
-                        | if . then [.udid, .name, .runtime] | @tsv else "" end'
-                    )
-                    if [ -z "$SIMULATOR_DEVICE" ]; then
-                      # Fallback: pick highest iOS runtime available
-                      read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
-                        xcrun simctl list --json devices available | jq -r '
-                          .devices
-                          | to_entries
-                          | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-")))
-                          | map(. as $e | $e.value[]
-                              | {udid, name: (.name // ""), runtime: $e.key})
-                          | map(select(.name | startswith("iPhone")))
-                          | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
-                                               elif (.name | contains("Pro")) then 4
-                                               elif (.name | contains("Plus")) then 3
-                                               elif (.name | contains("SE")) then 1
-                                               else 2 end))
-                          | map(.ver = (.runtime | capture("iOS-(?<v>[0-9-]+)").v | gsub("-"; "") | tonumber))
-                          | sort_by(.ver, .modelWeight)
-                          | last
-                          | [.udid, .name, .runtime]
-                          | @tsv'
-                      )
-                    fi
-                  else
-                    echo "jq not available; using simple selection"
-                    # Try newest iOS section first by scanning in order 26, 18.6, 18.5, 18.4
-                    for VER in 26.0 18.6 18.5 18.4; do
-                      SECTION=$(xcrun simctl list devices available | awk "/-- iOS ${VER} --/{flag=1;next}/-- iOS/{flag=0}flag")
-                      if [ -n "$SECTION" ]; then
-                        CANDIDATE=$(printf "%s\n" "$SECTION" | grep "iPhone 17 Pro Max\|iPhone 17 Pro\|iPhone 17\|iPhone 16 Pro Max\|iPhone 16 Pro\|iPhone 16 Plus\|iPhone 16\|iPhone SE" | head -1)
-                        SIMULATOR_DEVICE=$(printf "%s" "$CANDIDATE" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p')
-                        [ -n "$SIMULATOR_DEVICE" ] && break
-                      fi
-                    done
-                    # Final fallback: first available iPhone of any version
-                    [ -z "$SIMULATOR_DEVICE" ] && SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
-                  fi
-                  echo "Chosen simulator: UDID=${SIMULATOR_DEVICE:-unknown} NAME=${SIMULATOR_NAME:-unknown} RUNTIME=${SIMULATOR_RUNTIME:-unknown}"
+  build-ios:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: macos-15
+    concurrency:
+      group: ios-${{ github.event.workflow_run.head_branch || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Fetch full history
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Setup Xcode 26.0
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.0"
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('ios/Podfile') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-
+            ${{ runner.os }}-pods-v2-
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('**/*.swift', '**/*.m', '**/*.h') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}-
+            ${{ runner.os }}-deriveddata-
+      - name: Cache CocoaPods cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-cocoapods-cache-v2-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cocoapods-cache-v2-
+      - name: Cache Metro bundler
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/metro
+            node_modules/.cache
+          key: ${{ runner.os }}-metro-${{ hashFiles('package-lock.json', 'metro.config.js', 'babel.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-metro-
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      - name: Install jq (for deterministic simulator selection)
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            brew update
+            brew install jq
+          fi
+      - name: Setup Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0"
+          bundler-cache: true
+      - name: Install iOS pods
+        working-directory: ios
+        run: |
+          xcodebuild -version
+          EXPECTED_VERSION=$(cat ../.cocoapods-version | tr -d '[:space:]')
+          ACTUAL_VERSION=$(bundle exec pod --version)
+          echo "Expected CocoaPods version: $EXPECTED_VERSION"
+          echo "Actual CocoaPods version: $ACTUAL_VERSION"
+          if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+              echo "Error: CocoaPods version mismatch. Expected $EXPECTED_VERSION but got $ACTUAL_VERSION"
+              exit 1
+          fi
+          bundle exec pod install --repo-update
+      - name: List available simulators
+        run: |
+          xcrun simctl list devices available
+      - name: Build iOS app (Simulator)
+        run: |
+          echo "Selecting iPhone 17-series simulator on iOS 26.x (pinned to Xcode 26.0)..."
+          echo "Dumping available devices JSON for debugging:"
+          if command -v jq >/dev/null 2>&1; then
+            xcrun simctl list --json devices available | jq '.'
+          else
+            xcrun simctl list --json devices available
+          fi
+          SDK_VER=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || true)
+          if [ -z "$SDK_VER" ]; then
+            SDK_VER=$(xcodebuild -version -sdk iphonesimulator 2>/dev/null | awk '/SDKVersion/ {print $2; exit}')
+          fi
+          echo "Detected iphonesimulator SDK version: ${SDK_VER:-unknown}"
+          # Prefer jq-powered JSON selection; fall back to grep if jq unavailable
+          if command -v jq >/dev/null 2>&1; then
+            # Prefer iOS 26.x runtime and iPhone 17 Pro Max/Pro, then others
+            read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
+              xcrun simctl list --json devices available | jq -r '
+                .devices
+                | to_entries
+                | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-26-")))
+                | map(. as $e | $e.value[]
+                    | {udid, name: (.name // ""), runtime: $e.key})
+                | map(select(.name | startswith("iPhone")))
+                | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
+                                     elif (.name | contains("Pro")) then 4
+                                     elif (.name | contains("Plus")) then 3
+                                     elif (.name | contains("SE")) then 1
+                                     else 2 end))
+                | sort_by(.modelWeight)
+                | last // empty
+                | if . then [.udid, .name, .runtime] | @tsv else "" end'
+            )
+            if [ -z "$SIMULATOR_DEVICE" ]; then
+              # Fallback: pick highest iOS runtime available
+              read -r SIMULATOR_DEVICE SIMULATOR_NAME SIMULATOR_RUNTIME < <(
+                xcrun simctl list --json devices available | jq -r '
+                  .devices
+                  | to_entries
+                  | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-")))
+                  | map(. as $e | $e.value[]
+                      | {udid, name: (.name // ""), runtime: $e.key})
+                  | map(select(.name | startswith("iPhone")))
+                  | map(.modelWeight = (if (.name | contains("Pro Max")) then 5
+                                       elif (.name | contains("Pro")) then 4
+                                       elif (.name | contains("Plus")) then 3
+                                       elif (.name | contains("SE")) then 1
+                                       else 2 end))
+                  | map(.ver = (.runtime | capture("iOS-(?<v>[0-9-]+)").v | gsub("-"; "") | tonumber))
+                  | sort_by(.ver, .modelWeight)
+                  | last
+                  | [.udid, .name, .runtime]
+                  | @tsv'
+              )
+            fi
+          else
+            echo "jq not available; using simple selection"
+            # Try newest iOS section first by scanning in order 26, 18.6, 18.5, 18.4
+            for VER in 26.0 18.6 18.5 18.4; do
+              SECTION=$(xcrun simctl list devices available | awk "/-- iOS ${VER} --/{flag=1;next}/-- iOS/{flag=0}flag")
+              if [ -n "$SECTION" ]; then
+                CANDIDATE=$(printf "%s\n" "$SECTION" | grep "iPhone 17 Pro Max\|iPhone 17 Pro\|iPhone 17\|iPhone 16 Pro Max\|iPhone 16 Pro\|iPhone 16 Plus\|iPhone 16\|iPhone SE" | head -1)
+                SIMULATOR_DEVICE=$(printf "%s" "$CANDIDATE" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p')
+                [ -n "$SIMULATOR_DEVICE" ] && break
+              fi
+            done
+            # Final fallback: first available iPhone of any version
+            [ -z "$SIMULATOR_DEVICE" ] && SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+          fi
+          echo "Chosen simulator: UDID=${SIMULATOR_DEVICE:-unknown} NAME=${SIMULATOR_NAME:-unknown} RUNTIME=${SIMULATOR_RUNTIME:-unknown}"
 
-                  if [ -z "$SIMULATOR_DEVICE" ]; then
-                      echo "No iPhone simulators found, trying generic iOS Simulator"
-                      SIMULATOR_DEVICE=$(xcrun simctl list devices available | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
-                  fi
+          if [ -z "$SIMULATOR_DEVICE" ]; then
+              echo "No iPhone simulators found, trying generic iOS Simulator"
+              SIMULATOR_DEVICE=$(xcrun simctl list devices available | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+          fi
 
-                  if [ -z "$SIMULATOR_DEVICE" ]; then
-                      echo "No simulators found, building without specific destination"
-                      xcodebuild \
-                        -workspace ios/WorkTrack.xcworkspace \
-                        -scheme WorkTrack \
-                        -configuration Release \
-                        -sdk iphonesimulator \
-                        -derivedDataPath ios/build \
-                        -parallelizeTargets \
-                        -jobs 4 \
-                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-                        clean build
-                  else
-                      echo "Using simulator UDID: $SIMULATOR_DEVICE"
-                      xcodebuild \
-                        -workspace ios/WorkTrack.xcworkspace \
-                        -scheme WorkTrack \
-                        -configuration Release \
-                        -sdk iphonesimulator \
-                        -destination "platform=iOS Simulator,id=$SIMULATOR_DEVICE" \
-                        -derivedDataPath ios/build \
-                        -parallelizeTargets \
-                        -jobs 4 \
-                        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-                        clean build
-                  fi
+          if [ -z "$SIMULATOR_DEVICE" ]; then
+              echo "No simulators found, building without specific destination"
+              xcodebuild \
+                -workspace ios/WorkTrack.xcworkspace \
+                -scheme WorkTrack \
+                -configuration Release \
+                -sdk iphonesimulator \
+                -derivedDataPath ios/build \
+                -parallelizeTargets \
+                -jobs 4 \
+                CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                clean build
+          else
+              echo "Using simulator UDID: $SIMULATOR_DEVICE"
+              xcodebuild \
+                -workspace ios/WorkTrack.xcworkspace \
+                -scheme WorkTrack \
+                -configuration Release \
+                -sdk iphonesimulator \
+                -destination "platform=iOS Simulator,id=$SIMULATOR_DEVICE" \
+                -derivedDataPath ios/build \
+                -parallelizeTargets \
+                -jobs 4 \
+                CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                clean build
+          fi
 
-                  mkdir -p ios/build/simulator
-                  cp -r ios/build/Build/Products/Release-iphonesimulator/WorkTrack.app ios/build/simulator/
-            - name: Upload iOS simulator app
-              uses: actions/upload-artifact@v5
-              with:
-                  name: ios-simulator-app
-                  path: ios/build/simulator/WorkTrack.app
-            - name: Generate Job Summary
-              uses: actions/github-script@v8
-              with:
-                  script: |
-                      // Get artifact URLs
-                      const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          run_id: context.runId
-                      });
+          mkdir -p ios/build/simulator
+          cp -r ios/build/Build/Products/Release-iphonesimulator/WorkTrack.app ios/build/simulator/
+      - name: Upload iOS simulator app
+        uses: actions/upload-artifact@v5
+        with:
+          name: ios-simulator-app
+          path: ios/build/simulator/WorkTrack.app
+      - name: Generate Job Summary
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Get artifact URLs
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId
+            });
 
-                      const iosArtifact = artifacts.data.artifacts.find(a => a.name === 'ios-simulator-app');
-                      const iosUrl = iosArtifact ? 
-                          `[Download Simulator App](${iosArtifact.archive_download_url})` : 
-                          'Not available';
+            const iosArtifact = artifacts.data.artifacts.find(a => a.name === 'ios-simulator-app');
+            const iosUrl = iosArtifact ? 
+                `[Download Simulator App](${iosArtifact.archive_download_url})` : 
+                'Not available';
 
-                      // Get app bundle size
-                      let appSize = 'Unknown';
-                      try {
-                          const fs = require('fs');
-                          const appPath = 'ios/build/simulator/WorkTrack.app';
-                          if (fs.existsSync(appPath)) {
-                              const stats = fs.statSync(appPath);
-                              appSize = `${(stats.size / (1024 * 1024)).toFixed(1)} MB`;
-                          }
-                      } catch (e) {
-                          console.log('Could not get app size:', e.message);
-                      }
+            // Get app bundle size
+            let appSize = 'Unknown';
+            try {
+                const fs = require('fs');
+                const appPath = 'ios/build/simulator/WorkTrack.app';
+                if (fs.existsSync(appPath)) {
+                    const stats = fs.statSync(appPath);
+                    appSize = `${(stats.size / (1024 * 1024)).toFixed(1)} MB`;
+                }
+            } catch (e) {
+                console.log('Could not get app size:', e.message);
+            }
 
-                      // Get simulator info from environment or logs
-                      const simulatorInfo = process.env.SIMULATOR_INFO || 'iPhone 17 Pro Max (iOS 26.x)';
+            // Get simulator info from environment or logs
+            const simulatorInfo = process.env.SIMULATOR_INFO || 'iPhone 17 Pro Max (iOS 26.x)';
 
-                      // Create summary
-                      const summary = `# 🍎 iOS Build Summary
+            // Create summary
+            const summary = `# 🍎 iOS Build Summary
 
-                      ## Build Status
-                      | Component | Status | Details |
-                      |-----------|--------|---------|
-                      | **Xcode Build** | ✅ | Simulator app built successfully |
-                      | **App Size** | ✅ | ${appSize} |
-                      | **Simulator** | ✅ | ${simulatorInfo} |
-                      | **Artifacts** | ✅ | Uploaded to GitHub Actions |
-                      | **CocoaPods** | ✅ | Dependencies installed with caching |
+            ## Build Status
+            | Component | Status | Details |
+            |-----------|--------|---------|
+            | **Xcode Build** | ✅ | Simulator app built successfully |
+            | **App Size** | ✅ | ${appSize} |
+            | **Simulator** | ✅ | ${simulatorInfo} |
+            | **Artifacts** | ✅ | Uploaded to GitHub Actions |
+            | **CocoaPods** | ✅ | Dependencies installed with caching |
 
-                      ## Download Links
-                      - 📱 **Simulator App**: ${iosUrl}
+            ## Download Links
+            - 📱 **Simulator App**: ${iosUrl}
 
-                      ## Build Details
-                      - **Build Type**: Release (Simulator)
-                      - **Xcode Version**: 26.0
-                      - **Target**: iOS Simulator
-                      - **Architecture**: x86_64, arm64 (Apple Silicon)
-                      - **CocoaPods Cache**: Enabled
-                      - **DerivedData Cache**: Enabled
-                      - **Parallel Build**: Enabled (4 jobs)
+            ## Build Details
+            - **Build Type**: Release (Simulator)
+            - **Xcode Version**: 26.0
+            - **Target**: iOS Simulator
+            - **Architecture**: x86_64, arm64 (Apple Silicon)
+            - **CocoaPods Cache**: Enabled
+            - **DerivedData Cache**: Enabled
+            - **Parallel Build**: Enabled (4 jobs)
 
-                      ## Caching Status
-                      - ✅ **CocoaPods**: Cached based on Podfile.lock
-                      - ✅ **DerivedData**: Cached based on source changes
-                      - ✅ **Metro Bundler**: Cached for JS bundling
-                      - ✅ **Node Modules**: Cached based on package-lock.json
+            ## Caching Status
+            - ✅ **CocoaPods**: Cached based on Podfile.lock
+            - ✅ **DerivedData**: Cached based on source changes
+            - ✅ **Metro Bundler**: Cached for JS bundling
+            - ✅ **Node Modules**: Cached based on package-lock.json
 
-                      ---
-                      *Generated by GitHub Actions*`;
+            ---
+            *Generated by GitHub Actions*`;
 
-                      // Set as job summary
-                      core.summary
-                          .addHeading('iOS Build Summary')
-                          .addTable([
-                              [{data: 'Component', header: true}, {data: 'Status', header: true}, {data: 'Details', header: true}],
-                              ['Xcode Build', '✅', 'Simulator app built successfully'],
-                              ['App Size', '✅', appSize],
-                              ['Simulator', '✅', simulatorInfo],
-                              ['Artifacts', '✅', 'Uploaded to GitHub Actions'],
-                              ['CocoaPods', '✅', 'Dependencies installed with caching']
-                          ])
-                          .addHeading('Download Links', 2)
-                          .addRaw(`📱 **Simulator App**: ${iosUrl}\n\n`)
-                          .addHeading('Build Details', 2)
-                          .addRaw(`**Build Type**: Release (Simulator)\n`)
-                          .addRaw(`**Xcode Version**: 26.0\n`)
-                          .addRaw(`**Target**: iOS Simulator\n`)
-                          .addRaw(`**Architecture**: x86_64, arm64 (Apple Silicon)\n`)
-                          .addRaw(`**CocoaPods Cache**: Enabled\n`)
-                          .addRaw(`**DerivedData Cache**: Enabled\n`)
-                          .addRaw(`**Parallel Build**: Enabled (4 jobs)\n`)
-                          .addHeading('Caching Status', 2)
-                          .addRaw(`✅ **CocoaPods**: Cached based on Podfile.lock\n`)
-                          .addRaw(`✅ **DerivedData**: Cached based on source changes\n`)
-                          .addRaw(`✅ **Metro Bundler**: Cached for JS bundling\n`)
-                          .addRaw(`✅ **Node Modules**: Cached based on package-lock.json\n`)
-                          .write();
+            // Set as job summary
+            core.summary
+                .addHeading('iOS Build Summary')
+                .addTable([
+                    [{data: 'Component', header: true}, {data: 'Status', header: true}, {data: 'Details', header: true}],
+                    ['Xcode Build', '✅', 'Simulator app built successfully'],
+                    ['App Size', '✅', appSize],
+                    ['Simulator', '✅', simulatorInfo],
+                    ['Artifacts', '✅', 'Uploaded to GitHub Actions'],
+                    ['CocoaPods', '✅', 'Dependencies installed with caching']
+                ])
+                .addHeading('Download Links', 2)
+                .addRaw(`- 📱 **Simulator App**: ${iosUrl}\n`)
+                .addHeading('Build Details', 2)
+                .addRaw(`- **Build Type**: Release (Simulator)\n`)
+                .addRaw(`- **Xcode Version**: 26.0\n`)
+                .addRaw(`- **Target**: iOS Simulator\n`)
+                .addRaw(`- **Architecture**: x86_64, arm64 (Apple Silicon)\n`)
+                .addRaw(`- **CocoaPods Cache**: Enabled\n`)
+                .addRaw(`- **DerivedData Cache**: Enabled\n`)
+                .addRaw(`- **Parallel Build**: Enabled (4 jobs)\n`)
+                .addHeading('Caching Status', 2)
+                .addRaw(`- ✅ **CocoaPods**: Cached based on Podfile.lock\n`)
+                .addRaw(`- ✅ **DerivedData**: Cached based on source changes\n`)
+                .addRaw(`- ✅ **Metro Bundler**: Cached for JS bundling\n`)
+                .addRaw(`- ✅ **Node Modules**: Cached based on package-lock.json\n`)
+                .write();
 
-                      // Optional: Slack/Discord notification (commented out)
-                      /*
-                      // Uncomment and configure to enable Slack notifications
-                      const slackWebhook = process.env.SLACK_WEBHOOK_URL;
-                      if (slackWebhook) {
-                          const slackMessage = {
-                              text: `🍎 iOS Build ${context.payload.head_branch === 'main' ? 'Success' : 'Success (PR)'}`,
-                              attachments: [{
-                                  color: 'good',
-                                  fields: [
-                                      { title: 'Repository', value: `${context.repo.owner}/${context.repo.repo}`, short: true },
-                                      { title: 'Branch', value: context.payload.head_branch || 'main', short: true },
-                                      { title: 'App Size', value: appSize, short: true },
-                                      { title: 'Simulator', value: simulatorInfo, short: true },
-                                      { title: 'Download', value: iosUrl, short: false }
-                                  ]
-                              }]
-                          };
-                          
-                          await fetch(slackWebhook, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(slackMessage)
-                          });
-                      }
-                      */
+            // Optional: Slack/Discord notification (commented out)
+            /*
+            // Uncomment and configure to enable Slack notifications
+            const slackWebhook = process.env.SLACK_WEBHOOK_URL;
+            if (slackWebhook) {
+                const slackMessage = {
+                    text: `🍎 iOS Build ${context.payload.head_branch === 'main' ? 'Success' : 'Success (PR)'}`,
+                    attachments: [{
+                        color: 'good',
+                        fields: [
+                            { title: 'Repository', value: `${context.repo.owner}/${context.repo.repo}`, short: true },
+                            { title: 'Branch', value: context.payload.head_branch || 'main', short: true },
+                            { title: 'App Size', value: appSize, short: true },
+                            { title: 'Simulator', value: simulatorInfo, short: true },
+                            { title: 'Download', value: iosUrl, short: false }
+                        ]
+                    }]
+                };
+                
+                await fetch(slackWebhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(slackMessage)
+                });
+            }
+            */
 
-                      // Optional: Discord notification (commented out)
-                      /*
-                      // Uncomment and configure to enable Discord notifications
-                      const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
-                      if (discordWebhook) {
-                          const discordMessage = {
-                              content: `🍎 **iOS Build Success**`,
-                              embeds: [{
-                                  title: `${context.repo.owner}/${context.repo.repo}`,
-                                  description: `iOS Simulator app built successfully`,
-                                  color: 0x00ff00,
-                                  fields: [
-                                      { name: 'Branch', value: context.payload.head_branch || 'main', inline: true },
-                                      { name: 'App Size', value: appSize, inline: true },
-                                      { name: 'Simulator', value: simulatorInfo, inline: true },
-                                      { name: 'Download', value: iosUrl, inline: false }
-                                  ],
-                                  timestamp: new Date().toISOString()
-                              }]
-                          };
-                          
-                          await fetch(discordWebhook, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify(discordMessage)
-                          });
-                      }
-                      */
+            // Optional: Discord notification (commented out)
+            /*
+            // Uncomment and configure to enable Discord notifications
+            const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
+            if (discordWebhook) {
+                const discordMessage = {
+                    content: `🍎 **iOS Build Success**`,
+                    embeds: [{
+                        title: `${context.repo.owner}/${context.repo.repo}`,
+                        description: `iOS Simulator app built successfully`,
+                        color: 0x00ff00,
+                        fields: [
+                            { name: 'Branch', value: context.payload.head_branch || 'main', inline: true },
+                            { name: 'App Size', value: appSize, inline: true },
+                            { name: 'Simulator', value: simulatorInfo, inline: true },
+                            { name: 'Download', value: iosUrl, inline: false }
+                        ],
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+                
+                await fetch(discordWebhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(discordMessage)
+                });
+            }
+            */

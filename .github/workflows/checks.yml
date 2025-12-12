@@ -165,14 +165,14 @@ jobs:
                               ['Secret Scan', gitleaksStatus, gitleaksSummary]
                           ])
                           .addHeading('Coverage Details', 2)
-                          .addRaw(`**Threshold**: 95% (${coverageStatus === '✅' ? 'PASSED' : 'FAILED'})`)
-                          .addRaw(`**Current**: ${coveragePercent}`)
-                          .addRaw(`**Report**: ${coverageUrl}`)
+                          .addRaw(`- **Threshold**: 95% (${coverageStatus === '✅' ? 'PASSED' : 'FAILED'})\n`)
+                          .addRaw(`- **Current**: ${coveragePercent}\n`)
+                          .addRaw(`- **Report**: ${coverageUrl}\n`)
                           .addHeading('Security Checks', 2)
-                          .addRaw(`✅ **npm audit**: No high+ severity vulnerabilities found`)
-                          .addRaw(`${gitleaksStatus} **Gitleaks**: ${gitleaksSummary}`)
+                          .addRaw(`- ✅ **npm audit**: No high+ severity vulnerabilities found\n`)
+                          .addRaw(`- ${gitleaksStatus} **Gitleaks**: ${gitleaksSummary}\n`)
                           .addHeading('Artifacts', 2)
-                          .addRaw(`📊 **Coverage Report**: ${coverageUrl}`)
+                          .addRaw(`- 📊 **Coverage Report**: ${coverageUrl}\n`)
                           .write();
 
                       // Optional: Email notification on failure (commented out)
