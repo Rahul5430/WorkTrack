@@ -89,7 +89,7 @@ jobs:
                   ls -la android/app/build/outputs/apk/debug/ || echo "Debug directory not found"
                   ls -la android/app/build/outputs/ || echo "Outputs directory not found"
             - name: Upload Android debug APK
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v6
               with:
                   name: android-debug-apk
                   path: |
