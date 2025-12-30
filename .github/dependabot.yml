@@ -4,52 +4,41 @@ updates:
     - package-ecosystem: 'npm'
       directory: '/'
       schedule:
-          interval: 'weekly'
-          day: 'monday'
+          interval: 'daily'
           time: '09:00'
+      rebase-strategy: 'auto'
       commit-message:
-          prefix: 'deps'
+          prefix: 'chore(deps):'
           include: 'scope'
-      open-pull-requests-limit: 5
       labels: ['dependencies', 'javascript']
-      # Group minor and patch updates together
+      # Group minor and patch updates together (standard practice to reduce PR noise)
       groups:
           minor-and-patch:
               patterns: ['*']
               update-types: ['minor', 'patch']
-      # Ignore major version updates for critical packages
-      ignore:
-          - dependency-name: 'react-native'
-            update-types: ['version-update:semver-major']
-          - dependency-name: 'react'
-            update-types: ['version-update:semver-major']
-          - dependency-name: '@react-native-community/*'
-            update-types: ['version-update:semver-major']
 
     # GitHub Actions
     - package-ecosystem: 'github-actions'
       directory: '/'
       schedule:
-          interval: 'weekly'
-          day: 'monday'
+          interval: 'daily'
           time: '09:00'
+      rebase-strategy: 'auto'
       commit-message:
-          prefix: 'ci'
+          prefix: 'chore(ci):'
           include: 'scope'
-      open-pull-requests-limit: 3
       labels: ['ci', 'github-actions']
 
     # CocoaPods (iOS dependencies)
     - package-ecosystem: 'bundler'
       directory: '/'
       schedule:
-          interval: 'weekly'
-          day: 'monday'
+          interval: 'daily'
           time: '09:00'
+      rebase-strategy: 'auto'
       commit-message:
-          prefix: 'ios'
+          prefix: 'chore(ios):'
           include: 'scope'
-      open-pull-requests-limit: 3
       labels: ['dependencies', 'ios', 'cocoapods']
       # Group Ruby gem updates
       groups:
@@ -57,15 +46,14 @@ updates:
               patterns: ['*']
               update-types: ['minor', 'patch']
 
-    # Gradle (Android dependencies) - if you have gradle files
+    # Gradle (Android dependencies)
     - package-ecosystem: 'gradle'
       directory: '/android'
       schedule:
-          interval: 'weekly'
-          day: 'monday'
+          interval: 'daily'
           time: '09:00'
+      rebase-strategy: 'auto'
       commit-message:
-          prefix: 'android'
+          prefix: 'chore(android):'
           include: 'scope'
-      open-pull-requests-limit: 3
       labels: ['dependencies', 'android', 'gradle']
