@@ -58,7 +58,7 @@ jobs:
                   gradle-version: wrapper
                   cache-read-only: false
             - name: Cache Metro bundler
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: |
                       ~/.cache/metro
@@ -67,7 +67,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-metro-
             - name: Cache node_modules
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
