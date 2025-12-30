@@ -7,8 +7,8 @@ ruby ">= 2.6.10"
 # Pin to >= 1.16.2 to match Podfile.lock version (generated with 1.16.2)
 gem 'cocoapods', '>= 1.16.2'
 gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
-gem 'xcodeproj', '< 1.26.0'
-gem 'concurrent-ruby', '< 1.3.4'
+gem 'xcodeproj', '< 1.28.0'
+gem 'concurrent-ruby', '< 1.3.7'
  
 # Ruby 3.4.0 has removed some libraries from the standard library.
 gem 'bigdecimal'
