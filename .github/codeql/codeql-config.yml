@@ -1,0 +1,93 @@
+name: 'CodeQL Config'
+
+# Languages to analyze
+languages:
+    - javascript
+    - typescript
+    - kotlin
+    - swift
+
+# Paths to include for each language
+paths:
+    # TypeScript/JavaScript source code
+    - src/
+    - App.tsx
+    - index.js
+    - babel.config.js
+    - metro.config.js
+    - jest.config.js
+    - jest.setup.js
+    - scripts/
+    - __tests__/
+    - __mocks__/
+
+    # Kotlin (Android) source code
+    - android/app/src/main/java/
+    - android/app/src/main/kotlin/
+    - android/build.gradle
+    - android/app/build.gradle
+    - android/settings.gradle
+
+    # Swift (iOS) source code
+    - ios/WorkTrack/
+    - ios/Podfile
+
+# Paths to exclude (build artifacts, dependencies, generated files)
+paths-ignore:
+    # Node.js dependencies and build artifacts
+    - node_modules/
+    - coverage/
+    - .next/
+    - dist/
+    - build/
+    - android/app/build/
+    - android/build/
+    - android/.gradle/
+    - ios/build/
+    - ios/Pods/
+    - ios/DerivedData/
+    - vendor/
+
+    # Test coverage and reports
+    - coverage-output.txt
+    - coverage/
+    - *.log
+
+    # Generated and cache files
+    - .cache/
+    - .tmp/
+    - .temp/
+    - *.cache
+    - .gradle/
+
+    # Android specific
+    - android/.idea/
+    - android/local.properties
+    - android/app/debug.keystore
+    - android/app/release.keystore
+    - android/gradle/
+    - android/.gradle/
+
+    # iOS specific
+    - ios/Pods/
+    - ios/DerivedData/
+    - ios/*.xcworkspace/xcuserdata/
+    - ios/*.xcodeproj/xcuserdata/
+    - ios/*.xcuserstate
+
+    # React Native specific
+    - android/app/src/main/assets/
+    - android/app/src/main/res/
+    - ios/WorkTrack/Images.xcassets/
+    - ios/WorkTrack/Colors.xcassets/
+
+    # Documentation and config files that don't need analysis
+    - docs/
+    - README.md
+    - CONTRIBUTING.md
+    - *.md
+
+# Query suites to run
+queries:
+    # Security and quality queries for all languages
+    - uses: security-and-quality
