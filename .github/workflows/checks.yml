@@ -37,7 +37,7 @@ jobs:
                   # Ensure coverage directory exists
                   mkdir -p coverage
                   # Run tests with coverage and JSON output
-                  # --json outputs JSON to stdout, coverage files are still generated normally
+                  # --json outputs JSON array to stdout, coverage files are still generated normally
                   # Capture JSON to file, let stderr go to console for debugging
                   npm run test:coverage -- --json > coverage/test-results.json; TEST_EXIT_CODE=$?
                   # Always exit with the test result code (fail CI if tests fail)
@@ -70,13 +70,30 @@ jobs:
                           const coverageFile = 'coverage/coverage-summary.json';
                           if (fs.existsSync(coverageFile)) {
                               const coverage = JSON.parse(fs.readFileSync(coverageFile, 'utf8'));
-                              const total = coverage.total;
-                              coveragePercent = `${total.lines.pct}%`;
-                              coverageStatus = total.lines.pct >= 95 ? '✅' : '❌';
-                              coverageSummary = `Lines: ${total.lines.pct}% | Functions: ${total.functions.pct}% | Branches: ${total.branches.pct}% | Statements: ${total.statements.pct}%`;
+                              if (coverage && coverage.total) {
+                                  const total = coverage.total;
+                                  coveragePercent = `${total.lines.pct}%`;
+                                  coverageStatus = total.lines.pct >= 95 ? '✅' : '❌';
+                                  coverageSummary = `Lines: ${total.lines.pct}% | Functions: ${total.functions.pct}% | Branches: ${total.branches.pct}% | Statements: ${total.statements.pct}%`;
+                              } else {
+                                  console.log('Coverage file exists but missing total field');
+                              }
+                          } else {
+                              console.log(`Coverage file not found at: ${coverageFile}`);
+                              // List files in coverage directory for debugging
+                              try {
+                                  const coverageDir = 'coverage';
+                                  if (fs.existsSync(coverageDir)) {
+                                      const files = fs.readdirSync(coverageDir);
+                                      console.log(`Files in coverage directory: ${files.join(', ')}`);
+                                  }
+                              } catch (dirErr) {
+                                  console.log('Could not list coverage directory:', dirErr.message);
+                              }
                           }
                       } catch (e) {
                           console.log('Could not read coverage summary:', e.message);
+                          console.log('Error stack:', e.stack);
                       }
 
                       // Read test results
@@ -87,12 +104,38 @@ jobs:
                           const testFile = 'coverage/test-results.json';
                           if (fs.existsSync(testFile)) {
                               const testResults = JSON.parse(fs.readFileSync(testFile, 'utf8'));
-                              const { numTotalTests, numPassedTests, numFailedTests } = testResults;
-                              testSummary = `${numPassedTests}/${numTotalTests} passed`;
-                              testStatus = numFailedTests === 0 ? '✅' : '❌';
+                              // Jest --json outputs an array of test suite results
+                              // Aggregate results from all test suites
+                              let numTotalTests = 0;
+                              let numPassedTests = 0;
+                              let numFailedTests = 0;
+                              
+                              if (Array.isArray(testResults)) {
+                                  testResults.forEach(suite => {
+                                      numTotalTests += suite.numTotalTests || 0;
+                                      numPassedTests += suite.numPassedTests || 0;
+                                      numFailedTests += suite.numFailedTests || 0;
+                                  });
+                              } else if (testResults.numTotalTests !== undefined) {
+                                  // Fallback: if it's already a summary object
+                                  numTotalTests = testResults.numTotalTests;
+                                  numPassedTests = testResults.numPassedTests;
+                                  numFailedTests = testResults.numFailedTests;
+                              }
+                              
+                              if (numTotalTests > 0) {
+                                  testSummary = `${numPassedTests}/${numTotalTests} passed`;
+                                  testStatus = numFailedTests === 0 ? '✅' : '❌';
+                              } else {
+                                  testSummary = 'No tests found';
+                                  testStatus = '⚠️';
+                              }
+                          } else {
+                              console.log(`Test results file not found at: ${testFile}`);
                           }
                       } catch (e) {
-                          // Fallback: try to parse from Jest output
+                          console.log('Could not read test results:', e.message);
+                          console.log('Error stack:', e.stack);
                           testSummary = 'See logs for details';
                       }
 

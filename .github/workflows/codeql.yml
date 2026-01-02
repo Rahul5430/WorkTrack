@@ -40,15 +40,26 @@ jobs:
               with:
                   languages: ${{ matrix.language }}
                   config-file: .github/codeql/codeql-config.yml
-                  # Use the latest CodeQL bundle
-                  tools: latest
+                  # Use the linked CodeQL bundle (renamed from 'latest')
+                  tools: linked
 
             # Autobuild for JavaScript/TypeScript (optional - CodeQL can analyze source directly)
             - name: Autobuild (JavaScript/TypeScript)
               if: matrix.language == 'javascript' || matrix.language == 'typescript'
               uses: github/codeql-action/autobuild@v4
 
-            # Setup for Kotlin (Android) - minimal setup for dependency resolution
+            # Setup for Kotlin (Android) - React Native requires Node.js dependencies
+            - name: Setup Node.js for Kotlin
+              if: matrix.language == 'kotlin'
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 20
+                  cache: "npm"
+
+            - name: Install Node dependencies for Kotlin
+              if: matrix.language == 'kotlin'
+              run: npm ci
+
             - name: Setup Java for Kotlin
               if: matrix.language == 'kotlin'
               uses: actions/setup-java@v4
@@ -61,12 +72,41 @@ jobs:
               if: matrix.language == 'kotlin'
               uses: github/codeql-action/autobuild@v4
 
-            # Setup for Swift (iOS) - CodeQL needs Xcode for Swift analysis
+            # Setup for Swift (iOS) - React Native requires Node.js and CocoaPods
+            - name: Setup Node.js for Swift
+              if: matrix.language == 'swift'
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 20
+                  cache: "npm"
+
+            - name: Install Node dependencies for Swift
+              if: matrix.language == 'swift'
+              run: npm ci
+
+            - name: Setup Ruby and Bundler for Swift
+              if: matrix.language == 'swift'
+              uses: ruby/setup-ruby@v1
+              with:
+                  ruby-version: "3.2"
+                  bundler-cache: true
+
             - name: Setup Xcode for Swift
               if: matrix.language == 'swift'
               uses: maxim-lobanov/setup-xcode@v1
               with:
                   xcode-version: "26.0"
+
+            - name: Install iOS pods for Swift
+              if: matrix.language == 'swift'
+              working-directory: ios
+              run: |
+                  EXPECTED_VERSION=$(cat ../.cocoapods-version | tr -d '[:space:]')
+                  ACTUAL_VERSION=$(bundle exec pod --version)
+                  if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+                      bundle update cocoapods
+                  fi
+                  bundle exec pod install --repo-update
 
             - name: Autobuild (Swift)
               if: matrix.language == 'swift'

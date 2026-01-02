@@ -123,7 +123,20 @@ jobs:
                   exit 1
               fi
           fi
-          bundle exec pod install --repo-update
+          # Clear local podspecs cache to avoid version mismatches
+          if [ -d "Pods/Local Podspecs" ]; then
+              echo "Clearing local podspecs cache..."
+              rm -rf "Pods/Local Podspecs"
+          fi
+          # Try pod install first
+          if ! bundle exec pod install --repo-update; then
+              echo "Pod install failed, attempting to update hermes-engine..."
+              # Update hermes-engine specifically to resolve version mismatch
+              bundle exec pod update hermes-engine --no-repo-update || true
+              # Retry pod install
+              echo "Retrying pod install..."
+              bundle exec pod install --repo-update
+          fi
       - name: List available simulators
         run: |
           xcrun simctl list devices available
