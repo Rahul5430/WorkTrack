@@ -306,6 +306,7 @@ jobs:
             // Set as job summary
             core.summary
                 .addHeading('iOS Build Summary')
+                .addRaw('\n')
                 .addTable([
                     [{data: 'Component', header: true}, {data: 'Status', header: true}, {data: 'Details', header: true}],
                     ['Xcode Build', '✅', 'Simulator app built successfully'],
@@ -314,11 +315,12 @@ jobs:
                     ['Artifacts', '✅', 'Uploaded to GitHub Actions'],
                     ['CocoaPods', '✅', 'Dependencies installed with caching']
                 ])
+                .addRaw('\n')
                 .addHeading('Download Links', 2)
-                .addRaw('')
+                .addRaw('\n')
                 .addRaw(`- 📱 **Simulator App**: ${iosUrl}\n`)
                 .addHeading('Build Details', 2)
-                .addRaw('')
+                .addRaw('\n')
                 .addRaw(`- **Build Type**: Release (Simulator)\n`)
                 .addRaw(`- **Xcode Version**: 26.0\n`)
                 .addRaw(`- **Target**: iOS Simulator\n`)
@@ -327,7 +329,7 @@ jobs:
                 .addRaw(`- **DerivedData Cache**: Enabled\n`)
                 .addRaw(`- **Parallel Build**: Enabled (4 jobs)\n`)
                 .addHeading('Caching Status', 2)
-                .addRaw('')
+                .addRaw('\n')
                 .addRaw(`- ✅ **CocoaPods**: Cached based on Podfile.lock\n`)
                 .addRaw(`- ✅ **DerivedData**: Cached based on source changes\n`)
                 .addRaw(`- ✅ **Metro Bundler**: Cached for JS bundling\n`)

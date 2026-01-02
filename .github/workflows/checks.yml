@@ -173,6 +173,7 @@ jobs:
                       // Also set as job summary
                       core.summary
                           .addHeading('Quality Checks Summary')
+                          .addRaw('\n')
                           .addTable([
                               [{data: 'Check', header: true}, {data: 'Status', header: true}, {data: 'Details', header: true}],
                               ['Lint', '✅', 'ESLint passed'],
@@ -182,17 +183,18 @@ jobs:
                               ['Security Audit', '✅', 'npm audit passed (high+ vulnerabilities)'],
                               ['Secret Scan', gitleaksStatus, gitleaksSummary]
                           ])
+                          .addRaw('\n')
                           .addHeading('Coverage Details', 2)
-                          .addRaw('')
+                          .addRaw('\n')
                           .addRaw(`- **Threshold**: 95% (${coverageStatus === '✅' ? 'PASSED' : 'FAILED'})\n`)
                           .addRaw(`- **Current**: ${coveragePercent}\n`)
                           .addRaw(`- **Report**: ${coverageUrl}\n`)
                           .addHeading('Security Checks', 2)
-                          .addRaw('')
+                          .addRaw('\n')
                           .addRaw(`- ✅ **npm audit**: No high+ severity vulnerabilities found\n`)
                           .addRaw(`- ${gitleaksStatus} **Gitleaks**: ${gitleaksSummary}\n`)
                           .addHeading('Artifacts', 2)
-                          .addRaw('')
+                          .addRaw('\n')
                           .addRaw(`- 📊 **Coverage Report**: ${coverageUrl}\n`)
                           .write();
 
