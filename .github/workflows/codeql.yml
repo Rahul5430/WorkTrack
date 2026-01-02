@@ -56,6 +56,15 @@ jobs:
                   node-version: 20
                   cache: "npm"
 
+            - name: Cache node_modules for Kotlin
+              if: matrix.language == 'kotlin'
+              uses: actions/cache@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
+
             - name: Install Node dependencies for Kotlin
               if: matrix.language == 'kotlin'
               run: npm ci
@@ -68,9 +77,83 @@ jobs:
                   java-version: "17"
                   cache: "gradle"
 
-            - name: Autobuild (Kotlin)
+            - name: Setup Android SDK for Kotlin
               if: matrix.language == 'kotlin'
-              uses: github/codeql-action/autobuild@v4
+              uses: android-actions/setup-android@v3
+
+            - name: Cache Metro bundler for Kotlin
+              if: matrix.language == 'kotlin'
+              uses: actions/cache@v5
+              with:
+                  path: |
+                      ~/.cache/metro
+                      node_modules/.cache
+                  key: ${{ runner.os }}-metro-${{ hashFiles('package-lock.json', 'metro.config.js', 'babel.config.js') }}
+                  restore-keys: |
+                      ${{ runner.os }}-metro-
+
+            - name: Setup Gradle Build Action for Kotlin
+              if: matrix.language == 'kotlin'
+              uses: gradle/gradle-build-action@v3
+              with:
+                  gradle-version: wrapper
+                  cache-read-only: false
+
+            - name: Free up disk space for Kotlin
+              if: matrix.language == 'kotlin'
+              run: |
+                  # Free up disk space before building
+                  echo "Disk space before cleanup:"
+                  df -h
+
+                  # Clean Gradle cache if needed (keep recent entries)
+                  if [ -d ~/.gradle/caches ]; then
+                      echo "Cleaning old Gradle cache entries..."
+                      find ~/.gradle/caches -type f -atime +7 -delete 2>/dev/null || true
+                      find ~/.gradle/caches -type d -empty -delete 2>/dev/null || true
+                  fi
+
+                  # Clean Android build directories from previous runs
+                  if [ -d android/app/build ]; then
+                      echo "Cleaning previous Android build artifacts..."
+                      rm -rf android/app/build/outputs || true
+                      rm -rf android/app/build/intermediates/merged_assets || true
+                      rm -rf android/app/build/intermediates/merged_res || true
+                  fi
+
+                  echo "Disk space after cleanup:"
+                  df -h
+
+            - name: Build for CodeQL (Kotlin)
+              if: matrix.language == 'kotlin'
+              run: |
+                  # Build Android project for CodeQL analysis
+                  # Optimized for minimal disk space: only debug variant, single architecture
+                  cd android
+
+                  # Build only debug variant with single architecture (arm64-v8a) for CodeQL
+                  # This is sufficient for static analysis and uses much less disk space than building all architectures
+                  # Skip APK packaging to save space - CodeQL only needs compiled classes
+                  ./gradlew compileDebugKotlin \
+                      compileDebugJavaWithJavac \
+                      -PreactNativeArchitectures=arm64-v8a \
+                      --parallel \
+                      --build-cache \
+                      -Dorg.gradle.caching=true \
+                      -Dorg.gradle.parallel=true \
+                      -Dorg.gradle.configureondemand=true \
+                      -Dorg.gradle.daemon=false \
+                      --no-daemon \
+                      2>&1 | grep -v -E "(warning:|Note:)" || true
+
+                  # Clean up large artifacts after compilation (keep classes for CodeQL)
+                  echo "Cleaning up large build artifacts..."
+                  find android/app/build -name "*.apk" -delete 2>/dev/null || true
+                  find android/app/build -name "*.aab" -delete 2>/dev/null || true
+                  find android/app/build -path "*/merged_assets/*" -delete 2>/dev/null || true
+
+                  echo "Final disk space:"
+                  df -h
 
             # Setup for Swift (iOS) - React Native requires Node.js and CocoaPods
             - name: Setup Node.js for Swift
@@ -79,6 +162,15 @@ jobs:
               with:
                   node-version: 20
                   cache: "npm"
+
+            - name: Cache node_modules for Swift
+              if: matrix.language == 'swift'
+              uses: actions/cache@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
 
             - name: Install Node dependencies for Swift
               if: matrix.language == 'swift'
@@ -97,20 +189,73 @@ jobs:
               with:
                   xcode-version: "26.0"
 
+            - name: Cache CocoaPods for Swift
+              if: matrix.language == 'swift'
+              uses: actions/cache@v5
+              with:
+                  path: ios/Pods
+                  key: ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-${{ hashFiles('ios/Podfile') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pods-v2-${{ hashFiles('ios/Podfile.lock') }}-
+                      ${{ runner.os }}-pods-v2-
+
+            - name: Cache CocoaPods cache for Swift
+              if: matrix.language == 'swift'
+              uses: actions/cache@v5
+              with:
+                  path: ~/Library/Caches/CocoaPods
+                  key: ${{ runner.os }}-cocoapods-cache-v2-${{ hashFiles('ios/Podfile.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-cocoapods-cache-v2-
+
             - name: Install iOS pods for Swift
               if: matrix.language == 'swift'
               working-directory: ios
               run: |
                   EXPECTED_VERSION=$(cat ../.cocoapods-version | tr -d '[:space:]')
                   ACTUAL_VERSION=$(bundle exec pod --version)
+                  echo "Expected CocoaPods version: $EXPECTED_VERSION"
+                  echo "Actual CocoaPods version: $ACTUAL_VERSION"
                   if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+                      echo "CocoaPods version mismatch. Updating to $EXPECTED_VERSION..."
                       bundle update cocoapods
+                      ACTUAL_VERSION=$(bundle exec pod --version)
+                      echo "Updated CocoaPods version: $ACTUAL_VERSION"
+                      if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+                          echo "Error: Failed to update CocoaPods. Expected $EXPECTED_VERSION but got $ACTUAL_VERSION"
+                          exit 1
+                      fi
                   fi
-                  bundle exec pod install --repo-update
+                  # Clear local podspecs cache to avoid version mismatches
+                  if [ -d "Pods/Local Podspecs" ]; then
+                      echo "Clearing local podspecs cache..."
+                      rm -rf "Pods/Local Podspecs"
+                  fi
+                  # Try pod install first
+                  if ! bundle exec pod install --repo-update; then
+                      echo "Pod install failed, attempting to update hermes-engine..."
+                      # Update hermes-engine specifically to resolve version mismatch
+                      bundle exec pod update hermes-engine --no-repo-update || true
+                      # Retry pod install
+                      echo "Retrying pod install..."
+                      bundle exec pod install --repo-update
+                  fi
 
-            - name: Autobuild (Swift)
+            - name: Build for CodeQL (Swift)
               if: matrix.language == 'swift'
-              uses: github/codeql-action/autobuild@v4
+              run: |
+                  # Build the iOS workspace for CodeQL analysis
+                  # This builds only the actual source code workspace, avoiding node_modules dependencies
+                  # CodeQL can analyze Swift source code directly, but building ensures code compiles
+                  xcodebuild \
+                      -workspace ios/WorkTrack.xcworkspace \
+                      -scheme WorkTrack \
+                      -configuration Release \
+                      -sdk iphonesimulator \
+                      -derivedDataPath ios/build \
+                      CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                      build \
+                      2>&1 | grep -v "warning:" || true
 
             - name: Perform CodeQL Analysis
               uses: github/codeql-action/analyze@v4

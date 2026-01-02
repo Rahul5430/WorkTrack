@@ -37,9 +37,9 @@ jobs:
                   # Ensure coverage directory exists
                   mkdir -p coverage
                   # Run tests with coverage and JSON output
-                  # --json outputs JSON array to stdout, coverage files are still generated normally
-                  # Capture JSON to file, let stderr go to console for debugging
-                  npm run test:coverage -- --json > coverage/test-results.json; TEST_EXIT_CODE=$?
+                  # --json --outputFile writes JSON directly to file, avoiding stdout pollution
+                  # This ensures clean JSON output without npm/shell interference
+                  npm run test:coverage -- --json --outputFile=coverage/test-results.json; TEST_EXIT_CODE=$?
                   # Always exit with the test result code (fail CI if tests fail)
                   exit $TEST_EXIT_CODE
             - name: Upload coverage to Codecov
@@ -103,32 +103,48 @@ jobs:
                       try {
                           const testFile = 'coverage/test-results.json';
                           if (fs.existsSync(testFile)) {
-                              const testResults = JSON.parse(fs.readFileSync(testFile, 'utf8'));
-                              // Jest --json outputs an array of test suite results
-                              // Aggregate results from all test suites
-                              let numTotalTests = 0;
-                              let numPassedTests = 0;
-                              let numFailedTests = 0;
+                              const fileContent = fs.readFileSync(testFile, 'utf8').trim();
                               
-                              if (Array.isArray(testResults)) {
-                                  testResults.forEach(suite => {
-                                      numTotalTests += suite.numTotalTests || 0;
-                                      numPassedTests += suite.numPassedTests || 0;
-                                      numFailedTests += suite.numFailedTests || 0;
-                                  });
-                              } else if (testResults.numTotalTests !== undefined) {
-                                  // Fallback: if it's already a summary object
-                                  numTotalTests = testResults.numTotalTests;
-                                  numPassedTests = testResults.numPassedTests;
-                                  numFailedTests = testResults.numFailedTests;
-                              }
-                              
-                              if (numTotalTests > 0) {
-                                  testSummary = `${numPassedTests}/${numTotalTests} passed`;
-                                  testStatus = numFailedTests === 0 ? '✅' : '❌';
-                              } else {
-                                  testSummary = 'No tests found';
+                              // Validate that file is not empty and starts with valid JSON
+                              if (!fileContent || fileContent.length === 0) {
+                                  console.log('Test results file is empty');
+                                  testSummary = 'No test results found';
                                   testStatus = '⚠️';
+                              } else {
+                                  // Check if content looks like JSON (starts with [ or {)
+                                  if (!fileContent.startsWith('[') && !fileContent.startsWith('{')) {
+                                      console.log(`Test results file does not appear to be valid JSON. First 100 chars: ${fileContent.substring(0, 100)}`);
+                                      testSummary = 'Invalid JSON format';
+                                      testStatus = '⚠️';
+                                  } else {
+                                      const testResults = JSON.parse(fileContent);
+                                      // Jest --json outputs an array of test suite results
+                                      // Aggregate results from all test suites
+                                      let numTotalTests = 0;
+                                      let numPassedTests = 0;
+                                      let numFailedTests = 0;
+                                      
+                                      if (Array.isArray(testResults)) {
+                                          testResults.forEach(suite => {
+                                              numTotalTests += suite.numTotalTests || 0;
+                                              numPassedTests += suite.numPassedTests || 0;
+                                              numFailedTests += suite.numFailedTests || 0;
+                                          });
+                                      } else if (testResults.numTotalTests !== undefined) {
+                                          // Fallback: if it's already a summary object
+                                          numTotalTests = testResults.numTotalTests;
+                                          numPassedTests = testResults.numPassedTests;
+                                          numFailedTests = testResults.numFailedTests;
+                                      }
+                                      
+                                      if (numTotalTests > 0) {
+                                          testSummary = `${numPassedTests}/${numTotalTests} passed`;
+                                          testStatus = numFailedTests === 0 ? '✅' : '❌';
+                                      } else {
+                                          testSummary = 'No tests found';
+                                          testStatus = '⚠️';
+                                      }
+                                  }
                               }
                           } else {
                               console.log(`Test results file not found at: ${testFile}`);
@@ -136,6 +152,16 @@ jobs:
                       } catch (e) {
                           console.log('Could not read test results:', e.message);
                           console.log('Error stack:', e.stack);
+                          // Try to read first few lines of file for debugging
+                          try {
+                              const testFile = 'coverage/test-results.json';
+                              if (fs.existsSync(testFile)) {
+                                  const fileContent = fs.readFileSync(testFile, 'utf8');
+                                  console.log(`File content preview (first 200 chars): ${fileContent.substring(0, 200)}`);
+                              }
+                          } catch (debugErr) {
+                              console.log('Could not read file for debugging:', debugErr.message);
+                          }
                           testSummary = 'See logs for details';
                       }
 
