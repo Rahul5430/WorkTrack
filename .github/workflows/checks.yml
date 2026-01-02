@@ -33,7 +33,15 @@ jobs:
             - name: Run tests with coverage
               env:
                   FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
-              run: npm run test:coverage
+              run: |
+                  # Ensure coverage directory exists
+                  mkdir -p coverage
+                  # Run tests with coverage and JSON output
+                  # --json outputs JSON to stdout, coverage files are still generated normally
+                  # Capture JSON to file, let stderr go to console for debugging
+                  npm run test:coverage -- --json > coverage/test-results.json; TEST_EXIT_CODE=$?
+                  # Always exit with the test result code (fail CI if tests fail)
+                  exit $TEST_EXIT_CODE
             - name: Upload coverage to Codecov
               uses: codecov/codecov-action@v5
               with:

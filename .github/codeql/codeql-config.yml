@@ -50,14 +50,11 @@ paths-ignore:
 
     # Test coverage and reports
     - coverage-output.txt
-    - coverage/
-    - *.log
 
     # Generated and cache files
     - .cache/
     - .tmp/
     - .temp/
-    - *.cache
     - .gradle/
 
     # Android specific
@@ -71,9 +68,6 @@ paths-ignore:
     # iOS specific
     - ios/Pods/
     - ios/DerivedData/
-    - ios/*.xcworkspace/xcuserdata/
-    - ios/*.xcodeproj/xcuserdata/
-    - ios/*.xcuserstate
 
     # React Native specific
     - android/app/src/main/assets/
@@ -85,7 +79,6 @@ paths-ignore:
     - docs/
     - README.md
     - CONTRIBUTING.md
-    - *.md
 
 # Query suites to run
 queries:

@@ -64,7 +64,7 @@ module.exports = {
 	],
 	coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/src/assets/'],
 	coverageDirectory: 'coverage',
-	coverageReporters: ['lcov', 'text', 'text-summary'],
+	coverageReporters: ['lcov', 'text', 'text-summary', 'json-summary'],
 	coverageThreshold: {
 		global: {
 			branches: 95,
