@@ -128,14 +128,20 @@ jobs:
               if: matrix.language == 'kotlin'
               run: |
                   # Build Android project for CodeQL analysis
+                  # CodeQL needs to trace source files during build from repository root
                   # Optimized for minimal disk space: only debug variant, single architecture
-                  cd android
 
-                  # Build only debug variant with single architecture (arm64-v8a) for CodeQL
-                  # This is sufficient for static analysis and uses much less disk space than building all architectures
-                  # Skip APK packaging to save space - CodeQL only needs compiled classes
-                  ./gradlew compileDebugKotlin \
-                      compileDebugJavaWithJavac \
+                  # List source files first to verify they exist
+                  echo "Kotlin source files:"
+                  find android/app/src/main -name "*.kt" || echo "No Kotlin source files found"
+
+                  # Build the app module's debug variant with single architecture (arm64-v8a)
+                  # This ensures CodeQL can trace Kotlin source files during compilation
+                  # We use assembleDebug to build the full module, but limit to single architecture
+                  # CodeQL's build tracer will automatically intercept compiler invocations
+                  # Building from repository root ensures CodeQL can properly trace file paths
+                  cd android
+                  ./gradlew :app:assembleDebug \
                       -PreactNativeArchitectures=arm64-v8a \
                       --parallel \
                       --build-cache \
@@ -143,14 +149,33 @@ jobs:
                       -Dorg.gradle.parallel=true \
                       -Dorg.gradle.configureondemand=true \
                       -Dorg.gradle.daemon=false \
-                      --no-daemon \
-                      2>&1 | grep -v -E "(warning:|Note:)" || true
+                      --no-daemon
+                  cd ..
+
+                  # Verify Kotlin files were compiled (this is critical for CodeQL)
+                  echo "Checking for compiled Kotlin classes..."
+                  KOTLIN_CLASSES=$(find android/app/build -name "*.class" -path "*/kotlin/*" | wc -l)
+                  JAVA_CLASSES=$(find android/app/build -name "*.class" -path "*/java/*" | wc -l)
+                  echo "Found $KOTLIN_CLASSES Kotlin classes and $JAVA_CLASSES Java classes"
+
+                  if [ "$KOTLIN_CLASSES" -eq 0 ] && [ "$JAVA_CLASSES" -eq 0 ]; then
+                      echo "ERROR: No compiled classes found! CodeQL will not be able to analyze the code."
+                      echo "Build output directories:"
+                      ls -la android/app/build/ || true
+                      exit 1
+                  fi
+
+                  # Show some example compiled classes
+                  echo "Sample compiled classes:"
+                  find android/app/build -name "*.class" -path "*/kotlin/*" | head -5 || true
+                  find android/app/build -name "*.class" -path "*/java/*" | head -5 || true
 
                   # Clean up large artifacts after compilation (keep classes for CodeQL)
                   echo "Cleaning up large build artifacts..."
                   find android/app/build -name "*.apk" -delete 2>/dev/null || true
                   find android/app/build -name "*.aab" -delete 2>/dev/null || true
                   find android/app/build -path "*/merged_assets/*" -delete 2>/dev/null || true
+                  find android/app/build -path "*/merged_res/*" -delete 2>/dev/null || true
 
                   echo "Final disk space:"
                   df -h
