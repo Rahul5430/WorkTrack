@@ -208,6 +208,15 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-cocoapods-cache-v2-
 
+            - name: Cache Xcode Derived Data for Swift
+              if: matrix.language == 'swift'
+              uses: actions/cache@v5
+              with:
+                  path: ios/build
+                  key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('ios/**/*.swift', 'ios/**/*.m', 'ios/**/*.h', 'ios/Podfile.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-xcode-deriveddata-
+
             - name: Install iOS pods for Swift
               if: matrix.language == 'swift'
               working-directory: ios
@@ -245,17 +254,55 @@ jobs:
               if: matrix.language == 'swift'
               run: |
                   # Build the iOS workspace for CodeQL analysis
-                  # This builds only the actual source code workspace, avoiding node_modules dependencies
+                  # Optimized for speed: Debug configuration, parallel builds, single architecture
                   # CodeQL can analyze Swift source code directly, but building ensures code compiles
-                  xcodebuild \
-                      -workspace ios/WorkTrack.xcworkspace \
-                      -scheme WorkTrack \
-                      -configuration Release \
-                      -sdk iphonesimulator \
-                      -derivedDataPath ios/build \
-                      CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-                      build \
-                      2>&1 | grep -v "warning:" || true
+                  # Debug is much faster than Release (no optimizations) and sufficient for static analysis
+
+                  # Get available simulator (prefer x86_64 for faster builds on Intel runners)
+                  SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep -i "iPhone.*x86_64\|iPhone.*Simulator" | head -1 | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p')
+
+                  # Fallback to any available iPhone simulator
+                  [ -z "$SIMULATOR_DEVICE" ] && SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "^    iPhone" | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+
+                  # Final fallback: any iOS simulator
+                  [ -z "$SIMULATOR_DEVICE" ] && SIMULATOR_DEVICE=$(xcrun simctl list devices available | sed -n 's/.* (\([0-9A-Fa-f-]\{36\}\)) .*/\1/p' | head -1)
+
+                  if [ -z "$SIMULATOR_DEVICE" ]; then
+                      echo "No simulators found, building without specific destination"
+                      xcodebuild \
+                          -workspace ios/WorkTrack.xcworkspace \
+                          -scheme WorkTrack \
+                          -configuration Debug \
+                          -sdk iphonesimulator \
+                          -derivedDataPath ios/build \
+                          -parallelizeTargets \
+                          -jobs 4 \
+                          ONLY_ACTIVE_ARCH=YES \
+                          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                          build \
+                          2>&1 | grep -v -E "(warning:|note:)" || true
+                  else
+                      echo "Using simulator UDID: $SIMULATOR_DEVICE"
+                      xcodebuild \
+                          -workspace ios/WorkTrack.xcworkspace \
+                          -scheme WorkTrack \
+                          -configuration Debug \
+                          -sdk iphonesimulator \
+                          -destination "platform=iOS Simulator,id=$SIMULATOR_DEVICE" \
+                          -derivedDataPath ios/build \
+                          -parallelizeTargets \
+                          -jobs 4 \
+                          ONLY_ACTIVE_ARCH=YES \
+                          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                          build \
+                          2>&1 | grep -v -E "(warning:|note:)" || true
+                  fi
+
+                  # Clean up large build artifacts after compilation (keep compiled objects for CodeQL)
+                  echo "Cleaning up large build artifacts..."
+                  find ios/build -name "*.app" -type d -exec rm -rf {} + 2>/dev/null || true
+                  find ios/build -name "*.dSYM" -type d -exec rm -rf {} + 2>/dev/null || true
+                  find ios/build -name "*.ipa" -delete 2>/dev/null || true
 
             - name: Perform CodeQL Analysis
               uses: github/codeql-action/analyze@v4

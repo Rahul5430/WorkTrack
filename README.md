@@ -2,6 +2,7 @@
 [![Checks](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/Rahul5430/WorkTrack/actions/workflows/checks.yml?query=branch%3Amain)
 [![Android Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml/badge.svg)](https://github.com/Rahul5430/WorkTrack/actions/workflows/android.yml)
 [![iOS Build](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml/badge.svg)](https://github.com/Rahul5430/WorkTrack/actions/workflows/ios.yml)
+[![CodeQL](https://github.com/Rahul5430/WorkTrack/actions/workflows/codeql.yml/badge.svg)](https://github.com/Rahul5430/WorkTrack/actions/workflows/codeql.yml)
 
 # WorkTrack
 
@@ -54,6 +55,7 @@ Workflows on pushes to `main`:
 - Checks: ESLint, TypeScript typecheck, tests with coverage, Codecov, security audit
 - Android Build: builds debug APK and uploads artifact and Release asset
 - iOS Build: builds simulator app and uploads artifact
+- CodeQL: static code analysis for JavaScript, TypeScript, Kotlin, and Swift (runs on push, PR, and weekly schedule)
 
 ### 📥 Download Android debug APK
 
