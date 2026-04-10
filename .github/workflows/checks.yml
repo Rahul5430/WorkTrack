@@ -55,7 +55,7 @@ jobs:
                   name: jest-coverage
                   path: coverage
             - name: Generate Job Summary
-              uses: actions/github-script@v8
+              uses: actions/github-script@v9
               with:
                   script: |
                       const fs = require('fs');

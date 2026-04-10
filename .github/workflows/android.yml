@@ -110,7 +110,7 @@ jobs:
                       android/app/build/outputs/apk/debug/output-metadata.json
                   token: ${{ github.token }}
             - name: Generate Job Summary
-              uses: actions/github-script@v8
+              uses: actions/github-script@v9
               with:
                   script: |
                       // Get artifact URLs
