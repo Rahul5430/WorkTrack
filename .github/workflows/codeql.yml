@@ -79,7 +79,7 @@ jobs:
 
             - name: Setup Android SDK for Kotlin
               if: matrix.language == 'kotlin'
-              uses: android-actions/setup-android@v3
+              uses: android-actions/setup-android@v4
 
             - name: Cache Metro bundler for Kotlin
               if: matrix.language == 'kotlin'
