@@ -25,7 +25,7 @@ jobs:
                   set -e
                   npm audit --production --audit-level=high
             - name: Run Gitleaks secret scan
-              uses: gitleaks/gitleaks-action@v2
+              uses: gitleaks/gitleaks-action@v3
             - name: ESLint
               run: npm run lint
             - name: TypeScript typecheck
