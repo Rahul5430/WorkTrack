@@ -51,7 +51,7 @@ jobs:
             # Setup for Kotlin (Android) - React Native requires Node.js dependencies
             - name: Setup Node.js for Kotlin
               if: matrix.language == 'kotlin'
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: 20
                   cache: "npm"
@@ -183,7 +183,7 @@ jobs:
             # Setup for Swift (iOS) - React Native requires Node.js and CocoaPods
             - name: Setup Node.js for Swift
               if: matrix.language == 'swift'
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: 20
                   cache: "npm"
