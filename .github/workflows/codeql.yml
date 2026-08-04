@@ -36,7 +36,7 @@ jobs:
               uses: actions/checkout@v7
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@v4
+              uses: github/codeql-action/init@v4.37.4
               with:
                   languages: ${{ matrix.language }}
                   config-file: .github/codeql/codeql-config.yml
@@ -46,7 +46,7 @@ jobs:
             # Autobuild for JavaScript/TypeScript (optional - CodeQL can analyze source directly)
             - name: Autobuild (JavaScript/TypeScript)
               if: matrix.language == 'javascript' || matrix.language == 'typescript'
-              uses: github/codeql-action/autobuild@v4
+              uses: github/codeql-action/autobuild@v4.37.4
 
             # Setup for Kotlin (Android) - React Native requires Node.js dependencies
             - name: Setup Node.js for Kotlin
@@ -330,6 +330,6 @@ jobs:
                   find ios/build -name "*.ipa" -delete 2>/dev/null || true
 
             - name: Perform CodeQL Analysis
-              uses: github/codeql-action/analyze@v4
+              uses: github/codeql-action/analyze@v4.37.4
               with:
                   category: "/language:${{ matrix.language }}"
